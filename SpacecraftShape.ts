@@ -1,41 +1,49 @@
+import { viewBoxLeft } from "./start.js"
+import { viewBoxTop } from "./start.js"
+import { viewBoxWidth } from "./start.js"
+import { viewBoxHeight } from "./start.js"
+import { color } from "./start.js"
 
-export abstract class Spacecraft{
+export abstract class SpacecraftShape{
     
     static getCraftGElement(type: string): SVGGElement{
         const gElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
                 
         switch(type){
-            case "rocket":
+            
+            case "rokket":
                 
                 const outline = document.createElementNS("http://www.w3.org/2000/svg", "path")
                 const inline = document.createElementNS("http://www.w3.org/2000/svg", "path")
-                outline.setAttribute("d", `M 0 8, 
-                                            L  -4 -8,
-                                            L -2 -4,
-                                            L 0 -8,
-                                            L 2 -6, 
-                                            L 4 -8,
+                outline.setAttribute("d", `M 0 -8, 
+                                            L  -4 8,
+                                            L -2 4,
+                                            L 0 8,
+                                            L 2 6, 
+                                            L 4 8,
                                             z`)
                 outline.setAttribute("fill","none")
-                outline.setAttribute("stroke","black")
-                outline.setAttribute("stroke-width","1px")
+                outline.setAttribute("stroke",`${color}`)
                 outline.setAttribute("stroke-width","1px")
                 outline.setAttribute('vector-effect', 'non-scaling-stroke')
-
                 
-                inline.setAttribute("d", `M -1 6,
-                                            L 1 6,
-                                            L -2 2,
-                                            L 1.5 2,
+                inline.setAttribute("d", `M -.2 -5,
+                                            L .2 -5,
+                                            L 2 2,
+                                            L -1.5 2,
                                             z`)
-                inline.setAttribute("fill", "black")
+                inline.setAttribute("fill", "none")
+                inline.setAttribute("stroke", `${color}`)
+                inline.setAttribute("stroke-width", ".5px")
+                inline.setAttribute('vector-effect', 'non-scaling-stroke')
                 gElement.appendChild(outline)
                 gElement.appendChild(inline)
                 return(gElement)
             
             case "rainbowRocket":
                 gElement.setAttribute("fill", "none");
-                gElement.setAttribute("stroke-width", "1px")
+                gElement.setAttribute("stroke-width", ".5px")
+                gElement.setAttribute("stroke", `${color}`)
 
                 const wingLeft = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement;
                 wingLeft.setAttribute("d", "M-2 -3 q-1.5 1, -2 3 q1 -0.5, 2 -1z");
@@ -43,7 +51,7 @@ export abstract class Spacecraft{
                 const wingRight = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement;
                 wingRight.setAttribute("d", "M 2 -3 q 1.5 1, 2 3 q-1 -0.5, -2 -1z");
 
-                const summitball = document.createElementNS("http://www.w3.org/2000/svg", "circe") as SVGCircleElement;
+                const summitball = document.createElementNS("http://www.w3.org/2000/svg", "circle") as SVGCircleElement;
                 summitball.setAttribute("cx", "0");
                 summitball.setAttribute("cy", "-10");
                 summitball.setAttribute("r", ".2");
@@ -66,7 +74,25 @@ export abstract class Spacecraft{
                 gElement.appendChild(middlewindow)
 
                 return(gElement)
+
         }
+        
+        const imageUrl = `./${type}.png`    
+        const image = document.createElementNS("http://www.w3.org/2000/svg", "image")
+        image.href.baseVal = imageUrl
+        image.setAttribute("width", `${viewBoxWidth/2}`)
+        image.setAttribute("height", `${viewBoxHeight/2}`)
+        image.setAttribute("border", `2px solid ${color}`)
+        
+        image.setAttribute("transform", `translate (${-viewBoxWidth/4},${-viewBoxHeight/4})`)
+        image.onload = () =>{
+            console.log(image.getBBox().width)
+            
+            let imageWidth = image.getBBox().width
+
+        }
+        gElement.appendChild(image)
+        
         return(gElement)
             
     }
