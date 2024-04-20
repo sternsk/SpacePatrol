@@ -39,4 +39,13 @@ export class Vector2D{
         return(this._angle)
     }
 
+    // Create a Vector2D object from a JSON representation
+    static fromJSON(json: Record<string, number>): Vector2D {
+        return new Vector2D(json.x, json.y);
+    }
+    
+    // Convert Vector2D object to JSON representation
+    toJSON(): Record<string, number> {
+        return { x: this._x, y: this._y };
+}
 }

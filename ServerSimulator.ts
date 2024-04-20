@@ -47,7 +47,9 @@ export class ServerSimulator {
     private receiveMessage(spacecraft: Spacecraft) {
         this.spacecrafts.push(spacecraft);
     }
-
+    sendMessage(): Spacecraft[]{
+        return this.spacecrafts
+    }
     private isSpacecraftAlreadyAdded(spacecraft: Spacecraft): boolean {
         return this.spacecrafts.some(existingSpacecraft => existingSpacecraft.id === spacecraft.id);
     }
