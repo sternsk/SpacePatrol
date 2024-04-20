@@ -8,12 +8,69 @@ export let viewBoxTop = -50
 export let viewBoxLeft = -50
 export let viewBoxWidth = 100
 export let viewBoxHeight = 100
-export let color = "black"
+export let color = "grey"       //initial color
+
+let loopRunning = true;
+
+let keysPressed: {[key:string]:boolean} = {}
+let rotationImpuls = 0
+let rotationAngle = 0
+let previewSvgAspectRatio = viewBoxWidth / viewBoxHeight
 
 const previewSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg") as SVGSVGElement
+previewSvg.style.position = "fixed"
+previewSvg.style.outline = "none"
+
 previewSvg.setAttribute("id", "previewSvg")
-previewSvg.setAttribute("style", "border: 2px solid brown")
+previewSvg.setAttribute("tabindex", "0")
 previewSvg.setAttribute("viewBox",`${viewBoxLeft}, ${viewBoxTop}, ${viewBoxWidth}, ${viewBoxHeight}`)
+
+previewSvg.addEventListener(`keydown`, handleKeyDown.bind(this))
+previewSvg.addEventListener(`keyup`, handleKeyUp.bind(this))
+
+function handleKeyDown(event: KeyboardEvent):void{
+    keysPressed[event.key] = true;
+}
+
+function handleKeyUp(event: KeyboardEvent):void{
+    keysPressed[event.key] = false;
+}
+
+function loop(){
+    if(!loopRunning) return
+    requestAnimationFrame(() => loop())
+    
+    if(keysPressed["ArrowLeft"]){
+        rotationImpuls -= 1
+    }
+    else if(keysPressed["ArrowRight"]){
+        rotationImpuls += 1
+    }
+    
+    if(keysPressed["ArrowUp"]){
+        viewBoxWidth += viewBoxWidth / 10
+        viewBoxLeft = viewBoxWidth / -2
+        viewBoxHeight = viewBoxWidth * previewSvgAspectRatio
+        viewBoxTop = viewBoxHeight / -2
+        previewSvg.setAttribute("viewBox", `${viewBoxLeft}, ${viewBoxTop}, ${viewBoxWidth}, ${viewBoxHeight}`)
+    }
+    
+    if(keysPressed["ArrowDown"]){
+        viewBoxWidth -= viewBoxWidth / 10
+        viewBoxLeft = viewBoxWidth / -2
+        viewBoxHeight = viewBoxWidth * previewSvgAspectRatio
+        viewBoxTop = viewBoxHeight / -2
+        console.log(document.getElementById("previewSvg")?.getAttribute("viewBox"))
+        previewSvg.setAttribute("viewBox", `${viewBoxLeft}, ${viewBoxTop}, ${viewBoxWidth}, ${viewBoxHeight}`)
+    }
+
+    rotationAngle += rotationImpuls
+    rotationAngle = (rotationAngle%360 + 360)%360
+    previewSvg.style.transform = `rotate(${rotationAngle}deg)`
+    rotationImpuls -= rotationImpuls/100
+    if(Math.abs(rotationImpuls)<.1)
+        rotationImpuls = 0
+}
 
 document.getElementById("startPage")!.appendChild(previewSvg)
 
@@ -23,13 +80,14 @@ typeSelector.addEventListener("change", () =>{
         previewSvg.removeChild(previewSvg.firstChild)
     
     previewSvg.appendChild(SpacecraftShape.getCraftGElement(typeSelector.value))
+    previewSvg.focus()
 })
 
 colorSelector.addEventListener("change", () =>{
     color = colorSelector.value
     while(previewSvg.firstChild)
-        previewSvg.removeChild(previewSvg.firstChild)
-
+    previewSvg.removeChild(previewSvg.firstChild)
+    previewSvg.focus()
     previewSvg.appendChild(SpacecraftShape.getCraftGElement(typeSelector.value))
 })
 previewSvg.appendChild(SpacecraftShape.getCraftGElement(typeSelector.value))
@@ -37,12 +95,13 @@ previewSvg.appendChild(SpacecraftShape.getCraftGElement(typeSelector.value))
 document.getElementById("startButton")?.addEventListener("click", startSpaceGame)
 
 async function startSpaceGame(){
-    console.log("gameStarts now! "+typeSelector.value+" "+color+" "+ idInputElement.value)
+    loopRunning = false
+    console.log("gameStarts now! "+ typeSelector.value +" "+ color +" "+ idInputElement.value)
     
     let lib = await import("./library.js");
-    lib.initGame()
+    lib.initGame(document.getElementById("gameFrame")!, typeSelector.value, color, idInputElement.value)
     document.getElementById('gamePage')!.style.display = 'block';
     document.getElementById('startPage')!.style.display = 'none';
 }
-
+loop()
 

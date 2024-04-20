@@ -6,9 +6,10 @@ import { color } from "./start.js"
 
 export abstract class SpacecraftShape{
     
+    
     static getCraftGElement(type: string): SVGGElement{
         const gElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
-                
+        const additionalPaths: SVGElement[] = []        
         switch(type){
             
             case "rokket":
@@ -41,8 +42,8 @@ export abstract class SpacecraftShape{
                 return(gElement)
             
             case "rainbowRocket":
-                gElement.setAttribute("fill", "none");
-                gElement.setAttribute("stroke-width", ".5px")
+                gElement.setAttribute("fill", "grey");
+                gElement.setAttribute("stroke-width", ".5")
                 gElement.setAttribute("stroke", `${color}`)
 
                 const wingLeft = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement;
@@ -53,9 +54,9 @@ export abstract class SpacecraftShape{
 
                 const summitball = document.createElementNS("http://www.w3.org/2000/svg", "circle") as SVGCircleElement;
                 summitball.setAttribute("cx", "0");
-                summitball.setAttribute("cy", "-10");
+                summitball.setAttribute("cy", "-9");
                 summitball.setAttribute("r", ".2");
-                summitball.setAttribute("fill", "orange");
+                
 
                 const fire = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement;
                 fire.setAttribute("d", `M -2 2 Q -3 5, -2 8 Q -1 7, -1 6 Q -1 7.5, 0 9 Q 1 7.5, 1 6 Q 1 7, 2 8 Q 3 5, 2 2 Q 0 1.5, -2 2`)
@@ -74,24 +75,71 @@ export abstract class SpacecraftShape{
                 gElement.appendChild(middlewindow)
 
                 return(gElement)
+            
+            case "blizzer":
+                gElement.setAttribute("fill", "none");
+                gElement.setAttribute("stroke-width", ".5")
+                gElement.setAttribute("stroke", `${color}`)
+
+                
+                const path0 = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement;
+                path0.setAttribute("d", `M 0,-20, 
+                                        L -4, -12 
+                                        L -8 -8
+                                        L -8 -15`)
+                additionalPaths.push(path0)
+                
+                const path1 = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement;
+                path1.setAttribute("d", `M 0,-20, 
+                                        L 4, -12 
+                                        L 8 -8
+                                        L 8 -15`)
+                additionalPaths.push(path1)
+
+                const path2 = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement;
+                path2.setAttribute("d", `M -4,-10, 
+                                        L -4, 0 
+                                        L -8 2
+                                        L 8 2
+                                        L 4 0
+                                        L 4 -10`)
+                additionalPaths.push(path2)
+                break;
+
+            case "bromber":
+                gElement.setAttribute("fill", "none");
+                gElement.setAttribute("stroke-width", ".5")
+                gElement.setAttribute("stroke", `${color}`)
+
+                const box = document.createElementNS("http://www.w3.org/2000/svg", "rect") as SVGRectElement;
+                box.setAttribute("x", "-18")
+                box.setAttribute("y", "-25")
+                box.setAttribute("rx", "10")
+                box.setAttribute("ry", "5")
+                box.setAttribute("width", "34")
+                box.setAttribute("height", "52")
+                additionalPaths.push(box)
 
         }
         
         const imageUrl = `./${type}.png`    
         const image = document.createElementNS("http://www.w3.org/2000/svg", "image")
         image.href.baseVal = imageUrl
-        image.setAttribute("width", `${viewBoxWidth/2}`)
-        image.setAttribute("height", `${viewBoxHeight/2}`)
-        image.setAttribute("border", `2px solid ${color}`)
-        
-        image.setAttribute("transform", `translate (${-viewBoxWidth/4},${-viewBoxHeight/4})`)
         image.onload = () =>{
-            console.log(image.getBBox().width)
-            
             let imageWidth = image.getBBox().width
-
         }
+        image.setAttribute("width", `50`)
+        image.setAttribute("height", `50`)
+        image.setAttribute("transform", `translate (-25,-25)`)
+
+        
+
         gElement.appendChild(image)
+        if(additionalPaths){
+            additionalPaths.forEach((object) => {
+                gElement.appendChild(object)
+            })
+        }
         
         return(gElement)
             
