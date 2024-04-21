@@ -1,11 +1,14 @@
 import { Spacecraft } from "./Spacecraft";
 import { GameEnvironment } from "./GameEnvironment";
 import { ServerSimulator } from "./ServerSimulator";
+import { SpacecraftShape } from "./SpacecraftShape";
+import { KeyboardController } from "./KeyboardController";
 
 export class SpaceGame {
     private serverSimulator = new ServerSimulator();
     private spacecrafts: Spacecraft[] = [];
-    private gameEnvironment: GameEnvironment;
+    private gameEnvironment: GameEnvironment
+    private keyboardController = new KeyboardController
 
     constructor(gameFrame: HTMLElement) {
         this.gameEnvironment = new GameEnvironment(gameFrame);
@@ -13,8 +16,11 @@ export class SpaceGame {
 
     init(type: string, color: string, id: string) {
         const spacecraft = new Spacecraft(type, color, id);
+        spacecraft.gElement = SpacecraftShape.getCraftGElement(spacecraft.type)
+        spacecraft.gElement.setAttribute("tabindex", "0")
+        spacecraft.gElement.focus()
+        spacecraft.handleKeyboardInput(this.keyboardController.getKeysPressed())
         this.spacecrafts.push(spacecraft);
-
         this.gameLoop();
         setInterval(() => {
             this.syncWithAllTheOtherPlayersThatAreConnectedToTheServer();
@@ -31,7 +37,9 @@ export class SpaceGame {
     private updateElements() {
         this.spacecrafts.forEach((spacecraft) => {
             spacecraft.update();
+            this.gameEnvironment.svgElement.appendChild(SpacecraftShape.getCraftGElement(spacecraft.type))
         });
+
     }
 
     private syncWithAllTheOtherPlayersThatAreConnectedToTheServer() {
