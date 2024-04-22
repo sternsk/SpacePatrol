@@ -1,8 +1,8 @@
-import { Spacecraft } from "./Spacecraft";
-import { GameEnvironment } from "./GameEnvironment";
-import { ServerSimulator } from "./ServerSimulator";
-import { SpacecraftShape } from "./SpacecraftShape";
-import { KeyboardController } from "./KeyboardController";
+import { Spacecraft } from "./Spacecraft.js";
+import { GameEnvironment } from "./GameEnvironment.js";
+import { ServerSimulator } from "./ServerSimulator.js";
+import { SpacecraftShape } from "./SpacecraftShape.js";
+import { KeyboardController } from "./KeyboardController.js";
 
 export class SpaceGame {
     private serverSimulator = new ServerSimulator();
@@ -23,7 +23,7 @@ export class SpaceGame {
         this.spacecrafts.push(spacecraft);
         this.gameLoop();
         setInterval(() => {
-            this.syncWithAllTheOtherPlayersThatAreConnectedToTheServer();
+       //     this.syncWithAllTheOtherPlayersThatAreConnectedToTheServer();
         }, 100);
     }
 
@@ -41,7 +41,7 @@ export class SpaceGame {
         });
 
     }
-
+/*
     private syncWithAllTheOtherPlayersThatAreConnectedToTheServer() {
         // Send own status to server
         this.spacecrafts.forEach((spacecraft) => {
@@ -54,6 +54,7 @@ export class SpaceGame {
         const otherSpacecrafts = this.serverSimulator.sendMessage().filter((spacecraft) => {
             // Assuming Spacecraft class has an id property
             return spacecraft.id !== this.spacecrafts[0].id; // Filter out the spacecraft of the current player
+            
         });
 
         // Update the local spacecrafts array with data received from the server
@@ -70,4 +71,5 @@ export class SpaceGame {
             }
         });
     }
+    */
 }

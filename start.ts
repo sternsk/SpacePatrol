@@ -1,4 +1,5 @@
 import { SpacecraftShape } from "./SpacecraftShape.js";
+import { initGame } from "./library.js";
 
 export const typeSelector = document.getElementById(`typeSelector`)! as HTMLSelectElement;
 export const colorSelector = document.getElementById(`colorSelector`)! as HTMLSelectElement;
@@ -60,14 +61,16 @@ function loop(){
         viewBoxLeft = viewBoxWidth / -2
         viewBoxHeight = viewBoxWidth * previewSvgAspectRatio
         viewBoxTop = viewBoxHeight / -2
-        console.log(document.getElementById("previewSvg")?.getAttribute("viewBox"))
         previewSvg.setAttribute("viewBox", `${viewBoxLeft}, ${viewBoxTop}, ${viewBoxWidth}, ${viewBoxHeight}`)
     }
 
     rotationAngle += rotationImpuls
     rotationAngle = (rotationAngle%360 + 360)%360
     previewSvg.style.transform = `rotate(${rotationAngle}deg)`
-    rotationImpuls -= rotationImpuls/100
+    if(!keysPressed[`ArrowLeft`]&&!keysPressed[`ArrowRight`]){
+        rotationImpuls -= rotationImpuls/100
+    }
+
     if(Math.abs(rotationImpuls)<.1)
         rotationImpuls = 0
 }
@@ -96,12 +99,28 @@ document.getElementById("startButton")?.addEventListener("click", startSpaceGame
 
 async function startSpaceGame(){
     loopRunning = false
-    console.log("gameStarts now! "+ typeSelector.value +" "+ color +" "+ idInputElement.value)
+    console.log("game starts now! "+ typeSelector.value +" "+ color +" "+ idInputElement.value)
     
-    let lib = await import("./library.js");
-    lib.initGame(document.getElementById("gameFrame")!, typeSelector.value, color, idInputElement.value)
+    // workaround issues with lazy loading
+    initGame(document.getElementById("gameFrame")!, typeSelector.value, color, idInputElement.value);
     document.getElementById('gamePage')!.style.display = 'block';
     document.getElementById('startPage')!.style.display = 'none';
+
+    // implement lazy loading - with the import of library.ts the function initGame should become available
+    /*try {
+        // Dynamically import the library.js module
+        let lib = await import("./library.js");
+        
+        // Call the initGame function from the imported module
+        lib.initGame(document.getElementById("gameFrame")!, typeSelector.value, color, idInputElement.value);
+        
+        // Hide startPage and display gamePage
+        document.getElementById('gamePage')!.style.display = 'block';
+        document.getElementById('startPage')!.style.display = 'none';
+    } catch (error) {
+        console.error("Error loading library:", error);
+    }
+    */
 }
 loop()
 

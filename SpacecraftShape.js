@@ -1,131 +1,101 @@
-import { viewBoxLeft } from "./start.js"
-import { viewBoxTop } from "./start.js"
-import { viewBoxWidth } from "./start.js"
-import { viewBoxHeight } from "./start.js"
-import { color } from "./start.js"
-
-export abstract class SpacecraftShape{
-        
-    static getCraftGElement(type: string): SVGGElement{
-        const gElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
-        const additionalPaths: SVGElement[] = []
-        const path0 = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement; 
-        const path1 = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement;       
-        switch(type){
-            
+import { color } from "./start.js";
+export class SpacecraftShape {
+    static getCraftGElement(type) {
+        const gElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        const additionalPaths = [];
+        const path0 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        const path1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        switch (type) {
             case "rokket":
-                
-                const outline = document.createElementNS("http://www.w3.org/2000/svg", "path")
-                const inline = document.createElementNS("http://www.w3.org/2000/svg", "path")
+                const outline = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                const inline = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 outline.setAttribute("d", `M 0 -8, 
                                             L  -4 8,
                                             L -2 4,
                                             L 0 8,
                                             L 2 6, 
                                             L 4 8,
-                                            z`)
-                outline.setAttribute("fill","none")
-                outline.setAttribute("stroke",`${color}`)
-                outline.setAttribute("stroke-width","1px")
-                outline.setAttribute('vector-effect', 'non-scaling-stroke')
-                
+                                            z`);
+                outline.setAttribute("fill", "none");
+                outline.setAttribute("stroke", `${color}`);
+                outline.setAttribute("stroke-width", "1px");
+                outline.setAttribute('vector-effect', 'non-scaling-stroke');
                 inline.setAttribute("d", `M -.2 -5,
                                             L .2 -5,
                                             L 2 2,
                                             L -1.5 2,
-                                            z`)
-                inline.setAttribute("fill", "none")
-                inline.setAttribute("stroke", `${color}`)
-                inline.setAttribute("stroke-width", ".5px")
-                inline.setAttribute('vector-effect', 'non-scaling-stroke')
-                gElement.appendChild(outline)
-                gElement.appendChild(inline)
-                return(gElement)
-            
+                                            z`);
+                inline.setAttribute("fill", "none");
+                inline.setAttribute("stroke", `${color}`);
+                inline.setAttribute("stroke-width", ".5px");
+                inline.setAttribute('vector-effect', 'non-scaling-stroke');
+                gElement.appendChild(outline);
+                gElement.appendChild(inline);
+                return (gElement);
             case "rainbowRocket":
                 gElement.setAttribute("fill", "grey");
-                gElement.setAttribute("stroke-width", ".5")
-                gElement.setAttribute("stroke", `${color}`)
-
-                const wingLeft = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement;
+                gElement.setAttribute("stroke-width", ".5");
+                gElement.setAttribute("stroke", `${color}`);
+                const wingLeft = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 wingLeft.setAttribute("d", "M-2 -3 q-1.5 1, -2 3 q1 -0.5, 2 -1z");
-
-                const wingRight = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement;
+                const wingRight = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 wingRight.setAttribute("d", "M 2 -3 q 1.5 1, 2 3 q-1 -0.5, -2 -1z");
-
-                const summitball = document.createElementNS("http://www.w3.org/2000/svg", "circle") as SVGCircleElement;
+                const summitball = document.createElementNS("http://www.w3.org/2000/svg", "circle");
                 summitball.setAttribute("cx", "0");
                 summitball.setAttribute("cy", "-9");
                 summitball.setAttribute("r", ".2");
-                
-
-                const fire = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement;
-                fire.setAttribute("d", `M -2 2 Q -3 5, -2 8 Q -1 7, -1 6 Q -1 7.5, 0 9 Q 1 7.5, 1 6 Q 1 7, 2 8 Q 3 5, 2 2 Q 0 1.5, -2 2`)
-
-                const topwindow = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement;
+                const fire = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                fire.setAttribute("d", `M -2 2 Q -3 5, -2 8 Q -1 7, -1 6 Q -1 7.5, 0 9 Q 1 7.5, 1 6 Q 1 7, 2 8 Q 3 5, 2 2 Q 0 1.5, -2 2`);
+                const topwindow = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 topwindow.setAttribute("d", "M -1 -5 q .75 -.75, 1 -1 q .75 .75, 1 1 q -1 -.25, -2 0");
-
-                const middlewindow = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement;
+                const middlewindow = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 middlewindow.setAttribute("d", "M-1 -3 q -.5 2, 0 4 q .5 .15, 1 0 q -.5 -2, 0 -4 q -.5 -.15, -1 0");
-
-                gElement.appendChild(wingLeft)
-                gElement.appendChild(wingRight)
-                gElement.appendChild(summitball)
-                gElement.appendChild(fire)
-                gElement.appendChild(topwindow)
-                gElement.appendChild(middlewindow)
-
-                return(gElement)
-            
+                gElement.appendChild(wingLeft);
+                gElement.appendChild(wingRight);
+                gElement.appendChild(summitball);
+                gElement.appendChild(fire);
+                gElement.appendChild(topwindow);
+                gElement.appendChild(middlewindow);
+                return (gElement);
             case "blizzer.png":
                 gElement.setAttribute("fill", "none");
-                gElement.setAttribute("stroke-width", ".5")
-                gElement.setAttribute("stroke", `${color}`)
-
-                
-                
+                gElement.setAttribute("stroke-width", ".5");
+                gElement.setAttribute("stroke", `${color}`);
                 path0.setAttribute("d", `M 0,-20, 
                                         L -4, -12 
                                         L -8 -8
-                                        L -8 -15`)
-                additionalPaths.push(path0)
-                
-                
+                                        L -8 -15`);
+                additionalPaths.push(path0);
                 path1.setAttribute("d", `M 0,-20, 
                                         L 4, -12 
                                         L 8 -8
-                                        L 8 -15`)
-                additionalPaths.push(path1)
-
-                const path2 = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement;
+                                        L 8 -15`);
+                additionalPaths.push(path1);
+                const path2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
                 path2.setAttribute("d", `M -4,-10, 
                                         L -4, 0 
                                         L -8 2
                                         L 8 2
                                         L 4 0
-                                        L 4 -10`)
-                additionalPaths.push(path2)
+                                        L 4 -10`);
+                additionalPaths.push(path2);
                 break;
-
             case "bromber":
                 gElement.setAttribute("fill", "none");
-                gElement.setAttribute("stroke-width", ".5")
-                gElement.setAttribute("stroke", `${color}`)
-
-                const box = document.createElementNS("http://www.w3.org/2000/svg", "rect") as SVGRectElement;
-                box.setAttribute("x", "-18")
-                box.setAttribute("y", "-25")
-                box.setAttribute("rx", "10")
-                box.setAttribute("ry", "5")
-                box.setAttribute("width", "34")
-                box.setAttribute("height", "52")
-                additionalPaths.push(box)
-
+                gElement.setAttribute("stroke-width", ".5");
+                gElement.setAttribute("stroke", `${color}`);
+                const box = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                box.setAttribute("x", "-18");
+                box.setAttribute("y", "-25");
+                box.setAttribute("rx", "10");
+                box.setAttribute("ry", "5");
+                box.setAttribute("width", "34");
+                box.setAttribute("height", "52");
+                additionalPaths.push(box);
             case "helgram.png":
-                gElement.setAttribute("transform", "translate(-50,220) scale(0.0393700787401575,0.0100000)")
-                gElement.setAttribute("fill", `${color}`) 
-                gElement.setAttribute("stroke", "none")
-                
+                gElement.setAttribute("transform", "translate(-50,220) scale(0.0393700787401575,0.0100000)");
+                gElement.setAttribute("fill", `${color}`);
+                gElement.setAttribute("stroke", "none");
                 path0.setAttribute("d", `M1790 2633 c-11 -26 -23 -58 -27 -72 -3 -14 -12 -34 -20 -43 -13 -15
                     -14 -40 -3 -189 6 -95 15 -179 19 -187 11 -19 1 -62 -15 -69 -7 -2 -10 -12 -7
                     -21 4 -13 3 -14 -5 -3 -8 11 -13 11 -33 -2 -13 -8 -39 -18 -58 -22 -19 -4 -43
@@ -236,51 +206,45 @@ export abstract class SpacecraftShape{
                     -36 -15 -28 -16 6 -21 43 -6 43 5 0 14 -7 21 -15z m-590 -371 c0 -3 -18 -23
                     -41 -45 -22 -21 -38 -43 -35 -48 10 -16 -10 -21 -28 -8 -16 12 -16 14 4 40 12
                     15 28 27 35 27 8 0 19 9 25 20 10 18 40 29 40 14z m-130 -244 c0 -12 -28 -25
-                    -36 -17 -9 9 6 27 22 27 8 0 14 -5 14 -10z`)
-                    additionalPaths.push(path0)
-                
-                path1.setAttribute("d", "M510 910 c0 -13 30 -13 50 0 11 7 7 10 -17 10 -18 0 -33 -4 -33 -10z")
-                additionalPaths.push(path1)
+                    -36 -17 -9 9 6 27 22 27 8 0 14 -5 14 -10z`);
+                additionalPaths.push(path0);
+                path1.setAttribute("d", "M510 910 c0 -13 30 -13 50 0 11 7 7 10 -17 10 -18 0 -33 -4 -33 -10z");
+                additionalPaths.push(path1);
         }
-        
-        const imageUrl = `./${type}`    
-        const image = document.createElementNS("http://www.w3.org/2000/svg", "image")
-        image.href.baseVal = imageUrl
-        image.onload = () =>{
-            let imageWidth = image.getBBox().width
-        }
-        image.setAttribute("width", `50`)
-        image.setAttribute("height", `50`)
-        image.setAttribute("stroke", `${color}`)
-        image.setAttribute("transform", `translate (-25,-25)`)
-
-        gElement.appendChild(image)
-        if(additionalPaths){
+        const imageUrl = `./${type}`;
+        const image = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        image.href.baseVal = imageUrl;
+        image.onload = () => {
+            let imageWidth = image.getBBox().width;
+        };
+        image.setAttribute("width", `50`);
+        image.setAttribute("height", `50`);
+        image.setAttribute("stroke", `${color}`);
+        image.setAttribute("transform", `translate (-25,-25)`);
+        gElement.appendChild(image);
+        if (additionalPaths) {
             additionalPaths.forEach((object) => {
-                gElement.appendChild(object)
-            })
+                gElement.appendChild(object);
+            });
         }
-        
-        return(gElement)
-            
+        return (gElement);
     }
-    // Funktion zum Laden der SVG-Datei
-
 }
-
 // Funktion zum Laden der SVG-Datei
-function loadSVGFile(filename: string, callback: (svgElement: SVGElement) => void) {
+function loadSVGFile(filename, callback) {
     fetch(filename)
         .then(response => response.text())
         .then(data => {
-            const parser = new DOMParser();
-            const svgDocument = parser.parseFromString(data, "image/svg+xml");
-            const svgElement = svgDocument.querySelector("svg");
-            if (svgElement instanceof SVGElement) {
-                callback(svgElement);
-            } else {
-                console.error("SVG-Element nicht gefunden.");
-            }
-        })
+        const parser = new DOMParser();
+        const svgDocument = parser.parseFromString(data, "image/svg+xml");
+        const svgElement = svgDocument.querySelector("svg");
+        if (svgElement instanceof SVGElement) {
+            callback(svgElement);
+        }
+        else {
+            console.error("SVG-Element nicht gefunden.");
+        }
+    })
         .catch(error => console.error("Fehler beim Laden der SVG-Datei:", error));
 }
+//# sourceMappingURL=SpacecraftShape.js.map
