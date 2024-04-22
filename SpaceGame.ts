@@ -23,8 +23,8 @@ export class SpaceGame {
         this.spacecrafts.push(spacecraft);
         this.gameLoop();
         setInterval(() => {
-       //     this.syncWithAllTheOtherPlayersThatAreConnectedToTheServer();
-        }, 100);
+            this.syncReality();
+        }, 1000);
     }
 
     private gameLoop() {
@@ -41,23 +41,23 @@ export class SpaceGame {
         });
 
     }
-/*
-    private syncWithAllTheOtherPlayersThatAreConnectedToTheServer() {
+
+    private async syncReality(): Promise<Record<string, any>[]> {
         // Send own status to server
-        this.spacecrafts.forEach((spacecraft) => {
+        const returnData: Record<string, any>[] = [];
+        
+        for (const spacecraft of this.spacecrafts) {
             // Assuming Spacecraft class has a toJSON() method to convert spacecraft data to JSON
             const spacecraftData = spacecraft.toJSON();
-            this.serverSimulator.sendMessage();
-        });
-
-        // Get statuses of other players from the server
-        const otherSpacecrafts = this.serverSimulator.sendMessage().filter((spacecraft) => {
-            // Assuming Spacecraft class has an id property
-            return spacecraft.id !== this.spacecrafts[0].id; // Filter out the spacecraft of the current player
-            
-        });
-
-        // Update the local spacecrafts array with data received from the server
+            const response = await this.serverSimulator.sync(spacecraftData);
+            returnData.push(response);
+        }
+        console.log(returnData)
+        return returnData;
+    }
+    
+        
+       /* // Update the local spacecrafts array with data received from the server
         otherSpacecrafts.forEach((spacecraftData) => {
             // Assuming Spacecraft class has a static method fromJSON() to create a spacecraft object from JSON data
             const spacecraft = Spacecraft.fromJSON(spacecraftData);
@@ -70,6 +70,7 @@ export class SpaceGame {
                 this.spacecrafts.push(spacecraft);
             }
         });
-    }
-    */
+        */
+    
+    
 }

@@ -1,5 +1,4 @@
 import { SpacecraftShape } from "./SpacecraftShape.js";
-import { initGame } from "./library.js";
 export const typeSelector = document.getElementById(`typeSelector`);
 export const colorSelector = document.getElementById(`colorSelector`);
 export const idInputElement = document.getElementById('rocketId');
@@ -81,24 +80,23 @@ async function startSpaceGame() {
     loopRunning = false;
     console.log("game starts now! " + typeSelector.value + " " + color + " " + idInputElement.value);
     // workaround issues with lazy loading
-    initGame(document.getElementById("gameFrame"), typeSelector.value, color, idInputElement.value);
-    document.getElementById('gamePage').style.display = 'block';
-    document.getElementById('startPage').style.display = 'none';
+    /*initGame(document.getElementById("gameFrame")!, typeSelector.value, color, idInputElement.value);
+    document.getElementById('gamePage')!.style.display = 'block';
+    document.getElementById('startPage')!.style.display = 'none';
+*/
     // implement lazy loading - with the import of library.ts the function initGame should become available
-    /*try {
+    try {
         // Dynamically import the library.js module
         let lib = await import("./library.js");
-        
         // Call the initGame function from the imported module
-        lib.initGame(document.getElementById("gameFrame")!, typeSelector.value, color, idInputElement.value);
-        
+        lib.initGame(document.getElementById("gameFrame"), typeSelector.value, color, idInputElement.value);
         // Hide startPage and display gamePage
-        document.getElementById('gamePage')!.style.display = 'block';
-        document.getElementById('startPage')!.style.display = 'none';
-    } catch (error) {
+        document.getElementById('gamePage').style.display = 'block';
+        document.getElementById('startPage').style.display = 'none';
+    }
+    catch (error) {
         console.error("Error loading library:", error);
     }
-    */
 }
 loop();
 //# sourceMappingURL=start.js.map

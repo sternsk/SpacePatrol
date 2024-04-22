@@ -20,8 +20,8 @@ export class SpaceGame {
         this.spacecrafts.push(spacecraft);
         this.gameLoop();
         setInterval(() => {
-            //     this.syncWithAllTheOtherPlayersThatAreConnectedToTheServer();
-        }, 100);
+            this.syncReality();
+        }, 1000);
     }
     gameLoop() {
         requestAnimationFrame(() => {
@@ -34,6 +34,18 @@ export class SpaceGame {
             spacecraft.update();
             this.gameEnvironment.svgElement.appendChild(SpacecraftShape.getCraftGElement(spacecraft.type));
         });
+    }
+    async syncReality() {
+        // Send own status to server
+        const returnData = [];
+        for (const spacecraft of this.spacecrafts) {
+            // Assuming Spacecraft class has a toJSON() method to convert spacecraft data to JSON
+            const spacecraftData = spacecraft.toJSON();
+            const response = await this.serverSimulator.sync(spacecraftData);
+            returnData.push(response);
+        }
+        console.log(returnData);
+        return returnData;
     }
 }
 //# sourceMappingURL=SpaceGame.js.map

@@ -1,56 +1,88 @@
 import { Spacecraft } from "./Spacecraft.js";
-import * as http from 'http';
 
 export class ServerSimulator {
-    private spacecrafts: Spacecraft[] = [];
+    private spacecraftsData: Record<string, any>[] = [];
 
     constructor() {
-        const server = http.createServer((req, res) => {
-            // Handle the request
-            if (req.method === 'POST' && req.url === '/receive') {
-                let data = '';
-                req.on('data', chunk => {
-                    data += chunk;
-                });
-
-                req.on('end', () => {
-                    const receivedSpacecraft = JSON.parse(data) as Spacecraft;
-                    if (!this.isSpacecraftAlreadyAdded(receivedSpacecraft)) {
-                        this.receiveMessage(receivedSpacecraft);
-                    }
-                    res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({ success: true }));
-                });
-            } else if (req.method === 'GET' && req.url === '/send') {
-                const query = new URL(req.url!, `http://${req.headers.host}`).searchParams;
-                const spacecraftId = query.get('id');
-                if (spacecraftId) {
-                    const filteredSpacecrafts = this.spacecrafts.filter(spacecraft => spacecraft.id !== spacecraftId);
-                    res.writeHead(200, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify(filteredSpacecrafts));
-                } else {
-                    res.writeHead(400, { 'Content-Type': 'text/plain' });
-                    res.end('Spacecraft ID is required');
-                }
-            } else {
-                res.writeHead(404, { 'Content-Type': 'text/plain' });
-                res.end('Not Found');
-            }
-        });
-
+        const server = this.createServer();
+        
         const PORT = 3000;
         server.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
         });
     }
 
-    private receiveMessage(spacecraft: Spacecraft) {
-        this.spacecrafts.push(spacecraft);
+    private createServer() {
+        return {
+            listen: (port: number, callback: () => void) => {
+                console.log(`Server is running on port ${port}`);
+    
+                // Simulate request handling
+                document.addEventListener('fetch', async (event: any) => {
+                    
+                    const req = event.request;
+                    const url = new URL(req.url);
+                    let res;
+    
+                    if (req.method === 'POST' && url.pathname === '/receive') {
+                        const data = await req.text();
+                        
+                        res = new Response(JSON.stringify({ success: true }), {
+                            status: 200,
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                    } else if (req.method === 'GET' && url.pathname === '/send') {
+                        const spacecraftId = url.searchParams.get('id');
+                        if (spacecraftId) {
+                            const filteredspacecraftsData = this.spacecraftsData.filter(spacecraft => spacecraft.id !== spacecraftId);
+                            res = new Response(JSON.stringify(filteredspacecraftsData), {
+                                status: 200,
+                                headers: { 'Content-Type': 'application/json' }
+                            });
+                        } else {
+                            res = new Response('Spacecraft ID is required', {
+                                status: 400,
+                                headers: { 'Content-Type': 'text/plain' }
+                            });
+                        }
+                    } else {
+                        res = new Response('Not Found', {
+                            status: 404,
+                            headers: { 'Content-Type': 'text/plain' }
+                        });
+                    }
+    
+                    event.respondWith(res);
+                });
+    
+                callback(); // Call the callback to indicate that the server is listening
+            }
+        };
     }
-    sendMessage(): Spacecraft[]{
-        return this.spacecrafts
+    
+    
+
+    sync(data: Record<string, any>): Record<string, any>[] {
+        // Check if data is already stored
+        const isDataStored = this.spacecraftsData.some((element) => {
+            // Assuming the elements are objects and we're comparing their properties/values
+            return JSON.stringify(data) === JSON.stringify(element);
+        });
+    
+        // If data is already stored, log a message and return the current spacecraftsData
+        if (isDataStored) {
+            console.log("Data already stored");
+            return this.spacecraftsData;
+        }
+    
+        // If data is not stored, push it to spacecraftsData and return the updated array
+        console.log("New data detected");
+        this.spacecraftsData.push(data);
+        return this.spacecraftsData;
     }
+    
+
     private isSpacecraftAlreadyAdded(spacecraft: Spacecraft): boolean {
-        return this.spacecrafts.some(existingSpacecraft => existingSpacecraft.id === spacecraft.id);
+        return this.spacecraftsData.some(existingSpacecraft => existingSpacecraft.id === spacecraft.id);
     }
 }

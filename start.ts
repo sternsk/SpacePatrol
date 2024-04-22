@@ -102,12 +102,12 @@ async function startSpaceGame(){
     console.log("game starts now! "+ typeSelector.value +" "+ color +" "+ idInputElement.value)
     
     // workaround issues with lazy loading
-    initGame(document.getElementById("gameFrame")!, typeSelector.value, color, idInputElement.value);
+    /*initGame(document.getElementById("gameFrame")!, typeSelector.value, color, idInputElement.value);
     document.getElementById('gamePage')!.style.display = 'block';
     document.getElementById('startPage')!.style.display = 'none';
-
+*/
     // implement lazy loading - with the import of library.ts the function initGame should become available
-    /*try {
+    try {
         // Dynamically import the library.js module
         let lib = await import("./library.js");
         
@@ -120,7 +120,7 @@ async function startSpaceGame(){
     } catch (error) {
         console.error("Error loading library:", error);
     }
-    */
+    
 }
 loop()
 
