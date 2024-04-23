@@ -47,5 +47,5 @@ export class Vector2D{
     // Convert Vector2D object to JSON representation
     toJSON(): Record<string, number> {
         return { x: this._x, y: this._y };
-}
+    }
 }

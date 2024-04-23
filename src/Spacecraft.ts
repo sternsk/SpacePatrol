@@ -1,19 +1,24 @@
 
 import { Vector2D } from "./Vector2D.js";
+import { color } from "./start.js";
 
 
 export class Spacecraft {
     private _gElement: SVGGElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
     private _type: string;
+    private _color: string;
+    private _id: string
     private direction = 0;
     private _maneuverability = 2
     private _impuls = new Vector2D();
     private location = new Vector2D();
-    id: string;
+    
 
-    constructor(_type: string, color: string, id: string) {
-        this.id = id;
-        this._type = _type;
+    constructor() {
+        this._type = "rocket"
+        this._color = "flün"
+        this._id = "spacecraft"
+        
     }
 
     accelerate(thrust: number) {
@@ -39,6 +44,26 @@ export class Spacecraft {
 
     get type(): string{
         return this._type
+    }
+
+    set type(type: string) {
+        this._type = type
+    }
+
+    get color(): string{
+        return this._color
+    }
+
+    set color(color: string) {
+        this._color = color
+    }
+
+    get id(): string{
+        return this._id
+    }
+
+    set id(id: string) {
+        this._id = id
     }
     
     get gElement(): SVGGElement{
@@ -66,8 +91,6 @@ export class Spacecraft {
             this.brake(this._maneuverability/100);
         }
         
-        // console.log(keysPressed);
-        // Weitere Tastenabfragen...
     }
 
     update() {
@@ -87,7 +110,10 @@ export class Spacecraft {
 
     // Create a Spacecraft object from a JSON representation
     static fromJSON(json: Record<string, any>): Spacecraft {
-        const spacecraft = new Spacecraft(json._type, "", json.id); // Assuming color is not necessary for reconstruction
+        const spacecraft = new Spacecraft(); 
+        spacecraft.type = json._type
+        spacecraft.color = json.color
+        spacecraft.id = json.id
         spacecraft.direction = json.direction;
         // Assuming Vector2D class has a fromJSON method
         spacecraft._impuls = Vector2D.fromJSON(json._impuls);

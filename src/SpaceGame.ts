@@ -4,25 +4,27 @@ import { SpacecraftShape } from "./SpacecraftShape.js";
 import { KeyboardController } from "./KeyboardController.js";
 
 export class SpaceGame {
-    
+    private spacecraft: Spacecraft
     private spacecrafts: Spacecraft[] = [];
     private gameEnvironment: GameEnvironment;
     private keyboardController = new KeyboardController();
     private serverRequestHandler: ServerRequestHandler;
 
     constructor(gameFrame: HTMLElement) {
-        
+        this.spacecraft = new Spacecraft();
         this.gameEnvironment = new GameEnvironment(gameFrame);
         this.serverRequestHandler = new ServerRequestHandler();
     }
 
     init(type: string, color: string, id: string) {
-        const spacecraft = new Spacecraft(type, color, id);
-        spacecraft.gElement = SpacecraftShape.getCraftGElement(spacecraft.type);
-        spacecraft.gElement.setAttribute("tabindex", "0");
-        spacecraft.gElement.focus();
-        spacecraft.handleKeyboardInput(this.keyboardController.getKeysPressed());
-        this.spacecrafts.push(spacecraft);
+        this.spacecraft.type = type
+        this.spacecraft.color = color
+        this.spacecraft.id = id
+        this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type);
+        this.spacecraft.gElement.setAttribute("tabindex", "0");
+        this.spacecraft.gElement.focus(); //doesnt seem to work
+        this.spacecraft.handleKeyboardInput(this.keyboardController.getKeysPressed());
+        this.spacecrafts.push(this.spacecraft);
         this.gameLoop();
         setInterval(() => {
             this.syncReality();
@@ -47,15 +49,14 @@ export class SpaceGame {
         // Send own status to server
         const returnData: Record<string, any>[] = [];
         
-        for (const spacecraft of this.spacecrafts) {
-            const spacecraftData = spacecraft.toJSON();
+            const spacecraftData = this.spacecraft.toJSON();
             try {
                 const response = await this.serverRequestHandler.sync(spacecraftData);
                 returnData.push(response);
             } catch (error) {
                 console.error('Error syncing spacecraft data:', error);
             }
-        }
+        
         console.log("returnData: "+returnData);
     }
 }
