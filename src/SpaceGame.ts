@@ -56,7 +56,7 @@ export class SpaceGame {
                 console.error('Error syncing spacecraft data:', error);
             }
         }
-        console.log(returnData);
+        console.log("returnData: "+returnData);
     }
 }
 
