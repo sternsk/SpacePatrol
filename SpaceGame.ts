@@ -1,11 +1,10 @@
 import { Spacecraft } from "./Spacecraft.js";
 import { GameEnvironment } from "./GameEnvironment.js";
-import { ServerSimulator } from "./ServerSimulator.js";
 import { SpacecraftShape } from "./SpacecraftShape.js";
 import { KeyboardController } from "./KeyboardController.js";
 
 export class SpaceGame {
-    private serverSimulator = new ServerSimulator();
+    
     private spacecrafts: Spacecraft[] = [];
     private gameEnvironment: GameEnvironment
     private keyboardController = new KeyboardController
@@ -23,7 +22,7 @@ export class SpaceGame {
         this.spacecrafts.push(spacecraft);
         this.gameLoop();
         setInterval(() => {
-            this.syncReality();
+            this.sync(spacecraft.toJSON);
         }, 1000);
     }
 
@@ -42,35 +41,27 @@ export class SpaceGame {
 
     }
 
-    private async syncReality(): Promise<Record<string, any>[]> {
-        // Send own status to server
-        const returnData: Record<string, any>[] = [];
-        
-        for (const spacecraft of this.spacecrafts) {
-            // Assuming Spacecraft class has a toJSON() method to convert spacecraft data to JSON
-            const spacecraftData = spacecraft.toJSON();
-            const response = await this.serverSimulator.sync(spacecraftData);
-            returnData.push(response);
-        }
-        console.log(returnData)
-        return returnData;
-    }
-    
-        
-       /* // Update the local spacecrafts array with data received from the server
-        otherSpacecrafts.forEach((spacecraftData) => {
-            // Assuming Spacecraft class has a static method fromJSON() to create a spacecraft object from JSON data
-            const spacecraft = Spacecraft.fromJSON(spacecraftData);
-            const existingSpacecraft = this.spacecrafts.find((s) => s.id === spacecraft.id);
-            if (existingSpacecraft) {
-                // Update existing spacecraft if found
-                existingSpacecraft.updateFrom(spacecraft);
-            } else {
-                // Add new spacecraft if not found
-                this.spacecrafts.push(spacecraft);
+    // Method to sync data with the server
+    async sync(data: Record<string, any>) {
+        try {
+            const response = await fetch('http://localhost:3000/receive', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to sync data');
             }
-        });
-        */
-    
-    
+
+            const responseData = await response.json();
+            console.log('Server response:', responseData);
+            return responseData;
+        } catch (error) {
+            console.error('Error syncing data:', error);
+            throw error; // Rethrow the error to handle it upstream
+        }
+    }    
 }
