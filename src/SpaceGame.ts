@@ -11,7 +11,7 @@ export class SpaceGame {
     private serverRequestHandler: ServerRequestHandler;
 
     constructor(gameFrame: HTMLElement) {
-        console.log("script priptd")
+        
         this.gameEnvironment = new GameEnvironment(gameFrame);
         this.serverRequestHandler = new ServerRequestHandler();
     }
