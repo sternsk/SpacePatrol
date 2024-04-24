@@ -28,7 +28,7 @@ export class SpaceGame {
         this.gameLoop();
         setInterval(() => {
             this.syncReality();
-        }, 1000);
+        }, 100);
     }
 
     private gameLoop() {
@@ -46,25 +46,25 @@ export class SpaceGame {
     }
 
     private async syncReality(): Promise<void> {
-        // Send own status to server
-        const returnData: Record<string, any>[] = [];
-        
-            const spacecraftData = this.spacecraft.toJSON();
-            try {
-                const response = await this.serverRequestHandler.sync(spacecraftData);
-                returnData.push(response);
-            } catch (error) {
-                console.error('Error syncing spacecraft data:', error);
+        try {
+            // Send own status to server
+            for (const spacecraft of this.spacecrafts) {
+                await this.serverRequestHandler.sendData(spacecraft.toJSON());
             }
-        
-        console.log("returnData: "+returnData);
+
+            // Receive data from server
+            const receivedData = await this.serverRequestHandler.receiveData();
+            console.log('Received data:', receivedData);
+        } catch (error) {
+            console.error('Error syncing spacecraft data:', error);
+        }
     }
 }
 
 class ServerRequestHandler {
-    async sync(data: Record<string, any>): Promise<Record<string, any>> {
+    async sendData(data: Record<string, any>) {
         try {
-            const response = await fetch('http://localhost:3000/sync', {
+            const response = await fetch('http://192.168.2.222:3000/sync', { //http://spacepatrolzone.dynv6.net  http://192.168.2.222:3000  http://localhost
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -73,7 +73,21 @@ class ServerRequestHandler {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to sync data');
+                throw new Error('Failed to send data');
+            }
+
+            console.log('Data sent successfully');
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async receiveData() {
+        try {
+            const response = await fetch('http://192.168.2.222:3000/receive'); //http://spacepatrolzone.dynv6.net    http://192.168.2.222:3000
+
+            if (!response.ok) {
+                throw new Error('Failed to receive data');
             }
 
             return await response.json();
@@ -82,3 +96,4 @@ class ServerRequestHandler {
         }
     }
 }
+

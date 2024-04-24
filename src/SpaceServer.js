@@ -19,22 +19,40 @@ class SpaceServer {
             if (!data) {
                 return res.status(400).send('Data is required');
             }
-
-            this.spacecraftsData.push(data);
-            console.log('Received spacecraft data:', data);
+            
+            console.log('Received spacecraft data:', data); 
+            this.updateSpacecrafts(data)
             res.status(200).json({ success: true });
         });
 
         // GET route to send spacecrafts data
-        this.app.get('/sync', (req, res) => {
+        this.app.get('/receive', (req, res) => {
+            console.log('send spacecraft data:', this.spacecraftsData); //intermittierend not called
             res.status(200).json(this.spacecraftsData);
         });
+
 
         // Start the server
         const PORT = 3000;
         this.app.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
         });
+    }
+    
+    updateSpacecrafts(data){
+        console.log("updateSpacecrafts called" + data)
+        const index = this.spacecraftsData.findIndex(p => p.id === data.id);
+        if (index !== -1) {
+            console.log(" Spieler mit dieser ID bereits vorhanden, aktualisieren")
+            this.spacecraftsData[index] = data;
+            
+        } else {
+            
+            console.log("Spieler mit dieser ID nicht gefunden, hinzufügen")
+            this.spacecraftsData.push(data);
+            
+        }
+        
     }
 }
 
