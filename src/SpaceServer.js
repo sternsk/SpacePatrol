@@ -27,7 +27,7 @@ class SpaceServer {
 
         // GET route to send spacecrafts data
         this.app.get('/receive', (req, res) => {
-            console.log('send spacecraft data:', this.spacecraftsData); //intermittierend not called
+            console.log('send spacecraft data:', this.spacecraftsData); 
             res.status(200).json(this.spacecraftsData);
         });
 

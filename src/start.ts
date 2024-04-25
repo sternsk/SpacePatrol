@@ -99,14 +99,8 @@ document.getElementById("startButton")?.addEventListener("click", startSpaceGame
 
 async function startSpaceGame(){
     loopRunning = false
-    console.log("game starts now! "+ typeSelector.value +" "+ color +" "+ idInputElement.value)
+    console.log(`Commander ${idInputElement.value}, you depart in a ${color} ${typeSelector.value}. Game starts now!`)
     
-    // workaround issues with lazy loading
-    /*initGame(document.getElementById("gameFrame")!, typeSelector.value, color, idInputElement.value);
-    document.getElementById('gamePage')!.style.display = 'block';
-    document.getElementById('startPage')!.style.display = 'none';
-*/
-    // implement lazy loading - with the import of library.ts the function initGame should become available
     try {
         // Dynamically import the library.js module
         let lib = await import("./library.js");

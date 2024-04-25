@@ -1,4 +1,5 @@
 
+import { SpacecraftShape } from "./SpacecraftShape.js";
 import { Vector2D } from "./Vector2D.js";
 import { color } from "./start.js";
 
@@ -11,7 +12,7 @@ export class Spacecraft {
     private direction = 0;
     private _maneuverability = 2
     private _impuls = new Vector2D();
-    private location = new Vector2D();
+    private _location = new Vector2D();
     
 
     constructor() {
@@ -34,12 +35,22 @@ export class Spacecraft {
         // this._impuls.add(new Vector(.5, this.direction.angle))
         // Optional: Stoppe die Bewegung vollständig, wenn die Geschwindigkeit einen bestimmten Schwellenwert unterschreitet
          if (this._impuls.length < 0.01) {
+            console.log("stop completely")
             this._impuls = new Vector2D(0, 0);
         }
     }
 
     rotate(angle: number){
         this.direction += angle
+        this.direction = (this.direction%360+360)%360
+    }
+
+    get location(): Vector2D{
+        return this._location
+    }
+
+    set location(location: Vector2D) {
+        this._location = location
     }
 
     get type(): string{
@@ -94,7 +105,8 @@ export class Spacecraft {
     }
 
     update() {
-        this.location.add(this._impuls);
+        this._location.add(this._impuls);
+        this.gElement.setAttribute("transform", `translate (${this._location.x} ${this._location.y}) rotate (${this.direction + 90} ) `)
     }
 
     // Convert Spacecraft object to JSON representation
@@ -103,7 +115,7 @@ export class Spacecraft {
             _type: this._type,
             direction: this.direction,
             _impuls: this._impuls.toJSON(),
-            location: this.location.toJSON(),
+            _location: this._location.toJSON(),
             id: this.id
         };
     }
@@ -117,7 +129,8 @@ export class Spacecraft {
         spacecraft.direction = json.direction;
         // Assuming Vector2D class has a fromJSON method
         spacecraft._impuls = Vector2D.fromJSON(json._impuls);
-        spacecraft.location = Vector2D.fromJSON(json.location);
+        spacecraft._location = new Vector2D //json._location returns undefined
+        spacecraft._gElement = SpacecraftShape.getCraftGElement(spacecraft.type)
         return spacecraft;
     }
 
@@ -125,6 +138,6 @@ export class Spacecraft {
     updateFrom(other: Spacecraft) {
         this.direction = other.direction;
         this._impuls = other._impuls;
-        this.location = other.location;
+        this._location = other._location;
     }
 }
