@@ -56,7 +56,6 @@ export class SpaceGame {
             // Send own status to server
             const receivedData = await this.serverRequestHandler.sendData(this.spacecraft.toJSON());
             
-            
             console.log('Received data:', receivedData);
             // Überprüfe, ob die empfangenen Daten ein Array sind
             if (!Array.isArray(receivedData)) {

@@ -33,18 +33,27 @@ class SpaceServer {
         // POST route to receive spacecraft data
         this.app.post('/sync', (req, res) => {
             const data = req.body;
+            
             if (!data) {
                 return res.status(400).send('Data is required');
             }
-
+            console.log(' ');
             console.log('Received spacecraft data:', data);
             this.updateSpacecrafts(data)
             
             // entferne das Element, das den erhaltenen Daten entspricht
+            let adjustedData = this.spacecraftsData
             const indexToRemove = this.spacecraftsData.findIndex(item => item.id === data.id);
             if (indexToRemove !== -1) {
                 // Entferne das Element aus this.spacecraftsData
-                const adjustedData = this.spacecraftsData.splice(indexToRemove, 1);
+                console.log("this.spacecraftsData.length: "+this.spacecraftsData.length)
+                console.log("adjustedData.length: "+adjustedData.length)
+                console.log("removing "+data+" at index "+indexToRemove)
+                console.log("this.spacecraftsData before removal: "+this.spacecraftsData)
+                console.log("adjustedData before removal: "+adjustedData)
+                adjustedData.splice(indexToRemove, 1);
+                console.log("adjustedData.length after removal: "+adjustedData.length)
+                console.log("adjustedData after removal: "+adjustedData)
             }
             res.status(200).json(adjustedData);
         });
@@ -55,14 +64,13 @@ class SpaceServer {
             
             const index = this.spacecraftsData.findIndex(p => p.id === data.id);
             if (index !== -1) {
-                console.log(" Spieler mit dieser ID bereits vorhanden, aktualisieren")
                 this.spacecraftsData[index] = data;
     
             } else {
-    
+                console.log("before adding, this.spacecraftsData.length: "+this.spacecraftsData.length)
                 console.log("Spieler mit dieser ID nicht gefunden, hinzufügen")
                 this.spacecraftsData.push(data);
-    
+                console.log("after adding, this.spacecraftsData.length: "+this.spacecraftsData.length)
             }
     
         }
