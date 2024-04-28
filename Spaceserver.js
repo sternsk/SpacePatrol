@@ -39,16 +39,16 @@ class SpaceServer {
 
             console.log('Received spacecraft data:', data);
             this.updateSpacecrafts(data)
-            res.status(200).json({ success: true });
-        });
-        
-        // GET route to send spacecrafts data
-        this.app.get('/receive', (req, res) => {
-            // create a adjustedData from spacecraftsdata by deleting "data" from spacecraftsdata
-            const adjustedData = this.spacecraftsData.delete(data)
-            // send the adjustedData 
+            
+            // entferne das Element, das den erhaltenen Daten entspricht
+            const indexToRemove = this.spacecraftsData.findIndex(item => item.id === data.id);
+            if (indexToRemove !== -1) {
+                // Entferne das Element aus this.spacecraftsData
+                const adjustedData = this.spacecraftsData.splice(indexToRemove, 1);
+            }
             res.status(200).json(adjustedData);
         });
+        
     }
     
         updateSpacecrafts(data){
