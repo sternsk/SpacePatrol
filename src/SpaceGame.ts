@@ -54,10 +54,8 @@ export class SpaceGame {
     private async syncReality(): Promise<void> {
         try {
             // Send own status to server
-            await this.serverRequestHandler.sendData(this.spacecraft.toJSON());
+            const receivedData = await this.serverRequestHandler.sendData(this.spacecraft.toJSON());
             
-            // Receive data from server
-            const receivedData = await this.serverRequestHandler.receiveData();
             
             console.log('Received data:', receivedData);
             // Überprüfe, ob die empfangenen Daten ein Array sind
@@ -102,24 +100,14 @@ class ServerRequestHandler {
                 throw new Error('Failed to send data');
             }
 
-            console.log('Data sent successfully');
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    async receiveData() {
-        try {
-            const response = await fetch('https://spacepatrol.zapto.org/receive'); //http://spacepatrolzone.dynv6.net    http://192.168.2.222:3000 https://spacepatrol.zapto.org/receive
-
-            if (!response.ok) {
-                throw new Error('Failed to receive data');
-            }
-
+            console.log('Data sent successfully, awaiting return');
             return await response.json();
+            
         } catch (error) {
             throw error;
         }
     }
+
+    
 }
 
