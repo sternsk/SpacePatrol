@@ -54,10 +54,8 @@ export class SpaceGame {
     private async syncReality(): Promise<void> {
         try {
             // Send own status to server
-            for (const spacecraft of this.spacecrafts) {
-                await this.serverRequestHandler.sendData(spacecraft.toJSON());
-            }
-
+            await this.serverRequestHandler.sendData(this.spacecraft.toJSON());
+            
             // Receive data from server
             const receivedData = await this.serverRequestHandler.receiveData();
             

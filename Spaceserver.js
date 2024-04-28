@@ -25,7 +25,7 @@ class SpaceServer {
             console.log(`HTTPS Server is running on port ${PORT_HTTPS}`);
         });
     }
-    
+
     setupRoutes() {
         this.app.use(bodyParser.json());
         this.app.use(cors()); // Use cors middleware
@@ -41,22 +41,18 @@ class SpaceServer {
             this.updateSpacecrafts(data)
             res.status(200).json({ success: true });
         });
-             // GET route to send spacecrafts data
-             this.app.get('/receive', (req, res) => {
-                console.log('send spacecraft data:', this.spacecraftsData); //intermittierend not called
-                res.status(200).json(this.spacecraftsData);
-            });
-    
-    
-    /*        // Start the server
-            const PORT = 3000;
-            this.app.listen(PORT, () => {
-                console.log(`Server is running on port ${PORT}`);
-            });*/
+        
+        // GET route to send spacecrafts data
+        this.app.get('/receive', (req, res) => {
+            // create a adjustedData from spacecraftsdata by deleting "data" from spacecraftsdata
+            const adjustedData = this.spacecraftsData.delete(data)
+            // send the adjustedData 
+            res.status(200).json(adjustedData);
+        });
     }
     
         updateSpacecrafts(data){
-            console.log("updateSpacecrafts called" + data)
+            
             const index = this.spacecraftsData.findIndex(p => p.id === data.id);
             if (index !== -1) {
                 console.log(" Spieler mit dieser ID bereits vorhanden, aktualisieren")
