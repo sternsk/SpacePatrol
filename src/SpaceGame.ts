@@ -15,7 +15,7 @@ export class SpaceGame {
         this.spacecraft = new Spacecraft();
         this.gameEnvironment = new GameEnvironment(gameFrame);
         this.keyboardController = new KeyboardController(gameFrame);
-        gameFrame.focus();
+        gameFrame.focus(); //gameFrame erhält den Keyboard focus
         this.serverRequestHandler = new ServerRequestHandler();
     }
 
@@ -76,7 +76,9 @@ export class SpaceGame {
                 } else {
                     
                     console.log("Spieler mit dieser ID nicht gefunden, hinzufügen")
-                    this.spacecrafts.push(Spacecraft.fromJSON(element));
+                    const newSpacecraft = Spacecraft.fromJSON(element)
+                    this.spacecrafts.push(newSpacecraft);
+                    this.gameEnvironment.svgElement.appendChild(newSpacecraft.gElement)
                     
                 }
 
@@ -90,7 +92,7 @@ export class SpaceGame {
 class ServerRequestHandler {
     async sendData(data: Record<string, any>) {
         try {
-            const response = await fetch('http://spacepatrol.zapto.org/sync', { //http://spacepatrolzone.dynv6.net  http://192.168.2.222:3000  http://localhost
+            const response = await fetch('https://spacepatrol.zapto.org/sync', { //http://spacepatrolzone.dynv6.net  http://192.168.2.222:3000  http://localhost https://spacepatrol.zapto.org/sync
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -110,7 +112,7 @@ class ServerRequestHandler {
 
     async receiveData() {
         try {
-            const response = await fetch('http://spacepatrol.zapto.org/receive'); //http://spacepatrolzone.dynv6.net    http://192.168.2.222:3000
+            const response = await fetch('https://spacepatrol.zapto.org/receive'); //http://spacepatrolzone.dynv6.net    http://192.168.2.222:3000 https://spacepatrol.zapto.org/receive
 
             if (!response.ok) {
                 throw new Error('Failed to receive data');
