@@ -9,6 +9,7 @@ export class SpaceGame {
     private spacecrafts: Spacecraft[] = [];
     private gameEnvironment: GameEnvironment;
     private keyboardController: KeyboardController
+    private touchControl = true
     private serverRequestHandler: ServerRequestHandler;
 
     constructor(gameFrame: HTMLElement) {
@@ -41,6 +42,11 @@ export class SpaceGame {
             this.gameLoop();
         });
         this.spacecraft.handleKeyboardInput(this.keyboardController.getKeysPressed());
+        
+        if(this.touchControl){
+            this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
+        }
+
         this.gameEnvironment.handleSpacecraft(this.spacecraft)
         this.updateElements();
     }

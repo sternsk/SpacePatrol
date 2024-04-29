@@ -40,6 +40,11 @@ export class Spacecraft {
         }
     }
 
+    handleTouchControl(vector: Vector2D){
+        this._impuls = vector
+        this.direction = vector.angle
+    }
+
     rotate(angle: number){
         this.direction += angle
         this.direction = (this.direction%360+360)%360
