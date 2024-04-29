@@ -54,9 +54,9 @@ export class SpaceGame {
     private async syncReality(): Promise<void> {
         try {
             // Send own status to server
+            // store the feedback in receivedData
             const receivedData = await this.serverRequestHandler.sendData(this.spacecraft.toJSON());
             
-            console.log('Received data:', receivedData);
             // Überprüfe, ob die empfangenen Daten ein Array sind
             if (!Array.isArray(receivedData)) {
                 console.error('Received data is not in the expected format (array)');

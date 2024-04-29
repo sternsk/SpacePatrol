@@ -10,7 +10,7 @@ class SpaceServer {
         this.app = express();
         this.setupRoutes();
 
-        // Lade SSL-Zertifikat und privaten Schlüssel
+        // Load SSL-Zertifikat und privaten Schlüssel
         const privateKey = fs.readFileSync('/home/adrian/certs/privkey1.pem', 'utf8');
         const certificate = fs.readFileSync('/home/adrian/certs/fullchain1.pem', 'utf8');
         const credentials = { key: privateKey, cert: certificate };
@@ -24,11 +24,16 @@ class SpaceServer {
         httpsServer.listen(PORT_HTTPS, () => {
             console.log(`HTTPS Server is running on port ${PORT_HTTPS}`);
         });
+    
+        setInterval(this.removeInactiveSpacecrafts.bind(this), 2000); // Check every 2 seconds
     }
 
     setupRoutes() {
         this.app.use(bodyParser.json());
-        this.app.use(cors()); // Use cors middleware
+        // Use cors middleware with specific origin
+        this.app.use(cors({
+            //origin: 'https://adrianschindler.de'
+        }));
 
         // POST route to receive spacecraft data
         this.app.post('/sync', (req, res) => {
@@ -37,44 +42,46 @@ class SpaceServer {
             if (!data) {
                 return res.status(400).send('Data is required');
             }
-            console.log(' ');
-            console.log('Received spacecraft data:', data);
-            this.updateSpacecrafts(data)
             
-            // entferne das Element, das den erhaltenen Daten entspricht
-            let adjustedData = this.spacecraftsData
-            const indexToRemove = this.spacecraftsData.findIndex(item => item.id === data.id);
-            if (indexToRemove !== -1) {
-                // Entferne das Element aus this.spacecraftsData
-                console.log("this.spacecraftsData.length: "+this.spacecraftsData.length)
-                console.log("adjustedData.length: "+adjustedData.length)
-                console.log("removing "+data+" at index "+indexToRemove)
-                console.log("this.spacecraftsData before removal: "+this.spacecraftsData)
-                console.log("adjustedData before removal: "+adjustedData)
-                adjustedData.splice(indexToRemove, 1);
-                console.log("adjustedData.length after removal: "+adjustedData.length)
-                console.log("adjustedData after removal: "+adjustedData)
+            // Update spacecrafts data
+            this.updateSpacecrafts(data);
+            
+            // Send back adjusted spacecrafts data
+            // remove sending spacecraft
+            const index = this.spacecraftsData.findIndex(p => p.id === data.id)
+            const adjustedSpacecraftsData = [...this.spacecraftsData];
+            if(index !== -1){
+                adjustedSpacecraftsData.splice(index,1)
             }
-            res.status(200).json(adjustedData);
+            
+            res.status(200).json(adjustedSpacecraftsData);
         });
         
     }
     
-        updateSpacecrafts(data){
-            
-            const index = this.spacecraftsData.findIndex(p => p.id === data.id);
-            if (index !== -1) {
-                this.spacecraftsData[index] = data;
-    
-            } else {
-                console.log("before adding, this.spacecraftsData.length: "+this.spacecraftsData.length)
-                console.log("Spieler mit dieser ID nicht gefunden, hinzufügen")
-                this.spacecraftsData.push(data);
-                console.log("after adding, this.spacecraftsData.length: "+this.spacecraftsData.length)
-            }
-    
+    updateSpacecrafts(data){
+        const index = this.spacecraftsData.findIndex(p => p.id === data.id);
+        if (index !== -1) {
+            // Create new array with updated data
+            this.spacecraftsData = this.spacecraftsData.map(item => {
+                if (item.id === data.id) {
+                    return data; // Update existing data
+                }
+                return item; // Keep other data unchanged
+            });
+        } else {
+            //console.log("Spieler mit dieser ID nicht gefunden, hinzufügen");
+            this.spacecraftsData.push(data);
         }
     }
-    
-    // Create an instance of SpaceServer
-    const server = new SpaceServer();
+    removeInactiveSpacecrafts(){
+        console.log("removing inactive Spacecrafts")
+        const currentTime = Date.now();
+        this.spacecraftsData = this.spacecraftsData.filter(spacecraft => {
+            return (currentTime - spacecraft.lastUpdated) <= 10000; // Remove spacecrafts inactive for 10 seconds
+        });
+    }
+}
+
+// Create an instance of SpaceServer
+const server = new SpaceServer();

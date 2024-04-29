@@ -111,12 +111,15 @@ export class Spacecraft {
 
     // Convert Spacecraft object to JSON representation
     toJSON(): Record<string, any> {
+        console.log()
         return {
             _type: this._type,
             direction: this.direction,
             _impuls: this._impuls.toJSON(),
             _location: this._location.toJSON(),
-            id: this.id
+            id: this.id,
+            lastUpdate: Date.now()
+
         };
     }
 
