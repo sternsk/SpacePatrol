@@ -1,6 +1,7 @@
 export class Vector2D{
     private _x;
     private _y;
+    // properties length and angle are rather unused - might be deleted
     private _length = 0;
     private _angle = 0;
 
@@ -31,11 +32,11 @@ export class Vector2D{
     }
 
     get length(){
-        return(this._length)
+        return(Math.sqrt(Math.pow(this._x, 2) + Math.pow(this._y, 2)))
     }
     
     get angle(){
-        return(this._angle)
+        return(Math.atan2(this._y, this._x))
     }
 
     get x(): number{

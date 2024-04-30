@@ -1,4 +1,4 @@
-import { Vector2D } from "./Vector2D";
+import { Vector2D } from "./Vector2D.js";
 
 export class Joystick {
     private _joystickElement: HTMLElement;
@@ -27,7 +27,7 @@ export class Joystick {
     }
     
     get joystickElement(): HTMLElement{
-        return(this.joystickElement)
+        return(this._joystickElement)
     }
 
     get knobElement(): HTMLElement{
