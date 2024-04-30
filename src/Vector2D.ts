@@ -19,8 +19,8 @@ export class Vector2D{
         if (angle >= 360 || angle < 0) {
             angle = ((angle % 360) + 360) % 360; //ensure 0 < angle < 360
         }
-        const x = Math.cos(angle) * length
-        const y = Math.sin(angle) * length
+        const x = Math.cos(angle/180*Math.PI) * length
+        const y = Math.sin(angle/180*Math.PI) * length
 
         return new Vector2D(x, y);
       }
@@ -28,7 +28,6 @@ export class Vector2D{
     add(vector: Vector2D):void{
         this._x += vector._x
         this._y += vector._y
-
     }
 
     get length(){
@@ -37,6 +36,14 @@ export class Vector2D{
     
     get angle(){
         return(this._angle)
+    }
+
+    get x(): number{
+        return this._x
+    }
+
+    get y(): number{
+        return this._y
     }
 
     // Create a Vector2D object from a JSON representation

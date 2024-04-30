@@ -2,17 +2,21 @@ import { Spacecraft } from "./Spacecraft.js";
 import { GameEnvironment } from "./GameEnvironment.js";
 import { SpacecraftShape } from "./SpacecraftShape.js";
 import { KeyboardController } from "./KeyboardController.js";
+import { Vector2D } from "./Vector2D.js";
 
 export class SpaceGame {
     private spacecraft: Spacecraft
     private spacecrafts: Spacecraft[] = [];
     private gameEnvironment: GameEnvironment;
-    private keyboardController = new KeyboardController();
+    private keyboardController: KeyboardController
+    private touchControl = true
     private serverRequestHandler: ServerRequestHandler;
 
     constructor(gameFrame: HTMLElement) {
         this.spacecraft = new Spacecraft();
         this.gameEnvironment = new GameEnvironment(gameFrame);
+        this.keyboardController = new KeyboardController(gameFrame);
+        gameFrame.focus(); //gameFrame erhält den Keyboard focus
         this.serverRequestHandler = new ServerRequestHandler();
     }
 
@@ -23,48 +27,73 @@ export class SpaceGame {
         this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type);
         this.spacecraft.gElement.setAttribute("tabindex", "0");
         this.spacecraft.gElement.focus(); //doesnt seem to work
-        this.spacecraft.handleKeyboardInput(this.keyboardController.getKeysPressed());
+        this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
         this.spacecrafts.push(this.spacecraft);
         this.gameLoop();
+        
         setInterval(() => {
             this.syncReality();
         }, 1000);
+        
     }
 
     private gameLoop() {
         requestAnimationFrame(() => {
             this.gameLoop();
         });
+        this.spacecraft.handleKeyboardInput(this.keyboardController.getKeysPressed());
+        
+        if(this.touchControl){
+            this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
+        }
+
+        this.gameEnvironment.handleSpacecraft(this.spacecraft)
         this.updateElements();
     }
 
     private updateElements() {
         this.spacecrafts.forEach((spacecraft) => {
             spacecraft.update();
-            this.gameEnvironment.svgElement.appendChild(SpacecraftShape.getCraftGElement(spacecraft.type));
-        });
+            });
     }
 
     private async syncReality(): Promise<void> {
-        // Send own status to server
-        const returnData: Record<string, any>[] = [];
-        
-            const spacecraftData = this.spacecraft.toJSON();
-            try {
-                const response = await this.serverRequestHandler.sync(spacecraftData);
-                returnData.push(response);
-            } catch (error) {
-                console.error('Error syncing spacecraft data:', error);
+        try {
+            // Send own status to server
+            // store the feedback in receivedData
+            const receivedData = await this.serverRequestHandler.sendData(this.spacecraft.toJSON());
+            
+            // Überprüfe, ob die empfangenen Daten ein Array sind
+            if (!Array.isArray(receivedData)) {
+                console.error('Received data is not in the expected format (array)');
+                return; // Beende die Funktion, um weitere Fehler zu vermeiden
             }
-        
-        console.log("returnData: "+returnData);
+            receivedData.forEach(element => {
+                const index = this.spacecrafts.findIndex(p => p.id === element.id);
+                if (index !== -1) {
+                    console.log(" spacecraft mit dieser ID bereits vorhanden, aktualisieren")
+                    this.spacecrafts[index].location = Vector2D.fromJSON(element._location)
+                    
+                } else {
+                    
+                    console.log("Spieler mit dieser ID nicht gefunden, hinzufügen")
+                    const newSpacecraft = Spacecraft.fromJSON(element)
+                    this.spacecrafts.push(newSpacecraft);
+                    this.gameEnvironment.svgElement.appendChild(newSpacecraft.gElement)
+                    
+                }
+
+            });
+        } catch (error) {
+            console.error('Error syncing spacecraft data:', error);
+        }
     }
 }
 
 class ServerRequestHandler {
-    async sync(data: Record<string, any>): Promise<Record<string, any>> {
+    async sendData(data: Record<string, any>) {
         try {
-            const response = await fetch('http://localhost:3000/sync', {
+            const response = await fetch('https://spacepatrol.zapto.org/sync', { //http://spacepatrolzone.dynv6.net  http://192.168.2.222:3000  http://localhost https://spacepatrol.zapto.org/sync
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -73,12 +102,17 @@ class ServerRequestHandler {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to sync data');
+                throw new Error('Failed to send data');
             }
 
+            console.log('Data sent successfully, awaiting return');
             return await response.json();
+            
         } catch (error) {
             throw error;
         }
     }
+
+    
 }
+
