@@ -13,7 +13,7 @@ export class Spacecraft {
     private _maneuverability = 2
     private _impuls = new Vector2D();
     private _location = new Vector2D();
-    
+
 
     constructor() {
         this._type = "rocket"
@@ -29,15 +29,11 @@ export class Spacecraft {
 
     brake(dampingFactor: number): void {
         // Verringere die Geschwindigkeit um den Dämpfungsfaktor
-        console.log("dampingFactor: "+dampingFactor)
-        console.log("this._impuls.length: "+this._impuls.length)
         const newLength = this._impuls.length * (1-dampingFactor)
-        this._impuls = Vector2D.fromLengthAndAngle(newLength, this._impuls.angle)
+        this._impuls = Vector2D.fromLengthAndAngle(newLength, this._impuls.angle/Math.PI*180)
         
-        // this._impuls.add(new Vector(.5, this.direction.angle))
         // Optional: Stoppe die Bewegung vollständig, wenn die Geschwindigkeit einen bestimmten Schwellenwert unterschreitet
          if (this._impuls.length < 0.01) {
-            console.log("stop completely")
             this._impuls = new Vector2D(0, 0);
         }
     }
@@ -50,6 +46,10 @@ export class Spacecraft {
     rotate(angle: number){
         this.direction += angle
         this.direction = (this.direction%360+360)%360
+    }
+
+    get impuls(): Vector2D{
+        return this._impuls
     }
 
     get location(): Vector2D{
@@ -106,7 +106,7 @@ export class Spacecraft {
         }
 
         if (keysPressed['ArrowDown']) {
-            this.brake(this._maneuverability/100);
+            this.brake(this._maneuverability/10);
         }
         
     }
@@ -118,7 +118,6 @@ export class Spacecraft {
 
     // Convert Spacecraft object to JSON representation
     toJSON(): Record<string, any> {
-        console.log()
         return {
             _type: this._type,
             direction: this.direction,

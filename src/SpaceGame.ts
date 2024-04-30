@@ -30,12 +30,12 @@ export class SpaceGame {
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
         this.spacecrafts.push(this.spacecraft);
         this.gameLoop();
-        
+        /*
         setInterval(() => {
             this.syncReality();
         }, 1000);
         */
-        */
+        
     }
 
     private gameLoop() {
