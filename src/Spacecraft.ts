@@ -29,6 +29,8 @@ export class Spacecraft {
 
     brake(dampingFactor: number): void {
         // Verringere die Geschwindigkeit um den Dämpfungsfaktor
+        console.log("dampingFactor: "+dampingFactor)
+        console.log("this._impuls.length: "+this._impuls.length)
         const newLength = this._impuls.length * (1-dampingFactor)
         this._impuls = Vector2D.fromLengthAndAngle(newLength, this._impuls.angle)
         

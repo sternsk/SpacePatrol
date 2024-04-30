@@ -30,23 +30,26 @@ export class SpaceGame {
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
         this.spacecrafts.push(this.spacecraft);
         this.gameLoop();
-        
+      /*  
         setInterval(() => {
             this.syncReality();
         }, 1000);
-        
+        */
     }
 
     private gameLoop() {
         requestAnimationFrame(() => {
             this.gameLoop();
         });
-        this.spacecraft.handleKeyboardInput(this.keyboardController.getKeysPressed());
-        
-        if(this.touchControl){
+
+        if(!this.touchControl){
+            this.gameEnvironment.enableTouchControl()
+            console.log(this.gameEnvironment.joystick.value)
             this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
         }
-
+        
+        this.spacecraft.handleKeyboardInput(this.keyboardController.getKeysPressed());
+        
         this.gameEnvironment.handleSpacecraft(this.spacecraft)
         this.updateElements();
     }
