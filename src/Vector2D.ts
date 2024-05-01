@@ -20,8 +20,9 @@ export class Vector2D{
         if (angle >= 360 || angle < 0) {
             angle = ((angle % 360) + 360) % 360; //ensure 0 < angle < 360
         }
-        const x = Math.cos(angle/180*Math.PI) * length
-        const y = Math.sin(angle/180*Math.PI) * length
+        angle = angle/180*Math.PI
+        const x = Math.cos(angle) * length
+        const y = Math.sin(angle) * length
 
         return new Vector2D(x, y);
       }
@@ -36,7 +37,7 @@ export class Vector2D{
     }
     
     get angle(){
-        return(Math.atan2(this._y, this._x))
+        return(Math.atan2(this._y, this._x)/Math.PI*180)
     }
 
     get x(): number{

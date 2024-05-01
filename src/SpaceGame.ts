@@ -43,9 +43,8 @@ export class SpaceGame {
             this.gameLoop();
         });
 
-        if(!this.touchControl){
+        if(this.touchControl){
             this.gameEnvironment.enableTouchControl()
-            console.log(this.gameEnvironment.joystick.value)
             this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
         }
         

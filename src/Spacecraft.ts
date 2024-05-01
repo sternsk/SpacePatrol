@@ -30,7 +30,7 @@ export class Spacecraft {
     brake(dampingFactor: number): void {
         // Verringere die Geschwindigkeit um den Dämpfungsfaktor
         const newLength = this._impuls.length * (1-dampingFactor)
-        this._impuls = Vector2D.fromLengthAndAngle(newLength, this._impuls.angle/Math.PI*180)
+        this._impuls = Vector2D.fromLengthAndAngle(newLength, this._impuls.angle)
         
         // Optional: Stoppe die Bewegung vollständig, wenn die Geschwindigkeit einen bestimmten Schwellenwert unterschreitet
          if (this._impuls.length < 0.01) {
@@ -39,8 +39,7 @@ export class Spacecraft {
     }
 
     handleTouchControl(vector: Vector2D){
-        this._impuls = vector
-        this.direction = vector.angle
+        this._impuls.add(vector)
     }
 
     rotate(angle: number){

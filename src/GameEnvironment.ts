@@ -18,7 +18,6 @@ export class GameEnvironment{
         gameFrame.appendChild(this._svgElement)
         gameFrame.appendChild(this._joystick.joystickElement)
         this._joystick.joystickElement.setAttribute("display", "none")
-        gameFrame.appendChild(this._joystick.knobElement)
         this._joystick.knobElement.setAttribute("display", "none")
     
     }

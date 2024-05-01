@@ -7,21 +7,24 @@ export class Joystick {
 
     constructor() {
         this._joystickElement = document.createElement("div")
-        this._joystickElement.setAttribute("width", "200px")
-        this._joystickElement.setAttribute("height", "200px")
-        this._joystickElement.setAttribute("background-color", "lightgray")
-        this._joystickElement.setAttribute("border-radius", "50%")
-        this._joystickElement.setAttribute("position", "relative")
+        this._joystickElement.setAttribute("style", `width: 200px; 
+                                                        height: 200px; 
+                                                        background-color: lightgray; 
+                                                        border-radius: 50%; 
+                                                        position: relative`)
+        
         
         this._knobElement = document.createElement("div");
-        this._knobElement.setAttribute("width", "50px")
-        this._knobElement.setAttribute("height", "50px")
-        this._knobElement.setAttribute("background-color", "darkgray")
-        this._knobElement.setAttribute("border-radius", "50%")
-        this._knobElement.setAttribute("position", "absolute")
-        this._knobElement.setAttribute("top", "50%")
-        this._knobElement.setAttribute("left", "50%")
-        this._knobElement.setAttribute("transform", "translate(-50%, -50%)")
+        this._knobElement.setAttribute("style", `width: 50px;
+                                                height: 50px;
+                                                background-color: darkgray;
+                                                border-radius: 50%;
+                                                position: absolute;
+                                                top: 50%;
+                                                left: 50%;
+                                                transform: translate(-50%, -50%);
+                                                `)
+        this._joystickElement.appendChild(this._knobElement)
         
         this.initEvents();
     }
@@ -72,15 +75,17 @@ export class Joystick {
             this._knobElement.style.left = `${x}px`;
             this._knobElement.style.top = `${y}px`;
         }
-        console.log("relativDistance: "+relativDistance+", angle: "+angle)
-        this._value = Vector2D.fromLengthAndAngle(relativDistance, angle)
+        console.log("relativDistance: "+relativDistance+", angle in radians: "+angle)
+        this._value = Vector2D.fromLengthAndAngle(relativDistance/100, angle/Math.PI*180)
     }
 
     private onTouchEnd(event: TouchEvent) {
         event.preventDefault();
 
-        // Reset knob position
+        // Reset knob position and value
         this._knobElement.style.left = '50%';
         this._knobElement.style.top = '50%';
+        this._value = new Vector2D(0,0)
+        
     }
 }
