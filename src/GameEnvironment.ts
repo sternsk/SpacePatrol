@@ -16,15 +16,12 @@ export class GameEnvironment{
         this._svgElement.setAttribute("viewBox", "-100, -100, 200, 200")// different result: `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${viewBoxHeight}`)
         this._svgElement.setAttribute("tabindex", "0")
         gameFrame.appendChild(this._svgElement)
-        gameFrame.appendChild(this._joystick.joystickElement)
-        this._joystick.joystickElement.setAttribute("display", "none")
-        this._joystick.knobElement.setAttribute("display", "none")
-    
+        gameFrame.appendChild(this._joystick.container)
+        this.joystick.container.style.display = "none"
     }
 
     enableTouchControl(){
-        this._joystick.joystickElement.setAttribute("display", "block")
-        this._joystick.knobElement.setAttribute("display", "block")
+        this.joystick.container.style.display = "block"
     }
 
     get joystick(){
