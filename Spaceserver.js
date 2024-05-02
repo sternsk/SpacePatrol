@@ -19,13 +19,17 @@ class SpaceServer {
         const httpsServer = https.createServer(credentials, this.app);
 
         // Port für den HTTPS-Server
-        const PORT_HTTPS = 3001;
+        const PORT_HTTPS = 2001;
 
         httpsServer.listen(PORT_HTTPS, () => {
             console.log(`HTTPS Server is running on port ${PORT_HTTPS}`);
         });
     
         setInterval(this.removeInactiveSpacecrafts.bind(this), 2000); // Check every 2 seconds
+
+        setInterval(this.createSpacecraft.bind(this), 10000); // create a NPC every 10 seconds
+
+
     }
 
     setupRoutes() {
@@ -59,6 +63,31 @@ class SpaceServer {
         
     }
     
+    createSpacecraft(){
+        const availableTypes = ["rainbowRocket", 
+                                "rokket", 
+                                "bromber.png", 
+                                "blizzer.png", 
+                                "flipps.svg", 
+                                "lopman.png", 
+                                "helgram1.png", 
+                                "carrot.svg", 
+                                "rock.svg", 
+                                "eye.svg"]
+        const availableColors = ["red", "green", "white", "darkblue"]
+        const data = {type: availableTypes[Math.floor(Math.random()*availableTypes.length)], 
+                        color: availableColors[Math.floor(Math.random()*availableColors.length)],
+                        id: Math.random().toString,
+                        direction: Math.random()*360,
+                        impuls: {x: Math.random()-.5, y: Math.random()-.5},
+                        location: {x: Math.random()*200-100, y:Math.random()*200-100}
+
+        }
+        console.log("created spaceShipdata: "+data)
+        this.spacecraftsData.push(data)
+        console.log("this.spacecraftsData.length: "+this.spacecraftsData.length)
+    }
+
     updateSpacecrafts(data){
         const index = this.spacecraftsData.findIndex(p => p.id === data.id);
         if (index !== -1) {
@@ -75,7 +104,6 @@ class SpaceServer {
         }
     }
     removeInactiveSpacecrafts(){
-        console.log("removing inactive Spacecrafts")
         const currentTime = Date.now();
         this.spacecraftsData = this.spacecraftsData.filter(spacecraft => {
             return (currentTime - spacecraft.lastUpdated) <= 10000; // Remove spacecrafts inactive for 10 seconds

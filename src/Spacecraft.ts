@@ -37,9 +37,10 @@ export class Spacecraft {
             this._impuls = new Vector2D(0, 0);
         }
     }
-
+    
     handleTouchControl(vector: Vector2D){
         this._impuls.add(vector)
+        this.direction = vector.angle
     }
 
     rotate(angle: number){
@@ -118,12 +119,14 @@ export class Spacecraft {
     // Convert Spacecraft object to JSON representation
     toJSON(): Record<string, any> {
         return {
-            _type: this._type,
-            direction: this.direction,
-            _impuls: this._impuls.toJSON(),
-            _location: this._location.toJSON(),
+            type: this._type,
+            color: this._color,
             id: this.id,
-            lastUpdate: Date.now()
+            direction: this.direction,
+            impuls: this._impuls.toJSON(),
+            location: this._location.toJSON(),
+           
+            lastUpdate: Date.now()  //apply timestamp each time the vessel is transformed
 
         };
     }
@@ -135,9 +138,9 @@ export class Spacecraft {
         spacecraft.color = json.color
         spacecraft.id = json.id
         spacecraft.direction = json.direction;
-        // Assuming Vector2D class has a fromJSON method
+        
         spacecraft._impuls = Vector2D.fromJSON(json._impuls);
-        spacecraft._location = new Vector2D //json._location returns undefined
+        spacecraft._location = Vector2D.fromJSON(json._location) 
         spacecraft._gElement = SpacecraftShape.getCraftGElement(spacecraft.type)
         return spacecraft;
     }

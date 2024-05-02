@@ -1,6 +1,16 @@
 import { SpacecraftShape } from "./SpacecraftShape.js";
 import { initGame } from "./library.js";
 
+export const availableTypes = ["rainbowRocket", 
+                                "rokket", 
+                                "bromber.svg", 
+                                "blizzer.png", 
+                                "flipps.svg", 
+                                "lopman.png", 
+                                "helgram1.png", 
+                                "carrot.svg", 
+                                "rock.svg", 
+                                "eye.svg"]
 export const typeSelector = document.getElementById(`typeSelector`)! as HTMLSelectElement;
 export const colorSelector = document.getElementById(`colorSelector`)! as HTMLSelectElement;
 export const idInputElement = document.getElementById('rocketId')! as HTMLInputElement;

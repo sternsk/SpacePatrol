@@ -5,13 +5,19 @@ export class Joystick {
     private _knobElement: HTMLElement;
     private _value = new Vector2D()
 
+    private _isTouched = false
+
     constructor() {
         this._joystickElement = document.createElement("div")
+        
         this._joystickElement.setAttribute("style", `width: 200px; 
                                                         height: 200px; 
-                                                        background-color: lightgray; 
+                                                        background-color: gray; 
+                                                        opacity: .5;
                                                         border-radius: 50%; 
-                                                        position: relative`)
+                                                        position: absolute;
+                                                        bottom: 0px;
+                                                        left: 0px;`)
         
         
         this._knobElement = document.createElement("div");
@@ -33,6 +39,9 @@ export class Joystick {
         return(this._joystickElement)
     }
 
+    get isTouched(){
+        return this._isTouched
+    }
     get knobElement(): HTMLElement{
         return(this._knobElement)
     }
@@ -48,6 +57,7 @@ export class Joystick {
     }
 
     private onTouchStart(event: TouchEvent) {
+        this._isTouched = true
         event.preventDefault();
     }
 
@@ -75,16 +85,16 @@ export class Joystick {
             this._knobElement.style.left = `${x}px`;
             this._knobElement.style.top = `${y}px`;
         }
-        console.log("relativDistance: "+relativDistance+", angle in radians: "+angle)
         this._value = Vector2D.fromLengthAndAngle(relativDistance/100, angle/Math.PI*180)
     }
 
     private onTouchEnd(event: TouchEvent) {
         event.preventDefault();
-
+        this._isTouched = false
         // Reset knob position and value
         this._knobElement.style.left = '50%';
         this._knobElement.style.top = '50%';
+        
         this._value = new Vector2D(0,0)
         
     }

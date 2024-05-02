@@ -13,18 +13,28 @@ export class GameEnvironment{
         
     constructor(gameFrame: HTMLElement){
         this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        this._svgElement.setAttribute("viewBox", "-100, -100, 200, 200")// different result: `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${viewBoxHeight}`)
+
+        this._svgElement.setAttribute("viewBox", "-100, -100, 200, 350") // different result: `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${viewBoxHeight}`
+        
         this._svgElement.setAttribute("tabindex", "0")
+        
+        //this._svgElement.style.height = `100%`
+        
         gameFrame.appendChild(this._svgElement)
+        gameFrame.style.position = "relative"
+        console.log("window.innerHeight: "+window.innerHeight)
+        gameFrame.style.height =  `${window.innerHeight}px`
+        
         gameFrame.appendChild(this._joystick.joystickElement)
-        this._joystick.joystickElement.setAttribute("display", "none")
-        this._joystick.knobElement.setAttribute("display", "none")
-    
+        //this._joystick.container.setAttribute("x", "0")
+        //this._joystick.container.setAttribute("y", "0")
+        
+        this.joystick.joystickElement.style.display = "none"
     }
 
     enableTouchControl(){
-        this._joystick.joystickElement.setAttribute("display", "block")
-        this._joystick.knobElement.setAttribute("display", "block")
+        this.joystick.joystickElement.style.display = "block"
+        //this.joystick.container.setAttribute("transform","translate(0,0)")
     }
 
     get joystick(){

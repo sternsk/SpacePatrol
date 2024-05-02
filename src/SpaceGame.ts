@@ -30,11 +30,11 @@ export class SpaceGame {
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
         this.spacecrafts.push(this.spacecraft);
         this.gameLoop();
-        /*
+        
         setInterval(() => {
             this.syncReality();
         }, 1000);
-        */
+        
         
     }
 
@@ -45,6 +45,7 @@ export class SpaceGame {
 
         if(this.touchControl){
             this.gameEnvironment.enableTouchControl()
+            if(this.gameEnvironment.joystick.isTouched)
             this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
         }
         
