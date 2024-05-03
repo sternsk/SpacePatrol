@@ -111,19 +111,33 @@ async function startSpaceGame(){
     loopRunning = false
     console.log(`Commander ${idInputElement.value}, you depart in a ${color} ${typeSelector.value}. Game starts now!`)
     
+
     try {
         // Dynamically import the library.js module
         let lib = await import("./library.js");
         
         // Call the initGame function from the imported module
-        lib.initGame(document.getElementById("gameFrame")!, typeSelector.value, color, idInputElement.value);
-        
+        const gameFrame = document.getElementById("gameFrame")!
+        gameFrame.setAttribute("width", "100%")
+        gameFrame.setAttribute("height", "100%")
+
+        // check that the gameFrame is properly sized
+        if(gameFrame.offsetWidth && gameFrame.offsetHeight){
+            lib.initGame(gameFrame, typeSelector.value, color, idInputElement.value);
+        }
+        else{
+            console.log("gameFrame.offsetWidth: "+gameFrame.offsetWidth)
+            console.log("gameFrame.offsetHeight: "+gameFrame.offsetHeight)
+            console.log("gameFrame not properly sized")
+            lib.initGame(gameFrame, typeSelector.value, color, idInputElement.value);
+        }    
         // Hide startPage and display gamePage
         document.getElementById('gamePage')!.style.display = 'block';
         document.getElementById('startPage')!.style.display = 'none';
     } catch (error) {
         console.error("Error loading library:", error);
     }
+        
     
 }
 loop()

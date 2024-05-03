@@ -131,8 +131,8 @@ export class Spacecraft {
         return {
             type: this._type,
             color: this._color,
-            id: this.id,
-            direction: this.direction,
+            id: this._id,
+            direction: this._direction,
             impuls: this._impuls.toJSON(),
             location: this._location.toJSON(),
            

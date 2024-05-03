@@ -1,23 +1,23 @@
 import { Vector2D } from "./Vector2D.js";
 
 export class Joystick {
-    private _joystickElement: HTMLElement;
+    private _htmlElement: HTMLElement;
     private _knobElement: HTMLElement;
     private _value = new Vector2D()
 
     private _isTouched = false
 
     constructor() {
-        this._joystickElement = document.createElement("div")
+        this._htmlElement = document.createElement("div")
         
-        this._joystickElement.setAttribute("style", `width: 200px; 
+        this._htmlElement.setAttribute("style", `width: 200px; 
                                                         height: 200px; 
                                                         background-color: gray; 
                                                         opacity: .5;
                                                         border-radius: 50%; 
                                                         position: absolute;
-                                                        bottom: 0px;
-                                                        left: 0px;`)
+                                                        bottom: 50px;
+                                                        left: 10px;`)
         
         
         this._knobElement = document.createElement("div");
@@ -30,13 +30,13 @@ export class Joystick {
                                                 left: 50%;
                                                 transform: translate(-50%, -50%);
                                                 `)
-        this._joystickElement.appendChild(this._knobElement)
+        this._htmlElement.appendChild(this._knobElement)
         
         this.initEvents();
     }
     
-    get joystickElement(): HTMLElement{
-        return(this._joystickElement)
+    get htmlElement(): HTMLElement{
+        return(this._htmlElement)
     }
 
     get isTouched(){
@@ -65,11 +65,11 @@ export class Joystick {
         event.preventDefault();
         
         const touch = event.touches[0];
-        const offsetX = touch.clientX - this._joystickElement.getBoundingClientRect().left;
-        const offsetY = touch.clientY - this._joystickElement.getBoundingClientRect().top;
+        const offsetX = touch.clientX - this._htmlElement.getBoundingClientRect().left;
+        const offsetY = touch.clientY - this._htmlElement.getBoundingClientRect().top;
 
-        const centerX = this._joystickElement.offsetWidth / 2;
-        const centerY = this._joystickElement.offsetHeight / 2;
+        const centerX = this._htmlElement.offsetWidth / 2;
+        const centerY = this._htmlElement.offsetHeight / 2;
 
         const distance = Math.sqrt((offsetX - centerX) ** 2 + (offsetY - centerY) ** 2);
         const relativDistance = distance / centerX

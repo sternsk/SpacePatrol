@@ -53,6 +53,7 @@ export class SpaceGame {
         
         this.gameEnvironment.handleSpacecraft(this.spacecraft)
         this.updateElements();
+        this.gameEnvironment.setLabel("this is your data: "+JSON.stringify(this.spacecraft.toJSON()))
     }
 
     private updateElements() {
