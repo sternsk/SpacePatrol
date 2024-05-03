@@ -75,12 +75,12 @@ export class SpaceGame {
             receivedData.forEach(element => {
                 const index = this.spacecrafts.findIndex(p => p.id === element.id);
                 if (index !== -1) {
-                    console.log(" spacecraft mit dieser ID bereits vorhanden, aktualisieren")
-                    this.spacecrafts[index].location = Vector2D.fromJSON(element._location)
+                    /// spacecraft mit dieser ID bereits vorhanden, aktualisieren
+                    this.spacecrafts[index].updateFromJSON(element)
                     
                 } else {
                     
-                    console.log("Spieler mit dieser ID nicht gefunden, hinzufügen")
+                    // Spacecraft mit dieser ID nicht gefunden, hinzufügen
                     const newSpacecraft = Spacecraft.fromJSON(element)
                     this.spacecrafts.push(newSpacecraft);
                     this.gameEnvironment.svgElement.appendChild(newSpacecraft.gElement)

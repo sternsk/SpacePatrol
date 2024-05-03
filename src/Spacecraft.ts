@@ -9,7 +9,7 @@ export class Spacecraft {
     private _type: string;
     private _color: string;
     private _id: string
-    private direction = 0;
+    private _direction = 0;
     private _maneuverability = 2
     private _impuls = new Vector2D();
     private _location = new Vector2D();
@@ -40,12 +40,16 @@ export class Spacecraft {
     
     handleTouchControl(vector: Vector2D){
         this._impuls.add(vector)
-        this.direction = vector.angle
+        this._direction = vector.angle
     }
 
     rotate(angle: number){
-        this.direction += angle
-        this.direction = (this.direction%360+360)%360
+        this._direction += angle
+        this._direction = (this.direction%360+360)%360
+    }
+
+    get direction(): number{
+        return this._direction
     }
 
     get impuls(): Vector2D{
@@ -116,6 +120,12 @@ export class Spacecraft {
         this.gElement.setAttribute("transform", `translate (${this._location.x} ${this._location.y}) rotate (${this.direction + 90} ) `)
     }
 
+    updateFromJSON(json: Record<string, any>): void{
+        this._direction = json.direction
+        this._impuls = json.impuls
+        this._location = json.location
+    }
+
     // Convert Spacecraft object to JSON representation
     toJSON(): Record<string, any> {
         return {
@@ -133,21 +143,22 @@ export class Spacecraft {
 
     // Create a Spacecraft object from a JSON representation
     static fromJSON(json: Record<string, any>): Spacecraft {
-        const spacecraft = new Spacecraft(); 
-        spacecraft.type = json._type
-        spacecraft.color = json.color
-        spacecraft.id = json.id
-        spacecraft.direction = json.direction;
+        const spacecraft = new Spacecraft()
+        spacecraft._type = json.type
+        spacecraft._color = json.color
+        spacecraft._id = json.id
         
+        spacecraft._direction = json.direction;
         spacecraft._impuls = Vector2D.fromJSON(json._impuls);
         spacecraft._location = Vector2D.fromJSON(json._location) 
+        
         spacecraft._gElement = SpacecraftShape.getCraftGElement(spacecraft.type)
         return spacecraft;
     }
 
     // Update spacecraft properties from another spacecraft object
     updateFrom(other: Spacecraft) {
-        this.direction = other.direction;
+        this._direction = other.direction;
         this._impuls = other._impuls;
         this._location = other._location;
     }
