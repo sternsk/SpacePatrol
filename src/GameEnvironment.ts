@@ -40,8 +40,8 @@ export class GameEnvironment{
         this._label.style.position = "absolute"
         this._label.setAttribute("width", "100px")
         this._label.setAttribute("height", "40px")
-        this._label.setAttribute("top","400px")
-        this._label.setAttribute("left","200px")
+        this._label.style.left = "400px"
+        this._label.style.top = "200px"
         this._label.textContent = "label"
         
         //this._svgElement.style.height = `100%`

@@ -53,7 +53,7 @@ export class SpaceGame {
         
         this.gameEnvironment.handleSpacecraft(this.spacecraft)
         this.updateElements();
-        this.gameEnvironment.setLabel("this is your data: "+JSON.stringify(this.spacecraft.toJSON()))
+        this.gameEnvironment.setLabel("your data: "+JSON.stringify(this.spacecraft.toJSON()))
     }
 
     private updateElements() {
@@ -78,6 +78,11 @@ export class SpaceGame {
                 if (index !== -1) {
                     /// spacecraft mit dieser ID bereits vorhanden, aktualisieren
                     this.spacecrafts[index].updateFromJSON(element)
+
+                    // alle spacecrafts außer der eigenen kriegen ein label
+                    if(element.id != this.spacecraft.id){
+                        this.gameEnvironment.createLabel()
+                    }
                     
                 } else {
                     
@@ -86,6 +91,10 @@ export class SpaceGame {
                     this.spacecrafts.push(newSpacecraft);
                     this.gameEnvironment.svgElement.appendChild(newSpacecraft.gElement)
                     
+                    // Label für das neue spacecraft
+                    const label = document.createElement("label")
+                    label.style.position = "absolute"
+                    label.style.x
                 }
 
             });

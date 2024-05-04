@@ -28,8 +28,8 @@ export class Vector2D{
       }
     
     add(vector: Vector2D):void{
-        this._x += vector._x
-        this._y += vector._y
+        this._x += vector.x
+        this._y += vector.y
     }
 
     get length(){

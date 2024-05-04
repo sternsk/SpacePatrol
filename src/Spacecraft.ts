@@ -149,8 +149,8 @@ export class Spacecraft {
         spacecraft._id = json.id
         
         spacecraft._direction = json.direction;
-        spacecraft._impuls = Vector2D.fromJSON(json._impuls);
-        spacecraft._location = Vector2D.fromJSON(json._location) 
+        spacecraft._impuls = Vector2D.fromJSON(json.impuls);
+        spacecraft._location = Vector2D.fromJSON(json.location) 
         
         spacecraft._gElement = SpacecraftShape.getCraftGElement(spacecraft.type)
         return spacecraft;
