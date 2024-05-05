@@ -1,13 +1,15 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors'); // Import cors
+const cors = require('cors');
 const https = require('https');
 const fs = require('fs');
 
 class SpaceServer {
+    spacecraftsData: Record<string, any>[]
+    app = express()
     constructor() {
         this.spacecraftsData = []; // Assuming you have spacecrafts data stored somewhere
-        this.app = express();
+        
         this.setupRoutes();
 
         // Load SSL-Zertifikat und privaten Schlüssel
@@ -40,7 +42,7 @@ class SpaceServer {
         }));
 
         // POST route to receive spacecraft data
-        this.app.post('/sync', (req, res) => {
+        this.app.post('/sync', (req: any, res: any) => {
             const data = req.body;
             
             if (!data) {
@@ -66,15 +68,15 @@ class SpaceServer {
     createSpacecraft(){
         const availableTypes = ["rainbowRocket", 
                                 "rokket", 
-                                "bromber.png", 
-                                "blizzer.png", 
-                                "flipps.svg", 
-                                "lopman.png", 
-                                "helgram1.png", 
-                                "carrot.svg", 
-                                "rock.svg", 
-                                "eye.svg"]
-        const availableColors = ["red", "green", "white", "darkblue"]
+                                "../resources/bromber.png", 
+                                "../resources/blizzer.png", 
+                                "../resources/flipps.svg", 
+                                "../resources/lopman.png", 
+                                "../resources/helgram1.png", 
+                                "../resources/carrot.svg", 
+                                "../resources/rock.svg", 
+                                "../resources/eye.svg"]
+        const availableColors = ["red", "green", "brown", "darkblue"]
         const data = {type: availableTypes[Math.floor(Math.random()*availableTypes.length)], 
                         color: availableColors[Math.floor(Math.random()*availableColors.length)],
                         id: Math.random().toString,
@@ -88,7 +90,7 @@ class SpaceServer {
         console.log("this.spacecraftsData.length: "+this.spacecraftsData.length)
     }
 
-    updateSpacecrafts(data){
+    updateSpacecrafts(data:Record<string,any>){
         const index = this.spacecraftsData.findIndex(p => p.id === data.id);
         if (index !== -1) {
             // Create new array with updated data

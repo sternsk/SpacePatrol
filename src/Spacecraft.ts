@@ -1,8 +1,7 @@
 
 import { SpacecraftShape } from "./SpacecraftShape.js";
 import { Vector2D } from "./Vector2D.js";
-import { color } from "./start.js";
-
+import { Spacelabel } from "./Spacelabel.js";
 
 export class Spacecraft {
     private _gElement: SVGGElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
@@ -13,6 +12,8 @@ export class Spacecraft {
     private _maneuverability = 2
     private _impuls = new Vector2D();
     private _location = new Vector2D();
+
+    private _label: Spacelabel | undefined;
 
 
     constructor() {
@@ -25,6 +26,10 @@ export class Spacecraft {
     accelerate(thrust: number) {
         let vector = Vector2D.fromLengthAndAngle(thrust, this.direction);
         this._impuls.add(vector);
+    }
+
+    applyLabel(){
+        this._label = new Spacelabel()
     }
 
     brake(dampingFactor: number): void {
@@ -50,6 +55,9 @@ export class Spacecraft {
 
     get direction(): number{
         return this._direction
+    }
+    get label(){
+        return(this._label)
     }
 
     get impuls(): Vector2D{

@@ -2,7 +2,7 @@ import { Spacecraft } from "./Spacecraft.js";
 import { GameEnvironment } from "./GameEnvironment.js";
 import { SpacecraftShape } from "./SpacecraftShape.js";
 import { KeyboardController } from "./KeyboardController.js";
-import { Vector2D } from "./Vector2D.js";
+import { gameFrame } from "./gameMenu.js";
 
 export class SpaceGame {
     private spacecraft: Spacecraft
@@ -12,7 +12,7 @@ export class SpaceGame {
     private touchControl = true
     private serverRequestHandler: ServerRequestHandler;
 
-    constructor(gameFrame: HTMLElement) {
+    constructor() {
         this.spacecraft = new Spacecraft();
         this.gameEnvironment = new GameEnvironment(gameFrame);
         this.keyboardController = new KeyboardController(gameFrame);
@@ -27,13 +27,14 @@ export class SpaceGame {
         this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type);
         this.spacecraft.gElement.setAttribute("tabindex", "0");
         this.spacecraft.gElement.focus(); //doesnt seem to work
+        this.spacecraft.applyLabel()
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
         this.spacecrafts.push(this.spacecraft);
         this.gameLoop();
         
         setInterval(() => {
             this.syncReality();
-        }, 1000);
+        }, 500);
         
         
     }
@@ -53,13 +54,24 @@ export class SpaceGame {
         
         this.gameEnvironment.handleSpacecraft(this.spacecraft)
         this.updateElements();
-        this.gameEnvironment.setLabel("your data: "+JSON.stringify(this.spacecraft.toJSON()))
+        
+        //if(this.gameEnvironment.label.htmlElement)
+        
     }
 
     private updateElements() {
         this.spacecrafts.forEach((spacecraft) => {
             spacecraft.update();
-            });
+            if(spacecraft.label){
+                spacecraft.label.htmlElement.textContent = `id: ${this.spacecraft.id},
+                                                             ${this.spacecraft.location.x.toFixed(2)},  
+                                                             ${this.spacecraft.location.y.toFixed(2)}`
+                spacecraft.label.location = {x: (this.spacecraft.gElement.getBoundingClientRect().x +
+                                                    this.spacecraft.gElement.getBoundingClientRect().width/2) , 
+                                                y: (this.spacecraft.gElement.getBoundingClientRect().y+
+                                                this.spacecraft.gElement.getBoundingClientRect().height/2)}
+            }
+        });
     }
 
     private async syncReality(): Promise<void> {
@@ -81,7 +93,7 @@ export class SpaceGame {
 
                     // alle spacecrafts außer der eigenen kriegen ein label
                     if(element.id != this.spacecraft.id){
-                        this.gameEnvironment.createLabel()
+                        //this.gameEnvironment.createLabel()
                     }
                     
                 } else {
@@ -92,9 +104,7 @@ export class SpaceGame {
                     this.gameEnvironment.svgElement.appendChild(newSpacecraft.gElement)
                     
                     // Label für das neue spacecraft
-                    const label = document.createElement("label")
-                    label.style.position = "absolute"
-                    label.style.x
+                    newSpacecraft.applyLabel()
                 }
 
             });

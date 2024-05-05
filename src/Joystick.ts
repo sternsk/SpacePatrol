@@ -16,7 +16,7 @@ export class Joystick {
                                                         opacity: .5;
                                                         border-radius: 50%; 
                                                         position: absolute;
-                                                        bottom: 50px;
+                                                        bottom: 20px;
                                                         left: 10px;`)
         
         
@@ -85,7 +85,7 @@ export class Joystick {
             this._knobElement.style.left = `${x}px`;
             this._knobElement.style.top = `${y}px`;
         }
-        this._value = Vector2D.fromLengthAndAngle(relativDistance/100, angle/Math.PI*180)
+        this._value = Vector2D.fromLengthAndAngle(relativDistance/10, angle/Math.PI*180)
     }
 
     private onTouchEnd(event: TouchEvent) {

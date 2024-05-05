@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext", 
-    "outDir": "./",
+    "outDir": "../../dist/SpacePatrol0113",
     "rootDir": "./",
     "sourceMap": false,
     "allowJs": true,
@@ -14,11 +14,7 @@
     "moduleResolution": "node" 
   },
   "include": [
-    "./*.ts" // Include your source files
+    "./**/*.ts" // Include your source files
   ],
-  "exclude": [
-    "./node_modules",
-    "./src"
-  ]
   
 }
