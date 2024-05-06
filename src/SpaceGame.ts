@@ -3,6 +3,7 @@ import { GameEnvironment } from "./GameEnvironment.js";
 import { SpacecraftShape } from "./SpacecraftShape.js";
 import { KeyboardController } from "./KeyboardController.js";
 import { gameFrame } from "./gameMenu.js";
+import { Vector2D } from "./Vector2D.js";
 
 export class SpaceGame {
     private spacecraft: Spacecraft
@@ -31,11 +32,11 @@ export class SpaceGame {
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
         this.spacecrafts.push(this.spacecraft);
         this.gameLoop();
-        
+        /*
         setInterval(() => {
             this.syncReality();
         }, 500);
-        
+        */
         
     }
 
@@ -55,21 +56,18 @@ export class SpaceGame {
         this.gameEnvironment.handleSpacecraft(this.spacecraft)
         this.updateElements();
         
-        //if(this.gameEnvironment.label.htmlElement)
-        
+
     }
 
     private updateElements() {
         this.spacecrafts.forEach((spacecraft) => {
+            
+            spacecraft.pseudoOrbit(new Vector2D(0,0)) 
+
             spacecraft.update();
             if(spacecraft.label){
-                spacecraft.label.htmlElement.textContent = `id: ${this.spacecraft.id},
-                                                             ${this.spacecraft.location.x.toFixed(2)},  
-                                                             ${this.spacecraft.location.y.toFixed(2)}`
-                spacecraft.label.location = {x: (this.spacecraft.gElement.getBoundingClientRect().x +
-                                                    this.spacecraft.gElement.getBoundingClientRect().width/2) , 
-                                                y: (this.spacecraft.gElement.getBoundingClientRect().y+
-                                                this.spacecraft.gElement.getBoundingClientRect().height/2)}
+                spacecraft.label.htmlElement.textContent = `distance to center: ${spacecraft.location.distanceTo(new Vector2D(0,0)).toFixed(0)}
+                                                            scale: ${spacecraft.scale}`
             }
         });
     }

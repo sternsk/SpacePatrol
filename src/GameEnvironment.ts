@@ -1,11 +1,11 @@
 import { Spacecraft } from "./Spacecraft.js";
 import { Joystick } from "./Joystick.js";
 
-
+export let viewBoxWidth = 50;
 
 export class GameEnvironment{
     aspectRatio: number 
-    // center zero in viewBox
+    
     viewBoxHeight: number 
     viewBoxWidth: number
     viewBoxLeft: number 
@@ -26,8 +26,9 @@ export class GameEnvironment{
             this.aspectRatio = .8
         }    
         
-        this.viewBoxWidth = 200
+        this.viewBoxWidth = viewBoxWidth
         this.viewBoxHeight = this.viewBoxWidth / this.aspectRatio
+        // center zero in viewBox
         this.viewBoxLeft = -this.viewBoxWidth / 2
         this.viewBoxTop = -this.viewBoxHeight / 2
         

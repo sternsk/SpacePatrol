@@ -32,6 +32,16 @@ export class Vector2D{
         this._y += vector.y
     }
 
+    distanceTo(destination: Vector2D): number{
+        let distanceVector = new Vector2D(destination.x - this._x, destination.y - this._y )
+        return (distanceVector.length)
+    }
+
+    inverse(){
+        this._x = -this._x
+        this._y = -this._y
+    }
+
     get length(){
         return(Math.sqrt(Math.pow(this._x, 2) + Math.pow(this._y, 2)))
     }

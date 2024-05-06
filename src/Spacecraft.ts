@@ -2,6 +2,7 @@
 import { SpacecraftShape } from "./SpacecraftShape.js";
 import { Vector2D } from "./Vector2D.js";
 import { Spacelabel } from "./Spacelabel.js";
+import { viewBoxWidth } from "./GameEnvironment.js";
 
 export class Spacecraft {
     private _gElement: SVGGElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
@@ -12,6 +13,9 @@ export class Spacecraft {
     private _maneuverability = 2
     private _impuls = new Vector2D();
     private _location = new Vector2D();
+
+    private _scale = 1;
+    private _isOnDarkSide = false
 
     private _label: Spacelabel | undefined;
 
@@ -42,10 +46,37 @@ export class Spacecraft {
             this._impuls = new Vector2D(0, 0);
         }
     }
-    
+    handleKeyboardInput(keysPressed: {[key: string]: boolean}) {
+        if (keysPressed['ArrowLeft']) {
+            this.rotate(-this._maneuverability);
+        }
+        
+        if (keysPressed['ArrowRight']) {
+            this.rotate(this._maneuverability);
+        }
+        
+        if (keysPressed['ArrowUp']) {
+            this.accelerate(this._maneuverability/100);
+        }
+
+        if (keysPressed['ArrowDown']) {
+            this.brake(this._maneuverability/10);
+        }
+    }
+
     handleTouchControl(vector: Vector2D){
         this._impuls.add(vector)
         this._direction = vector.angle
+    }
+
+    pseudoOrbit(vector: Vector2D){
+        const distance = this._location.distanceTo(vector)
+        if (distance < viewBoxWidth/2)
+            this._scale = Math.cos(distance/(viewBoxWidth/4) * Math.PI/4)
+        if (distance > viewBoxWidth/2){
+            this.impuls.inverse()
+            this._isOnDarkSide = !this._isOnDarkSide
+        }
     }
 
     rotate(angle: number){
@@ -71,7 +102,9 @@ export class Spacecraft {
     set location(location: Vector2D) {
         this._location = location
     }
-
+    get scale(){
+        return(this._scale)
+    }
     get type(): string{
         return this._type
     }
@@ -104,28 +137,24 @@ export class Spacecraft {
         this._gElement = g
     }
 
-    handleKeyboardInput(keysPressed: {[key: string]: boolean}) {
-        if (keysPressed['ArrowLeft']) {
-            this.rotate(-this._maneuverability);
-        }
-        
-        if (keysPressed['ArrowRight']) {
-            this.rotate(this._maneuverability);
-        }
-        
-        if (keysPressed['ArrowUp']) {
-            this.accelerate(this._maneuverability/100);
-        }
-
-        if (keysPressed['ArrowDown']) {
-            this.brake(this._maneuverability/10);
-        }
-        
+    set scale(scale: number){
+        this._scale = scale
     }
 
+    
     update() {
         this._location.add(this._impuls);
-        this.gElement.setAttribute("transform", `translate (${this._location.x} ${this._location.y}) rotate (${this.direction + 90} ) `)
+        this.gElement.setAttribute("transform", `translate (${this._location.x} ${this._location.y}) scale (${this._scale}) rotate (${this.direction + 90})`)
+        if(this._isOnDarkSide)
+            this.gElement.style.display = "none"
+        else if(!this._isOnDarkSide)
+            this.gElement.style.display = "block"
+        if(this._label){
+            this._label.location = {x: (this.gElement.getBoundingClientRect().x +
+                this.gElement.getBoundingClientRect().width/2) , 
+            y: (this.gElement.getBoundingClientRect().y+
+            this.gElement.getBoundingClientRect().height/2)}
+        }
     }
 
     updateFromJSON(json: Record<string, any>): void{
