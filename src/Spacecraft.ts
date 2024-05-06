@@ -17,7 +17,7 @@ export class Spacecraft {
     private _scale = 1;
     private _isOnDarkSide = false
 
-    private _label: Spacelabel | undefined;
+    private _label: SVGTextElement | undefined;
 
 
     constructor() {
@@ -33,7 +33,8 @@ export class Spacecraft {
     }
 
     applyLabel(){
-        this._label = new Spacelabel()
+        this._label = document.createElementNS("http://www.w3.org/2000/svg", "text")
+        this._label.setAttribute("font-size", "2px")
     }
 
     brake(dampingFactor: number): void {
@@ -140,7 +141,11 @@ export class Spacecraft {
     set scale(scale: number){
         this._scale = scale
     }
-
+    setLabelText(text: string){
+        if(this._label){
+            this._label.innerHTML = text
+        }
+    }
     
     update() {
         this._location.add(this._impuls);
@@ -150,11 +155,9 @@ export class Spacecraft {
         else if(!this._isOnDarkSide)
             this.gElement.style.display = "block"
         if(this._label){
-            this._label.location = {x: (this.gElement.getBoundingClientRect().x +
-                this.gElement.getBoundingClientRect().width/2) , 
-            y: (this.gElement.getBoundingClientRect().y+
-            this.gElement.getBoundingClientRect().height/2)}
+            this._label.setAttribute("transform", `translate(${this._location.x} ${this._location.y})`)
         }
+        
     }
 
     updateFromJSON(json: Record<string, any>): void{
