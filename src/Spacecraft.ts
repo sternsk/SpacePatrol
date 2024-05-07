@@ -21,8 +21,6 @@ export class Spacecraft {
     private _label: SVGTextElement | undefined;
     private _labelBorder: SVGRectElement | undefined;
     
-
-
     constructor() {
         this._type = "rocket"
         this._color = "flün"
@@ -36,14 +34,26 @@ export class Spacecraft {
     }
 
     applyLabel(svgElement: SVGElement){
+        this._labelBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
+        svgElement.appendChild(this._labelBorder)
+        this._labelBorder.setAttribute("x", `${this.scale*6.7}`)
+        this._labelBorder.setAttribute("y", `-2px`)
+        this._labelBorder.setAttribute("stroke-width", "2px")
+        this._labelBorder.setAttribute("stroke", "grey")
+        this._labelBorder.setAttribute("vector-effect", "non-scaling-stroke")
+        this._labelBorder.setAttribute("fill","lightgrey")
+        this._labelBorder.setAttribute("fill-opacity",".8")
+        
         this._label = document.createElementNS("http://www.w3.org/2000/svg", "text")
         svgElement.appendChild(this._label)
         this._label.setAttribute("font-size", "2px")
-
-        //Border für da Text
-        this._labelBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
-        this._labelBorder.style.width = this._label.getBBox().width.toString()
-
+        
+        setTimeout(()=>{//wait for the textelement to be positioned
+            if(this._labelBorder && this._label){
+            this._labelBorder.style.width = (this._label.getBBox().width* 1.1).toString()
+            this._labelBorder.style.height = (this._label.getBBox().height* 1.1).toString()
+            }
+        })
     }
 
     brake(dampingFactor: number): void {
@@ -168,8 +178,9 @@ export class Spacecraft {
             this.gElement.style.display = "none"
         else if(!this._isOnDarkSide)
             this.gElement.style.display = "block"
-        if(this._label){
+        if(this._label && this._labelBorder){
             this._label.setAttribute("transform", `translate(${this._location.x} ${this._location.y})`)
+            this._labelBorder.setAttribute("transform", `translate(${this._location.x}, ${this._location.y})`)
         }
         
     }

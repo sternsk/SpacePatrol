@@ -29,10 +29,7 @@ export class SpaceGame {
         this.spacecraft.gElement.setAttribute("tabindex", "0");
         this.spacecraft.gElement.focus(); //doesnt seem to work
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
-        if(this.spacecraft.label){
-            this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
-            
-        }
+        this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
         this.spacecrafts.push(this.spacecraft);
         this.gameLoop();
         /*
@@ -65,15 +62,15 @@ export class SpaceGame {
     private updateElements() {
         this.spacecrafts.forEach((spacecraft) => {
             
-            spacecraft.pseudoOrbit(new Vector2D(0,0)) 
+            //spacecraft.pseudoOrbit(new Vector2D(0,0)) 
 
             spacecraft.update();
             if(spacecraft.label){
                 //console.log(spacecraft.label)
                 spacecraft.setLabelText(`<tspan x="${spacecraft.scale*7}"> 
-                                            distance to center: ${spacecraft.location.distanceTo(new Vector2D(0,0)).toFixed(0)} </tspan>
+                                        distance to zero: ${spacecraft.location.distanceTo(new Vector2D(0,0)).toFixed(2)} </tspan>
                                         <tspan x="${spacecraft.scale*7}" dy="2px">
-                                            scale: ${spacecraft.scale.toFixed(2)}</tspan>`);
+                                        distance to left: ${(spacecraft.location.x-this.gameEnvironment.viewBoxLeft).toFixed(2)}</tspan>`);
 
             }
         });
