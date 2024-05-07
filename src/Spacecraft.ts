@@ -3,6 +3,7 @@ import { SpacecraftShape } from "./SpacecraftShape.js";
 import { Vector2D } from "./Vector2D.js";
 import { Spacelabel } from "./Spacelabel.js";
 import { viewBoxWidth } from "./GameEnvironment.js";
+import { color } from "./gameMenu.js";
 
 export class Spacecraft {
     private _gElement: SVGGElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
@@ -143,8 +144,13 @@ export class Spacecraft {
     }
     setLabelText(text: string){
         if(this._label){
+            this._label.setAttribute("font-family", "Arial")
+            this._label.setAttribute("stroke-width", ".05")
+            this._label.setAttribute("stroke", `${color}`)
             this._label.innerHTML = text
         }
+        //Border rectangle
+            
     }
     
     update() {

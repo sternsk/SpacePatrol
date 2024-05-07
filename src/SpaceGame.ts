@@ -30,8 +30,10 @@ export class SpaceGame {
         this.spacecraft.gElement.focus(); //doesnt seem to work
         this.spacecraft.applyLabel()
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
-        if(this.spacecraft.label)
+        if(this.spacecraft.label){
             this.gameEnvironment.svgElement.appendChild(this.spacecraft.label)
+            
+        }
         this.spacecrafts.push(this.spacecraft);
         this.gameLoop();
         /*
@@ -69,8 +71,10 @@ export class SpaceGame {
             spacecraft.update();
             if(spacecraft.label){
                 //console.log(spacecraft.label)
-                spacecraft.setLabelText(`distance to center: ${spacecraft.location.distanceTo(new Vector2D(0,0)).toFixed(0)}\n
-                                        scale: ${spacecraft.scale}`);
+                spacecraft.setLabelText(`<tspan x="${spacecraft.scale*7}"> 
+                                            distance to center: ${spacecraft.location.distanceTo(new Vector2D(0,0)).toFixed(0)} </tspan>
+                                        <tspan x="${spacecraft.scale*7}" dy="2px">
+                                            scale: ${spacecraft.scale.toFixed(2)}</tspan>`);
 
             }
         });
