@@ -18,6 +18,8 @@ export class Spacecraft {
     private _isOnDarkSide = false
 
     private _label: SVGTextElement | undefined;
+    private _labelBorder: SVGRectElement | undefined;
+    
 
 
     constructor() {
@@ -32,9 +34,13 @@ export class Spacecraft {
         this._impuls.add(vector);
     }
 
-    applyLabel(){
+    applyLabel(svgElement: SVGElement){
         this._label = document.createElementNS("http://www.w3.org/2000/svg", "text")
+        svgElement.appendChild(this._label)
         this._label.setAttribute("font-size", "2px")
+
+        //Border für da Text
+
     }
 
     brake(dampingFactor: number): void {
