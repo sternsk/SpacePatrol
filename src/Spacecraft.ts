@@ -41,6 +41,8 @@ export class Spacecraft {
         this._label.setAttribute("font-size", "2px")
 
         //Border für da Text
+        this._labelBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
+        this._labelBorder.style.width = this._label.getBBox().width.toString()
 
     }
 
