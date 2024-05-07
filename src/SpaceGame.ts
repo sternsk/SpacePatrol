@@ -24,14 +24,13 @@ export class SpaceGame {
     init(type: string, color: string, id: string) {
         this.spacecraft.type = type
         this.spacecraft.color = color
-        this.spacecraft.id = id
+        if(id) this.spacecraft.id = id
         this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type);
         this.spacecraft.gElement.setAttribute("tabindex", "0");
         this.spacecraft.gElement.focus(); //doesnt seem to work
-        this.spacecraft.applyLabel()
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
         if(this.spacecraft.label){
-            this.gameEnvironment.svgElement.appendChild(this.spacecraft.label)
+            this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
             
         }
         this.spacecrafts.push(this.spacecraft);
@@ -110,7 +109,7 @@ export class SpaceGame {
                     this.gameEnvironment.svgElement.appendChild(newSpacecraft.gElement)
                     
                     // Label für das neue spacecraft
-                    newSpacecraft.applyLabel()
+                    newSpacecraft.applyLabel(this.gameEnvironment.svgElement)
                 }
 
             });
