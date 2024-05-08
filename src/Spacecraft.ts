@@ -1,9 +1,11 @@
 
 import { SpacecraftShape } from "./SpacecraftShape.js";
 import { Vector2D } from "./Vector2D.js";
-import { Spacelabel } from "./Spacelabel.js";
 import { viewBoxWidth } from "./GameEnvironment.js";
 import { color } from "./gameMenu.js";
+import { time } from "console";
+
+export let fontSize = viewBoxWidth/45
 
 export class Spacecraft {
     private _gElement: SVGGElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
@@ -14,6 +16,8 @@ export class Spacecraft {
     private _maneuverability = 2
     private _impuls = new Vector2D();
     private _location = new Vector2D();
+
+    private _lastUpdate: number = Date.now()
 
     private _scale = 1;
     private _isOnDarkSide = false
@@ -37,7 +41,7 @@ export class Spacecraft {
         this._labelBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
         svgElement.appendChild(this._labelBorder)
         this._labelBorder.setAttribute("x", `${this.scale*6.7}`)
-        this._labelBorder.setAttribute("y", `-2px`)
+        this._labelBorder.setAttribute("y", `${-fontSize}`)
         this._labelBorder.setAttribute("stroke-width", "2px")
         this._labelBorder.setAttribute("stroke", "grey")
         this._labelBorder.setAttribute("vector-effect", "non-scaling-stroke")
@@ -46,7 +50,7 @@ export class Spacecraft {
         
         this._label = document.createElementNS("http://www.w3.org/2000/svg", "text")
         svgElement.appendChild(this._label)
-        this._label.setAttribute("font-size", "2px")
+        this._label.setAttribute("font-size", `${fontSize}px`)
         
         setTimeout(()=>{//wait for the textelement to be positioned
             if(this._labelBorder && this._label){
@@ -114,6 +118,9 @@ export class Spacecraft {
     get impuls(): Vector2D{
         return this._impuls
     }
+    get lastUpdate(): number{
+        return this._lastUpdate
+    }
 
     get location(): Vector2D{
         return this._location
@@ -172,7 +179,9 @@ export class Spacecraft {
     }
     
     update() {
+       // if(this._location instanceof Vector2D && this._impuls instanceof Vector2D)
         this._location.add(this._impuls);
+        
         this.gElement.setAttribute("transform", `translate (${this._location.x} ${this._location.y}) scale (${this._scale}) rotate (${this.direction + 90})`)
         if(this._isOnDarkSide)
             this.gElement.style.display = "none"
@@ -180,19 +189,21 @@ export class Spacecraft {
             this.gElement.style.display = "block"
         if(this._label && this._labelBorder){
             this._label.setAttribute("transform", `translate(${this._location.x} ${this._location.y})`)
-            this._labelBorder.setAttribute("transform", `translate(${this._location.x}, ${this._location.y})`)
+            this._labelBorder.setAttribute("transform", `translate(${(this._location.x-7.5)+this.scale*7}, ${this._location.y})`)
         }
         
     }
 
     updateFromJSON(json: Record<string, any>): void{
         this._direction = json.direction
-        this._impuls = json.impuls
-        this._location = json.location
+        this._impuls = Vector2D.fromJSON(json.impuls)
+        this._location = Vector2D.fromJSON(json.location)
+        this._lastUpdate = json.lastUpdate
     }
 
     // Convert Spacecraft object to JSON representation
     toJSON(): Record<string, any> {
+        this._lastUpdate = Date.now()
         return {
             type: this._type,
             color: this._color,
@@ -201,7 +212,7 @@ export class Spacecraft {
             impuls: this._impuls.toJSON(),
             location: this._location.toJSON(),
            
-            lastUpdate: Date.now()  //apply timestamp each time the vessel is transformed
+            lastUpdate: this._lastUpdate  //apply timestamp each time the vessel is transformed
 
         };
     }
@@ -214,8 +225,8 @@ export class Spacecraft {
         spacecraft._id = json.id
         
         spacecraft._direction = json.direction;
-        spacecraft._impuls = Vector2D.fromJSON(json.impuls);
-        spacecraft._location = Vector2D.fromJSON(json.location) 
+        spacecraft._impuls = new Vector2D(json.impuls.x, json.impuls.y)
+        spacecraft._location = new Vector2D(json.location.x, json.location.y) 
         
         spacecraft._gElement = SpacecraftShape.getCraftGElement(spacecraft.type)
         return spacecraft;

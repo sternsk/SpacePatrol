@@ -4,6 +4,7 @@ import { SpacecraftShape } from "./SpacecraftShape.js";
 import { KeyboardController } from "./KeyboardController.js";
 import { gameFrame } from "./gameMenu.js";
 import { Vector2D } from "./Vector2D.js";
+import { fontSize } from "./Spacecraft.js";
 
 export class SpaceGame {
     private spacecraft: Spacecraft
@@ -32,11 +33,11 @@ export class SpaceGame {
         this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
         this.spacecrafts.push(this.spacecraft);
         this.gameLoop();
-        /*
+        
         setInterval(() => {
             this.syncReality();
         }, 500);
-        */
+        
         
     }
 
@@ -62,16 +63,13 @@ export class SpaceGame {
     private updateElements() {
         this.spacecrafts.forEach((spacecraft) => {
             
-            //spacecraft.pseudoOrbit(new Vector2D(0,0)) 
-
+            spacecraft.pseudoOrbit(new Vector2D(0,0)) 
             spacecraft.update();
             if(spacecraft.label){
-                //console.log(spacecraft.label)
                 spacecraft.setLabelText(`<tspan x="${spacecraft.scale*7}"> 
-                                        distance to zero: ${spacecraft.location.distanceTo(new Vector2D(0,0)).toFixed(2)} </tspan>
-                                        <tspan x="${spacecraft.scale*7}" dy="2px">
-                                        distance to left: ${(spacecraft.location.x-this.gameEnvironment.viewBoxLeft).toFixed(2)}</tspan>`);
-
+                                        id: ${spacecraft.id} </tspan>
+                                        <tspan x="${spacecraft.scale*7}" dy="${fontSize}">
+                                        time since last update: ${Date.now()-spacecraft.lastUpdate}</tspan>`);
             }
         });
     }
