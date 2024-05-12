@@ -1,3 +1,5 @@
+console.log("spaceServer ver 2024-05-12-23:51")
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -42,6 +44,7 @@ class SpaceServer {
 
         // POST route to receive spacecraft data
         this.app.post('/sync', (req: any, res: any) => {
+            console.log("server was called")
             const data = req.body;
             
             if (!data) {
@@ -100,6 +103,7 @@ class SpaceServer {
     }
 
     updateSpacecrafts(data:Record<string,any>){
+        //check if there is a dataset with same id
         const index = this.spacecraftsData.findIndex(p => p.id === data.id);
         if (index !== -1) {
             // Create new array with updated data

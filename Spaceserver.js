@@ -1,4 +1,5 @@
 "use strict";
+console.log("spaceServer ver 2024-05-12-23:51");
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -32,6 +33,7 @@ class SpaceServer {
         }));
         // POST route to receive spacecraft data
         this.app.post('/sync', (req, res) => {
+            console.log("server was called");
             const data = req.body;
             if (!data) {
                 return res.status(400).send('Data is required');
@@ -80,6 +82,7 @@ class SpaceServer {
         console.log("removed inactive spacecrafts. SpacecraftsData.length: " + this.spacecraftsData.length);
     }
     updateSpacecrafts(data) {
+        //check if there is a dataset with same id
         const index = this.spacecraftsData.findIndex(p => p.id === data.id);
         if (index !== -1) {
             // Create new array with updated data

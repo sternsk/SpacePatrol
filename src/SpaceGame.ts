@@ -44,7 +44,7 @@ export class SpaceGame {
         requestAnimationFrame(() => {
             this.gameLoop();
         });
-
+        
         if(this.touchControl){
             this.gameEnvironment.enableTouchControl()
             if(this.gameEnvironment.joystick.isTouched)
@@ -97,6 +97,7 @@ export class SpaceGame {
                 return; // Beende die Funktion, um weitere Fehler zu vermeiden
             }
             receivedData.forEach(element => {
+                console.log("creatung spicecrafts")
                 const spacecraft = Spacecraft.fromJSON(element)
                 this.spacecrafts.push(spacecraft)
                 this.gameEnvironment.svgElement.appendChild(spacecraft.gElement)
@@ -123,7 +124,7 @@ class ServerRequestHandler {
                 throw new Error('Failed to send data');
             }
 
-            //console.log('Data sent successfully, awaiting return');
+            console.log('Data sent successfully, awaiting return');
             return await response.json();
             
         } catch (error) {
