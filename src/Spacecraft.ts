@@ -51,6 +51,7 @@ export class Spacecraft {
         this._label = document.createElementNS("http://www.w3.org/2000/svg", "text")
         svgElement.appendChild(this._label)
         this._label.setAttribute("font-size", `${fontSize}px`)
+        this._label.innerHTML = `<tspan x="${this._scale*7}">label text not set yet, yet to be written`
         
         setTimeout(()=>{//wait for the textelement to be positioned
             if(this._labelBorder && this._label){
@@ -175,7 +176,10 @@ export class Spacecraft {
             this._label.innerHTML = text
         }
         //Border rectangle
-            
+        if(this._labelBorder && this._label){
+            this._labelBorder.style.width = (this._label.getBBox().width* 1.1).toString()
+            this._labelBorder.style.height = (this._label.getBBox().height* 1.1).toString()
+        }
     }
     
     update() {

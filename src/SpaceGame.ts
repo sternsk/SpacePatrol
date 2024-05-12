@@ -31,7 +31,6 @@ export class SpaceGame {
         this.spacecraft.gElement.focus(); //doesnt seem to work
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
         this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
-        this.spacecrafts.push(this.spacecraft);
         this.gameLoop();
         
         setInterval(() => {
@@ -54,27 +53,39 @@ export class SpaceGame {
         
         this.spacecraft.handleKeyboardInput(this.keyboardController.getKeysPressed());
         
-        this.gameEnvironment.handleSpacecraft(this.spacecraft)
+        this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus")
         this.updateElements();
         
 
     }
 
     private updateElements() {
-        this.spacecrafts.forEach((spacecraft) => {
-            
-            spacecraft.pseudoOrbit(new Vector2D(0,0)) 
-            spacecraft.update();
-            if(spacecraft.label){
-                spacecraft.setLabelText(`<tspan x="${spacecraft.scale*7}"> 
-                                        id: ${spacecraft.id} </tspan>
-                                        <tspan x="${spacecraft.scale*7}" dy="${fontSize}">
-                                        time since last update: ${Date.now()-spacecraft.lastUpdate}</tspan>`);
-            }
-        });
-    }
+        this.spacecraft.update()
+        if(this.spacecrafts.length>0){
+            this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale*7}"> 
+                                            Other Spacecrafts: ${this.spacecrafts.length} </tspan>
+                                        <tspan x="${this.spacecraft.scale*7}" dy="1em"> 
+                                            last Spacecraft Location: ${this.spacecrafts[this.spacecrafts.length-1].location.x.toFixed(0)}, 
+                                                                        ${this.spacecrafts[this.spacecrafts.length-1].location.y.toFixed(0)} </tspan>)
+                                        <tspan x="${this.spacecraft.scale*7}" dy="1em"> 
+                                            last Spacecraft type: ${this.spacecrafts[this.spacecrafts.length-1].type}</tspan>`);
 
+            this.spacecrafts.forEach((spacecraft) => {
+                
+                spacecraft.pseudoOrbit(new Vector2D(0,0)) 
+                spacecraft.update();
+                if(spacecraft.label){
+                    spacecraft.setLabelText(`<tspan x="${spacecraft.scale*7}"> 
+                                            id: ${spacecraft.id} </tspan>
+                                            <tspan x="${spacecraft.scale*7}" dy="${fontSize}">
+                                            time since last update: ${Date.now()-spacecraft.lastUpdate}</tspan>`);
+                }
+            });
+
+        }
+    }
     private async syncReality(): Promise<void> {
+        
         try {
             // Send own status to server
             // store the feedback in receivedData
@@ -86,28 +97,11 @@ export class SpaceGame {
                 return; // Beende die Funktion, um weitere Fehler zu vermeiden
             }
             receivedData.forEach(element => {
-                const index = this.spacecrafts.findIndex(p => p.id === element.id);
-                if (index !== -1) {
-                    /// spacecraft mit dieser ID bereits vorhanden, aktualisieren
-                    this.spacecrafts[index].updateFromJSON(element)
-
-                    // alle spacecrafts außer der eigenen kriegen ein label
-                    if(element.id != this.spacecraft.id){
-                        //this.gameEnvironment.createLabel()
-                    }
-                    
-                } else {
-                    
-                    // Spacecraft mit dieser ID nicht gefunden, hinzufügen
-                    const newSpacecraft = Spacecraft.fromJSON(element)
-                    this.spacecrafts.push(newSpacecraft);
-                    this.gameEnvironment.svgElement.appendChild(newSpacecraft.gElement)
-                    
-                    // Label für das neue spacecraft
-                    newSpacecraft.applyLabel(this.gameEnvironment.svgElement)
-                }
-
+                const spacecraft = Spacecraft.fromJSON(element)
+                this.spacecrafts.push(spacecraft)
+                this.gameEnvironment.svgElement.appendChild(spacecraft.gElement)
             });
+
         } catch (error) {
             console.error('Error syncing spacecraft data:', error);
         }
@@ -129,7 +123,7 @@ class ServerRequestHandler {
                 throw new Error('Failed to send data');
             }
 
-            console.log('Data sent successfully, awaiting return');
+            //console.log('Data sent successfully, awaiting return');
             return await response.json();
             
         } catch (error) {

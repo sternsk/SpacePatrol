@@ -61,7 +61,22 @@ export class GameEnvironment{
         return(this._svgElement);
     }
 
-    handleSpacecraft(spacecraft: Spacecraft){
-        //check if spaceCraft is outside the viewBox and do something, place it in again, widen viewbox etc
+    handleSpacecraft(spacecraft: Spacecraft, option: string){
+        switch (option){
+            case "pseudoOrbit":
+                spacecraft.pseudoOrbit
+                break;
+            case "pseudoTorus":
+                if(spacecraft.location.x < this.viewBoxLeft)
+                    spacecraft.location.x = this.viewBoxLeft + viewBoxWidth
+                if(spacecraft.location.x > this.viewBoxLeft + viewBoxWidth)
+                    spacecraft.location.x = this.viewBoxLeft
+                if (spacecraft.location.y < this.viewBoxTop)
+                    spacecraft.location.y = this.viewBoxTop + this.viewBoxHeight
+                if(spacecraft.location.y > this.viewBoxTop + this.viewBoxHeight)
+                    spacecraft.location.y = this.viewBoxTop
+
+                break;
+        }
     }
 } 

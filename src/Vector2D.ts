@@ -58,6 +58,14 @@ export class Vector2D{
         return this._y
     }
 
+    set x(x: number){
+        this._x = x
+    }
+
+    set y(y: number){
+        this._y = y
+    }
+
     // Create a Vector2D object from a JSON representation
     static fromJSON(json: Record<string, number>): Vector2D {
         return new Vector2D(json.x, json.y);
