@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext", 
-    "outDir": "../../dist/SpacePatrol0114",
+    "outDir": "../../dist/SpacePatrol0115",
     "rootDir": "./",
     "sourceMap": false,
     "allowJs": true,

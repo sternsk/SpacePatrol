@@ -61,7 +61,7 @@ export class SpaceGame {
 
     private updateElements() {
         this.spacecraft.update()
-        if(this.spacecrafts.length>0){
+        if(this.spacecrafts.length > 0){
             this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale*7}"> 
                                             Other Spacecrafts: ${this.spacecrafts.length} </tspan>
                                         <tspan x="${this.spacecraft.scale*7}" dy="1em"> 
@@ -74,6 +74,7 @@ export class SpaceGame {
                 
                 spacecraft.pseudoOrbit(new Vector2D(0,0)) 
                 spacecraft.update();
+                
                 if(spacecraft.label){
                     spacecraft.setLabelText(`<tspan x="${spacecraft.scale*7}"> 
                                             id: ${spacecraft.id} </tspan>
@@ -108,15 +109,22 @@ export class SpaceGame {
             })
             
             receivedData.forEach(element => {
-                
-
                 // check if element of receivedData is already in spacecrafts-Array
-                // if so update the element in Spacecrafts-Array
+                const index = this.spacecrafts.findIndex(spacecraft => spacecraft.id === element.id)
                 
-                // otherwise create a new spacecraft and add it to the svg-element
-                const spacecraft = Spacecraft.fromJSON(element)
-                this.spacecrafts.push(spacecraft)
-                this.gameEnvironment.svgElement.appendChild(spacecraft.gElement)
+                // if so update the element in Spacecrafts-Array
+                if(index !== -1){
+                    this.spacecrafts[index].updateFromJSON
+                } 
+                else {
+                    // otherwise create a new spacecraft and add it to the svg-element
+                    const spacecraft = Spacecraft.fromJSON(element)
+                    spacecraft.applyLabel(this.gameEnvironment.svgElement)
+                    this.spacecrafts.push(spacecraft)
+                    this.gameEnvironment.svgElement.appendChild(spacecraft.gElement)
+                }
+                
+                
             });
 
         } catch (error) {

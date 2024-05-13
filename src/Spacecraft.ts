@@ -20,8 +20,7 @@ export class Spacecraft {
     private _lastUpdate: number = Date.now()
 
     private _scale = 1;
-    private _isOnDarkSide = false
-
+    
     private _label: SVGTextElement | undefined;
     private _labelBorder: SVGRectElement | undefined;
     
@@ -100,7 +99,6 @@ export class Spacecraft {
             this._scale = Math.cos(distance/(viewBoxWidth/4) * Math.PI/4)
         if (distance > viewBoxWidth/2){
             this.impuls.inverse()
-            this._isOnDarkSide = !this._isOnDarkSide
         }
     }
 
@@ -187,10 +185,7 @@ export class Spacecraft {
         this._location.add(this._impuls);
         
         this.gElement.setAttribute("transform", `translate (${this._location.x} ${this._location.y}) scale (${this._scale}) rotate (${this.direction + 90})`)
-        if(this._isOnDarkSide)
-            this.gElement.style.display = "none"
-        else if(!this._isOnDarkSide)
-            this.gElement.style.display = "block"
+        
         if(this._label && this._labelBorder){
             this._label.setAttribute("transform", `translate(${this._location.x} ${this._location.y})`)
             this._labelBorder.setAttribute("transform", `translate(${(this._location.x-7.5)+this.scale*7}, ${this._location.y})`)
@@ -216,7 +211,7 @@ export class Spacecraft {
             impuls: this._impuls.toJSON(),
             location: this._location.toJSON(),
            
-            lastUpdate: this._lastUpdate  //apply timestamp each time the vessel is transformed
+            lastUpdate: this._lastUpdate  //apply timestamp each time the vessel is transformed to JSON
 
         };
     }
@@ -244,11 +239,20 @@ export class Spacecraft {
     }
 
     vanish(){
-        while(this._scale > .1){
-            requestAnimationFrame(() =>{
+        const animate = ()=>{
+            if (this._scale > .1){
                 this._scale -= this._scale/100
-            })
+                this.update()
+                requestAnimationFrame(animate)
+
+            } else {
+                this._gElement.parentNode?.removeChild(this._gElement)
+                if(this._label){
+                    this._label.parentNode?.removeChild(this._label)
+                    this._labelBorder?.parentNode?.removeChild(this._labelBorder)
+                }
+            } 
         }
-        this._gElement.innerHTML = ""
+        animate()
     }
 }
