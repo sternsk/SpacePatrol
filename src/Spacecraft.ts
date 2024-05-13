@@ -242,4 +242,13 @@ export class Spacecraft {
         this._impuls = other._impuls;
         this._location = other._location;
     }
+
+    vanish(){
+        while(this._scale > .1){
+            requestAnimationFrame(() =>{
+                this._scale -= this._scale/100
+            })
+        }
+        this._gElement.innerHTML = ""
+    }
 }

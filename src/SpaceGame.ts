@@ -96,8 +96,24 @@ export class SpaceGame {
                 console.error('Received data is not in the expected format (array)');
                 return; // Beende die Funktion, um weitere Fehler zu vermeiden
             }
+            // compare all Elements in the spacecrafts-Array with the receivedData and 
+            // delete the elements that are not in receivedData
+            this.spacecrafts = this.spacecrafts.filter(spacecraft =>{
+                const index = receivedData.findIndex(data => data.id === spacecraft.id)
+                if(index == -1){
+                    spacecraft.vanish();
+                    return false //Element entfernen
+                }
+                return true // Element beibehalten
+            })
+            
             receivedData.forEach(element => {
-                console.log("creatung spicecrafts")
+                
+
+                // check if element of receivedData is already in spacecrafts-Array
+                // if so update the element in Spacecrafts-Array
+                
+                // otherwise create a new spacecraft and add it to the svg-element
                 const spacecraft = Spacecraft.fromJSON(element)
                 this.spacecrafts.push(spacecraft)
                 this.gameEnvironment.svgElement.appendChild(spacecraft.gElement)

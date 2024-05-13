@@ -1,4 +1,4 @@
-console.log("spaceServer ver 2024-05-12-23:51")
+console.log("spaceServer ver 2024-05-13")
 
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -44,7 +44,6 @@ class SpaceServer {
 
         // POST route to receive spacecraft data
         this.app.post('/sync', (req: any, res: any) => {
-            console.log("server was called")
             const data = req.body;
             
             if (!data) {
