@@ -1,13 +1,14 @@
 import { Spacecraft } from "./Spacecraft.js";
 import { Joystick } from "./Joystick.js";
+import { gameFrame } from "./gameMenu.js";
 
 export let viewBoxWidth = 200;
 
 export class GameEnvironment{
-    aspectRatio: number 
-    gameFrame: HTMLElement
-    viewBoxHeight: number 
+    screenAspectRatio: number
+    viewBoxToScreenRatio: number 
     viewBoxWidth: number
+    viewBoxHeight: number 
     viewBoxLeft: number 
     viewBoxTop: number 
 
@@ -16,31 +17,33 @@ export class GameEnvironment{
     
     private _joystick = new Joystick()
         
-    constructor(gameFrame: HTMLElement){
-        this.gameFrame = gameFrame
+    constructor(){
         
         if(gameFrame.offsetHeight != 0){
-            this.aspectRatio = gameFrame.offsetWidth / gameFrame.offsetHeight
+            this.screenAspectRatio = gameFrame.offsetWidth / gameFrame.offsetHeight
         }
         else{
             console.log("gameFrame not properly sized")
-            this.aspectRatio = .8
+            this.screenAspectRatio = .8
         }    
         
         this.viewBoxWidth = viewBoxWidth
-        this.viewBoxHeight = this.viewBoxWidth / this.aspectRatio
+        this.viewBoxToScreenRatio = this.viewBoxWidth / window.innerWidth
+        this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio
         // center zero in viewBox
         this.viewBoxLeft = -this.viewBoxWidth / 2
         this.viewBoxTop = -this.viewBoxHeight / 2
         
         this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         this._svgElement.style.position = "absolute"
+        console.log(gameFrame.clientHeight)
+        
         this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
         this._svgElement.setAttribute("tabindex", "0")
 
         gameFrame.appendChild(this._svgElement)
         gameFrame.style.position = "relative"
-        gameFrame.style.height =  `${window.innerHeight}px`
+        gameFrame.style.height = `${window.innerHeight}px`
         
         gameFrame.appendChild(this._joystick.htmlElement)
         
@@ -78,13 +81,19 @@ export class GameEnvironment{
     }
 
     handleResize(){
-        console.log("handle resize called")
         this.updateLabel()
+        gameFrame.style.width = `${window.innerWidth}px`
+        gameFrame.style.height = `${window.innerHeight}px`
+        this._svgElement.style.width = `${window.innerWidth}px`
+        this._svgElement.style.height = `${window.innerHeight}px`
+
+        this.viewBoxWidth = window.innerWidth * this.viewBoxToScreenRatio
+        this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio
+        this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
     }
 
     updateLabel(){
-        console.log("update Label called")
-        this.label.innerHTML = `gameFrame.clientWidth doesnt change: ${this.gameFrame.clientWidth}, gameFrame.clientHeight: ${this.gameFrame.clientHeight}<br>
+        this.label.innerHTML = `gameFrame.clientWidth doesnt change: ${gameFrame.clientWidth}, gameFrame.clientHeight: ${gameFrame.clientHeight}<br>
                                     window.innerWidth is dynamic: ${window.innerWidth}, window.innerHeight: ${window.innerHeight}<br>
                                     this.viewBoxWidth: ${this.viewBoxWidth}, this.viewBoxHeight: ${this.viewBoxHeight}<br>
                                     this._svgElement.getAttribute("viewBox"): ${this._svgElement.getAttribute("viewBox")}`

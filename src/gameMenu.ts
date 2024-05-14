@@ -14,6 +14,7 @@ import { Joystick } from "./Joystick.js";
                                 "eye.svg"]
 */
 export const gameFrame = document.getElementById("spacepatrolContainer")!
+//gameFrame.setAttribute("tabIndex","0")
 
 // apply fullscreen mode
 gameFrame.style.width = `${window.innerWidth}px`
@@ -97,7 +98,7 @@ option14.textContent = "goldenrod"
 option15.textContent = "beige"
 option16.textContent = "flün"
 
-const idInputElement = document.createElement("input")
+const idInputElement: HTMLInputElement = document.createElement("input")
 idInputElement.setAttribute("type", "text")
 idInputElement.setAttribute("placeholder", "enter your id")
 
@@ -146,7 +147,7 @@ previewSvg.setAttribute("viewBox",`${viewBoxLeft}, ${viewBoxTop}, ${viewBoxWidth
 previewSvg.style.zIndex = "-1"
 previewSvg.appendChild(SpacecraftShape.getCraftGElement(typeSelector.value))
 
-export const keyboardController = new KeyboardController()
+export const keyboardController = new KeyboardController(gameFrame)
 
 function loop(){
     if(!loopRunning) return

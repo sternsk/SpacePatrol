@@ -16,7 +16,7 @@ export class SpaceGame {
 
     constructor() {
         this.spacecraft = new Spacecraft();
-        this.gameEnvironment = new GameEnvironment(gameFrame);
+        this.gameEnvironment = new GameEnvironment();
       //  this.keyboardController = new KeyboardController(gameFrame);
         gameFrame.focus(); //gameFrame erhält den Keyboard focus
         this.serverRequestHandler = new ServerRequestHandler();
@@ -32,11 +32,11 @@ export class SpaceGame {
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
         this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
         this.gameLoop();
-       /* 
+       
         setInterval(() => {
             this.syncReality();
         }, 500);
-        */
+       
         
     }
 
@@ -49,6 +49,7 @@ export class SpaceGame {
             this.gameEnvironment.enableTouchControl()
             if(this.gameEnvironment.joystick.isTouched)
             this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
+            
         }
         
         this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
