@@ -5,7 +5,7 @@ export let viewBoxWidth = 200;
 
 export class GameEnvironment{
     aspectRatio: number 
-    
+    gameFrame: HTMLElement
     viewBoxHeight: number 
     viewBoxWidth: number
     viewBoxLeft: number 
@@ -17,7 +17,7 @@ export class GameEnvironment{
     private _joystick = new Joystick()
         
     constructor(gameFrame: HTMLElement){
-        
+        this.gameFrame = gameFrame
         
         if(gameFrame.offsetHeight != 0){
             this.aspectRatio = gameFrame.offsetWidth / gameFrame.offsetHeight
@@ -58,7 +58,7 @@ export class GameEnvironment{
                                     this._svgElement.getAttribute("viewBox"): ${this._svgElement.getAttribute("viewBox")}`
         gameFrame.appendChild(this.label)
 
-        document.addEventListener(`resize`, this.handleResize) 
+        window.addEventListener(`resize`, this.handleResize.bind(this)) 
 
     
     }
@@ -78,7 +78,16 @@ export class GameEnvironment{
     }
 
     handleResize(){
-        
+        console.log("handle resize called")
+        this.updateLabel()
+    }
+
+    updateLabel(){
+        console.log("update Label called")
+        this.label.innerHTML = `gameFrame.clientWidth doesnt change: ${this.gameFrame.clientWidth}, gameFrame.clientHeight: ${this.gameFrame.clientHeight}<br>
+                                    window.innerWidth is dynamic: ${window.innerWidth}, window.innerHeight: ${window.innerHeight}<br>
+                                    this.viewBoxWidth: ${this.viewBoxWidth}, this.viewBoxHeight: ${this.viewBoxHeight}<br>
+                                    this._svgElement.getAttribute("viewBox"): ${this._svgElement.getAttribute("viewBox")}`
     }
 
     handleSpacecraft(spacecraft: Spacecraft, option: string){

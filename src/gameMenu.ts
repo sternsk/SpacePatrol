@@ -1,4 +1,5 @@
 import { SpacecraftShape } from "./SpacecraftShape.js";
+import { KeyboardController } from "./KeyboardController.js";
 import { Joystick } from "./Joystick.js";
 
 /*export const availableTypes = ["rainbowRocket", 
@@ -79,18 +80,22 @@ const colorSelector = document.createElement("select")
 const option13 = document.createElement("option")
 const option14 = document.createElement("option")
 const option15 = document.createElement("option")
+const option16 = document.createElement("option")
 
 colorSelector.appendChild(option13)
 colorSelector.appendChild(option14)
 colorSelector.appendChild(option15)
+colorSelector.appendChild(option16)
 
 option13.setAttribute("value", "brown")
 option14.setAttribute("value", "goldenrod")
 option15.setAttribute("value", "beige")
+option16.setAttribute("value", "lightblue")
 
 option13.textContent = "brown"
 option14.textContent = "goldenrod"
 option15.textContent = "beige"
+option16.textContent = "flün"
 
 const idInputElement = document.createElement("input")
 idInputElement.setAttribute("type", "text")
@@ -113,7 +118,8 @@ let viewBoxTop = -50
 let viewBoxLeft = -50
 let viewBoxWidth = 100
 let viewBoxHeight = 100
-export let color = "lightblue"       //initial color
+export let color = colorSelector.value       //initial color
+
 
 let loopRunning = true;
 
@@ -140,17 +146,7 @@ previewSvg.setAttribute("viewBox",`${viewBoxLeft}, ${viewBoxTop}, ${viewBoxWidth
 previewSvg.style.zIndex = "-1"
 previewSvg.appendChild(SpacecraftShape.getCraftGElement(typeSelector.value))
 
-document.addEventListener(`keydown`, handleKeyDown.bind(this))
-document.addEventListener(`keyup`, handleKeyUp.bind(this))
-
-function handleKeyDown(event: KeyboardEvent):void{
-    keysPressed[event.key] = true;
-    console.log("keydown, gameMenu is listening")
-}
-
-function handleKeyUp(event: KeyboardEvent):void{
-    keysPressed[event.key] = false;
-}
+export const keyboardController = new KeyboardController()
 
 function loop(){
     if(!loopRunning) return
@@ -165,30 +161,28 @@ function loop(){
         viewBoxTop = viewBoxHeight / -2
         previewSvg.setAttribute("viewBox", `${viewBoxLeft}, ${viewBoxTop}, ${viewBoxWidth}, ${viewBoxHeight}`)
     }
-
-    if(keysPressed["ArrowLeft"]){
+    
+    
+    if (keyboardController.getKeysPressed()[`ArrowLeft`]){
         rotationImpuls -= 1
-    }
-    else if(keysPressed["ArrowRight"]){
+    }else if(keyboardController.getKeysPressed()[`ArrowRight`]){
         rotationImpuls += 1
     }
     
-    if(keysPressed["ArrowUp"]){
+    if (keyboardController.getKeysPressed()[`ArrowUp`]){
         viewBoxWidth += viewBoxWidth / 10
         viewBoxLeft = viewBoxWidth / -2
         viewBoxHeight = viewBoxWidth * previewSvgAspectRatio
         viewBoxTop = viewBoxHeight / -2
         previewSvg.setAttribute("viewBox", `${viewBoxLeft}, ${viewBoxTop}, ${viewBoxWidth}, ${viewBoxHeight}`)
-    }
-    
-    if(keysPressed["ArrowDown"]){
+    }else if(keyboardController.getKeysPressed()[`ArrowDown`]){
         viewBoxWidth -= viewBoxWidth / 10
         viewBoxLeft = viewBoxWidth / -2
         viewBoxHeight = viewBoxWidth * previewSvgAspectRatio
         viewBoxTop = viewBoxHeight / -2
         previewSvg.setAttribute("viewBox", `${viewBoxLeft}, ${viewBoxTop}, ${viewBoxWidth}, ${viewBoxHeight}`)
     }
-
+ 
     rotationAngle += rotationImpuls
     rotationAngle = (rotationAngle%360 + 360)%360
     previewSvg.style.transform = `rotate(${rotationAngle}deg)`

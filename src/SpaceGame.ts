@@ -1,7 +1,7 @@
 import { Spacecraft } from "./Spacecraft.js";
 import { GameEnvironment } from "./GameEnvironment.js";
 import { SpacecraftShape } from "./SpacecraftShape.js";
-import { KeyboardController } from "./KeyboardController.js";
+import { keyboardController } from "./gameMenu.js";
 import { gameFrame } from "./gameMenu.js";
 import { Vector2D } from "./Vector2D.js";
 import { fontSize } from "./Spacecraft.js";
@@ -10,14 +10,14 @@ export class SpaceGame {
     private spacecraft: Spacecraft
     private spacecrafts: Spacecraft[] = [];
     private gameEnvironment: GameEnvironment;
-    private keyboardController: KeyboardController
+    //private keyboardController: KeyboardController
     private touchControl = true
     private serverRequestHandler: ServerRequestHandler;
 
     constructor() {
         this.spacecraft = new Spacecraft();
         this.gameEnvironment = new GameEnvironment(gameFrame);
-        this.keyboardController = new KeyboardController(gameFrame);
+      //  this.keyboardController = new KeyboardController(gameFrame);
         gameFrame.focus(); //gameFrame erhält den Keyboard focus
         this.serverRequestHandler = new ServerRequestHandler();
     }
@@ -32,11 +32,11 @@ export class SpaceGame {
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
         this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
         this.gameLoop();
-        
+       /* 
         setInterval(() => {
             this.syncReality();
         }, 500);
-        
+        */
         
     }
 
@@ -51,7 +51,7 @@ export class SpaceGame {
             this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
         }
         
-        this.spacecraft.handleKeyboardInput(this.keyboardController.getKeysPressed());
+        this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
         
         this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus")
         this.updateElements();
