@@ -11,6 +11,7 @@ export class GameEnvironment{
     viewBoxLeft: number 
     viewBoxTop: number 
 
+    private label = document.createElement("HTMLLabelElement")
     private _svgElement: SVGSVGElement;
     
     private _joystick = new Joystick()
@@ -44,6 +45,21 @@ export class GameEnvironment{
         gameFrame.appendChild(this._joystick.htmlElement)
         
         this.joystick.htmlElement.style.display = "none"
+
+        this.label.style.position = "absolute"
+        this.label.style.top = "10px"
+        this.label.style.left = "10px"
+        this.label.style.border = "3px solid darkgreen"
+        this.label.style.backgroundColor = "lightgrey"
+        this.label.style.opacity = "0.8"
+        this.label.innerHTML = `gameFrame.clientWidth: ${gameFrame.clientWidth}, gameFrame.clientHeight: ${gameFrame.clientHeight}<br>
+                                    window.innerWidth: ${window.innerWidth}, window.innerHeight: ${window.innerHeight}<br>
+                                    this.viewBoxWidth: ${this.viewBoxWidth}, this.viewBoxHeight: ${this.viewBoxHeight}<br>
+                                    this._svgElement.getAttribute("viewBox"): ${this._svgElement.getAttribute("viewBox")}`
+        gameFrame.appendChild(this.label)
+
+        document.addEventListener(`resize`, this.handleResize) 
+
     
     }
 
@@ -59,6 +75,10 @@ export class GameEnvironment{
 
     get svgElement(){
         return(this._svgElement);
+    }
+
+    handleResize(){
+        
     }
 
     handleSpacecraft(spacecraft: Spacecraft, option: string){

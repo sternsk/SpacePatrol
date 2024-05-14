@@ -14,7 +14,7 @@ import { Joystick } from "./Joystick.js";
 */
 export const gameFrame = document.getElementById("spacepatrolContainer")!
 
-//appy fullscreen mode
+// apply fullscreen mode
 gameFrame.style.width = `${window.innerWidth}px`
 gameFrame.style.height = `${window.innerHeight}px`
 
@@ -124,6 +124,13 @@ let previewSvgAspectRatio = viewBoxWidth / viewBoxHeight
 
 const previewSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg") as SVGSVGElement
 previewSvg.style.position = "relative"
+//appy apply previewSvg to screen orientation
+const aspectRatio = window.innerWidth / window.innerHeight
+
+if (aspectRatio >= 1) { // landscape orientation
+    previewSvg.style.width = window.innerHeight.toString()
+}
+
 
 gameFrame.appendChild(previewSvg)
 
@@ -133,11 +140,12 @@ previewSvg.setAttribute("viewBox",`${viewBoxLeft}, ${viewBoxTop}, ${viewBoxWidth
 previewSvg.style.zIndex = "-1"
 previewSvg.appendChild(SpacecraftShape.getCraftGElement(typeSelector.value))
 
-gameFrame.addEventListener(`keydown`, handleKeyDown.bind(this))
-gameFrame.addEventListener(`keyup`, handleKeyUp.bind(this))
+document.addEventListener(`keydown`, handleKeyDown.bind(this))
+document.addEventListener(`keyup`, handleKeyUp.bind(this))
 
 function handleKeyDown(event: KeyboardEvent):void{
     keysPressed[event.key] = true;
+    console.log("keydown, gameMenu is listening")
 }
 
 function handleKeyUp(event: KeyboardEvent):void{

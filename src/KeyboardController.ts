@@ -2,8 +2,8 @@ export class KeyboardController {
     private keysPressed: {[key: string]: boolean} = {};
 
     constructor(gameFrame: HTMLElement) {
-        gameFrame.addEventListener('keydown', this.handleKeyDown.bind(this));
-        gameFrame.addEventListener('keyup', this.handleKeyUp.bind(this));
+        //gameFrame.addEventListener('keydown', this.handleKeyDown.bind(this));
+        //gameFrame.addEventListener('keyup', this.handleKeyUp.bind(this));
     }
 
     private handleKeyDown(event: KeyboardEvent): void {

@@ -61,15 +61,16 @@ export class SpaceGame {
 
     private updateElements() {
         this.spacecraft.update()
+        
+        this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale*7}"> 
+                                        user position: ${this.spacecraft.location.x.toFixed(0)}, ${this.spacecraft.location.y.toFixed(0)} </tspan>
+                                    <tspan x="${this.spacecraft.scale*7}" dy="1em"> 
+                                        viewPort position: ${this.spacecraft.gElement.getBoundingClientRect().left.toFixed(0)}, 
+                                                            ${this.spacecraft.gElement.getBoundingClientRect().top.toFixed(0)} </tspan>
+                                    <tspan x="${this.spacecraft.scale*7}" dy="1em"> 
+                                        third line for some more text</tspan>`);
+        
         if(this.spacecrafts.length > 0){
-            this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale*7}"> 
-                                            Other Spacecrafts: ${this.spacecrafts.length} </tspan>
-                                        <tspan x="${this.spacecraft.scale*7}" dy="1em"> 
-                                            last Spacecraft Location: ${this.spacecrafts[this.spacecrafts.length-1].location.x.toFixed(0)}, 
-                                                                        ${this.spacecrafts[this.spacecrafts.length-1].location.y.toFixed(0)} </tspan>)
-                                        <tspan x="${this.spacecraft.scale*7}" dy="1em"> 
-                                            last Spacecraft type: ${this.spacecrafts[this.spacecrafts.length-1].type}</tspan>`);
-
             this.spacecrafts.forEach((spacecraft) => {
                 
                 spacecraft.pseudoOrbit(new Vector2D(0,0)) 
