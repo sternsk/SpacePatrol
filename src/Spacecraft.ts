@@ -16,6 +16,7 @@ export class Spacecraft {
     private _maneuverability = 2
     private _impuls = new Vector2D();
     private _location = new Vector2D();
+    private _npc = false;
 
     private _lastUpdate: number = Date.now()
 
@@ -70,6 +71,18 @@ export class Spacecraft {
             this._impuls = new Vector2D(0, 0);
         }
     }
+
+    async gradualBrake(){
+        while(this._impuls.length){
+            this.brake(.1)
+            await this.delay(100)
+        }
+    }
+
+    private delay(ms: number){
+        return new Promise(resolve => setTimeout(resolve, ms))
+    }
+
     handleKeyboardInput(keysPressed: {[key: string]: boolean}) {
         if (keysPressed['ArrowLeft']) {
             this.rotate(-this._maneuverability);
@@ -123,6 +136,10 @@ export class Spacecraft {
 
     get location(): Vector2D{
         return this._location
+    }
+
+    get npc(){
+        return this._npc
     }
 
     set location(location: Vector2D) {
@@ -196,7 +213,7 @@ export class Spacecraft {
     updateFromJSON(json: Record<string, any>): void{
         this._direction = json.direction
         this._impuls = Vector2D.fromJSON(json.impuls)
-        this._location = Vector2D.fromJSON(json.location)
+        this._location = new Vector2D(json.location.x, json.location.y)
         this._lastUpdate = json.lastUpdate
     }
 
@@ -210,8 +227,8 @@ export class Spacecraft {
             direction: this._direction,
             impuls: this._impuls.toJSON(),
             location: this._location.toJSON(),
-           
-            lastUpdate: this._lastUpdate  //apply timestamp each time the vessel is transformed to JSON
+            lastUpdate: this._lastUpdate,  //apply timestamp each time the vessel is transformed to JSON
+            npc: this._npc
 
         };
     }
@@ -222,6 +239,7 @@ export class Spacecraft {
         spacecraft._type = json.type
         spacecraft._color = json.color
         spacecraft._id = json.id
+        spacecraft._npc = json.npc
         
         spacecraft._direction = json.direction;
         spacecraft._impuls = new Vector2D(json.impuls.x, json.impuls.y)

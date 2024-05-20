@@ -7,6 +7,9 @@ export class Joystick {
 
     private _isTouched = false
 
+    private touchEndObservers: (() => void)[] = []; // Array von Funktionen, die beim touchend-Ereignis aufgerufen werden
+
+
     constructor() {
         this._htmlElement = document.createElement("div")
         
@@ -33,6 +36,11 @@ export class Joystick {
         this._htmlElement.appendChild(this._knobElement)
         
         this.initEvents();
+    }
+
+    // Methode zum Hinzufügen von touchend-Beobachtern
+    addObserver(observer: () => void) {
+        this.touchEndObservers.push(observer);
     }
     
     get htmlElement(): HTMLElement{
@@ -91,11 +99,15 @@ export class Joystick {
     private onTouchEnd(event: TouchEvent) {
         event.preventDefault();
         this._isTouched = false
+        
         // Reset knob position and value
         this._knobElement.style.left = '50%';
         this._knobElement.style.top = '50%';
         
         this._value = new Vector2D(0,0)
+
+        // Benachrichtige alle Beobachter über das touchend-Ereignis
+        this.touchEndObservers.forEach(observer => observer());
         
     }
 }

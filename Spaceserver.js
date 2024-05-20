@@ -1,5 +1,5 @@
 "use strict";
-console.log("spaceServer ver 2024-05-12-23:51");
+console.log("spaceServer ver 2024-05-16 added npc flag");
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
@@ -22,8 +22,8 @@ class SpaceServer {
         httpsServer.listen(PORT_HTTPS, () => {
             console.log(`HTTPS Server is running on port ${PORT_HTTPS}`);
         });
-        setInterval(this.removeInactiveSpacecrafts.bind(this), 11000); // Check every 11 seconds
-        setInterval(this.createSpacecraft.bind(this), 10000); // create a NPC every 10 seconds
+        setInterval(this.removeInactiveSpacecrafts.bind(this), 11000); // Check every 11 seconds for inactive spacecrafts
+        setInterval(this.createSpacecraft.bind(this), 10000); // create a NPC every 10 seconds, inactive by default
     }
     setupRoutes() {
         this.app.use(bodyParser.json());
@@ -33,7 +33,6 @@ class SpaceServer {
         }));
         // POST route to receive spacecraft data
         this.app.post('/sync', (req, res) => {
-            console.log("server was called");
             const data = req.body;
             if (!data) {
                 return res.status(400).send('Data is required');
@@ -67,19 +66,17 @@ class SpaceServer {
             id: Math.random().toString(),
             direction: Math.random() * 360,
             impuls: { x: Math.random() - .5, y: Math.random() - .5 },
-            location: { x: Math.random() * 200 - 100, y: Math.random() * 200 - 100 }
+            location: { x: Math.random() * 200 - 100, y: Math.random() * 200 - 100 },
+            npc: true
         };
-        console.log("created spaceShip id: " + data.id);
-        console.log("with impuls: " + data.impuls.x + ", " + data.impuls.y);
         this.spacecraftsData.push(data);
-        console.log("this.spacecraftsData.length: " + this.spacecraftsData.length);
     }
     removeInactiveSpacecrafts() {
         const currentTime = Date.now();
         this.spacecraftsData = this.spacecraftsData.filter(spacecraft => {
             return (currentTime - spacecraft.lastUpdated) <= 10000; // Remove spacecrafts inactive for 10 seconds
         });
-        console.log("removed inactive spacecrafts. SpacecraftsData.length: " + this.spacecraftsData.length);
+        // console.log("removed inactive spacecrafts. SpacecraftsData.length: "+this.spacecraftsData.length)
     }
     updateSpacecrafts(data) {
         //check if there is a dataset with same id
@@ -88,6 +85,7 @@ class SpaceServer {
             // Create new array with updated data
             this.spacecraftsData = this.spacecraftsData.map(item => {
                 if (item.id === data.id) {
+                    //console.log("updating existing data")
                     return data; // Update existing data
                 }
                 return item; // Keep other data unchanged

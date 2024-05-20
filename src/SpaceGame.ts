@@ -10,14 +10,15 @@ export class SpaceGame {
     private spacecraft: Spacecraft
     private spacecrafts: Spacecraft[] = [];
     private gameEnvironment: GameEnvironment;
-    //private keyboardController: KeyboardController
     private touchControl = true
     private serverRequestHandler: ServerRequestHandler;
 
     constructor() {
         this.spacecraft = new Spacecraft();
         this.gameEnvironment = new GameEnvironment();
-      //  this.keyboardController = new KeyboardController(gameFrame);
+        this.gameEnvironment.displayTouchControl()
+        this.gameEnvironment.joystick.addObserver(() => this.handleTouchEndEvent());
+        
         gameFrame.focus(); //gameFrame erhält den Keyboard focus
         this.serverRequestHandler = new ServerRequestHandler();
     }
@@ -27,17 +28,19 @@ export class SpaceGame {
         this.spacecraft.color = color
         if(id) this.spacecraft.id = id
         this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type);
-        this.spacecraft.gElement.setAttribute("tabindex", "0");
-        this.spacecraft.gElement.focus(); //doesnt seem to work
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
         this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
         this.gameLoop();
        
         setInterval(() => {
             this.syncReality();
-        }, 500);
+        }, 50);
        
         
+    }
+
+    async handleTouchEndEvent(){
+        this.spacecraft.gradualBrake()
     }
 
     private gameLoop() {
@@ -46,10 +49,9 @@ export class SpaceGame {
         });
         
         if(this.touchControl){
-            this.gameEnvironment.enableTouchControl()
+            
             if(this.gameEnvironment.joystick.isTouched)
             this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
-            
         }
         
         this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
@@ -67,14 +69,16 @@ export class SpaceGame {
                                         user position: ${this.spacecraft.location.x.toFixed(0)}, ${this.spacecraft.location.y.toFixed(0)} </tspan>
                                     <tspan x="${this.spacecraft.scale*7}" dy="1em"> 
                                         viewPort position: ${this.spacecraft.gElement.getBoundingClientRect().left.toFixed(0)}, 
-                                                            ${this.spacecraft.gElement.getBoundingClientRect().top.toFixed(0)} </tspan>
-                                    <tspan x="${this.spacecraft.scale*7}" dy="1em"> 
-                                        third line for some more text</tspan>`);
+                                                            ${this.spacecraft.gElement.getBoundingClientRect().top.toFixed(0)} </tspan>`);
         
         if(this.spacecrafts.length > 0){
             this.spacecrafts.forEach((spacecraft) => {
-                
-                spacecraft.pseudoOrbit(new Vector2D(0,0)) 
+                if(spacecraft.npc){
+                    spacecraft.pseudoOrbit(new Vector2D(0,0)) 
+                }
+                else{
+                    this.gameEnvironment.handleSpacecraft(spacecraft, "pseudoTorus")
+                }
                 spacecraft.update();
                 
                 if(spacecraft.label){
@@ -114,14 +118,16 @@ export class SpaceGame {
                 // check if element of receivedData is already in spacecrafts-Array
                 const index = this.spacecrafts.findIndex(spacecraft => spacecraft.id === element.id)
                 
-                // if so update the element in Spacecrafts-Array
-                if(index !== -1){
-                    this.spacecrafts[index].updateFromJSON
+                // if so and is not an npc, update the element in Spacecrafts-Array 
+                if(index !== -1 && !element.npc){
+                    this.spacecrafts[index].updateFromJSON(element)
                 } 
-                else {
-                    // otherwise create a new spacecraft and add it to the svg-element
+                
+                // otherwise create a new spacecraft and add it to the svg-element
+                else if(index === -1){// make sure, not to create too many spacecrafts
                     const spacecraft = Spacecraft.fromJSON(element)
-                    spacecraft.applyLabel(this.gameEnvironment.svgElement)
+                    if(!spacecraft.npc) //npc dont get a label
+                        spacecraft.applyLabel(this.gameEnvironment.svgElement)
                     this.spacecrafts.push(spacecraft)
                     this.gameEnvironment.svgElement.appendChild(spacecraft.gElement)
                 }
@@ -150,7 +156,7 @@ class ServerRequestHandler {
                 throw new Error('Failed to send data');
             }
 
-            console.log('Data sent successfully, awaiting return');
+          //  console.log('Data sent successfully, awaiting return');
             return await response.json();
             
         } catch (error) {

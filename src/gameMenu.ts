@@ -14,9 +14,10 @@ import { Joystick } from "./Joystick.js";
                                 "eye.svg"]
 */
 export const gameFrame = document.getElementById("spacepatrolContainer")!
-//gameFrame.setAttribute("tabIndex","0")
+gameFrame.setAttribute("tabIndex","0")
 
 // apply fullscreen mode
+gameFrame.style.position = "fixed"
 gameFrame.style.width = `${window.innerWidth}px`
 gameFrame.style.height = `${window.innerHeight}px`
 
@@ -142,9 +143,12 @@ if (aspectRatio >= 1) { // landscape orientation
 gameFrame.appendChild(previewSvg)
 
 previewSvg.setAttribute("id", "previewSvg")
+
 previewSvg.setAttribute("tabindex", "0")
 previewSvg.setAttribute("viewBox",`${viewBoxLeft}, ${viewBoxTop}, ${viewBoxWidth}, ${viewBoxHeight}`)
 previewSvg.style.zIndex = "-1"
+previewSvg.style.outline = "none"
+
 previewSvg.appendChild(SpacecraftShape.getCraftGElement(typeSelector.value))
 
 export const keyboardController = new KeyboardController(gameFrame)

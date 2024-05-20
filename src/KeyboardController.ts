@@ -1,19 +1,17 @@
+import { gameFrame } from "./gameMenu.js";
+
 export class KeyboardController {
     private keysPressed: {[key: string]: boolean} = {};
 
     constructor(svgElement: HTMLElement) {
-        document.addEventListener('keydown', this.handleKeyDown.bind(this));
-        document.addEventListener('keyup', this.handleKeyUp.bind(this));
+        gameFrame.addEventListener('keydown', this.handleKeyDown.bind(this));
+        gameFrame.addEventListener('keyup', this.handleKeyUp.bind(this));
     }
 
     private handleKeyDown(event: KeyboardEvent): void {
-        console.log("this.isInputFocused: "+this.isInputFocused())
-            
         //event.preventDefault(); // Verhindert Standardverhalten but prevents the access to idInputElement as well
-        
         this.keysPressed[event.key] = true;
-        //
-        //event.stopPropagation()
+        
     }
 
     private handleKeyUp(event: KeyboardEvent): void {
@@ -29,10 +27,6 @@ export class KeyboardController {
     public getKeysPressed(): {[key: string]: boolean} {
         return this.keysPressed;
     }
-    private isInputFocused(): boolean {
-        const activeElement = document.activeElement;
-        
-        return activeElement instanceof HTMLInputElement || activeElement instanceof HTMLTextAreaElement;
-    }
+    
 }
 

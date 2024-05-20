@@ -41,41 +41,43 @@ export class GameEnvironment{
         this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
         this._svgElement.setAttribute("tabindex", "0")
 
-        gameFrame.appendChild(this._svgElement)
-        gameFrame.style.position = "relative"
-        gameFrame.style.height = `${window.innerHeight}px`
+        const viewBoxBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
+        viewBoxBorder.setAttribute("x", `${this.viewBoxLeft}`)
+        viewBoxBorder.setAttribute("y", `${this.viewBoxTop}`)
+        viewBoxBorder.setAttribute("width", `${this.viewBoxWidth}`)
+        viewBoxBorder.setAttribute("height", `${this.viewBoxHeight}`)
+        viewBoxBorder.setAttribute("fill", `none`)
+        viewBoxBorder.setAttribute("stroke-width", `2px`)
+        viewBoxBorder.setAttribute("stroke", `green`)
+        this._svgElement.appendChild(viewBoxBorder)
         
+
+        gameFrame.appendChild(this._svgElement)
+        gameFrame.style.height = `${window.innerHeight}px`
         gameFrame.appendChild(this._joystick.htmlElement)
         
         this.joystick.htmlElement.style.display = "none"
-
+        
         this.label.style.position = "absolute"
         this.label.style.top = "10px"
         this.label.style.left = "10px"
         this.label.style.border = "3px solid darkgreen"
         this.label.style.backgroundColor = "lightgrey"
         this.label.style.opacity = "0.8"
-        this.label.innerHTML = `gameFrame.clientWidth: ${gameFrame.clientWidth}, gameFrame.clientHeight: ${gameFrame.clientHeight}<br>
-                                    window.innerWidth: ${window.innerWidth}, window.innerHeight: ${window.innerHeight}<br>
-                                    this.viewBoxWidth: ${this.viewBoxWidth}, this.viewBoxHeight: ${this.viewBoxHeight}<br>
-                                    this._svgElement.getAttribute("viewBox"): ${this._svgElement.getAttribute("viewBox")}`
+        this.label.innerHTML = `Steuer dein Raumschiff mit den Pfeiltasten oder Touchfeld! <br>Andere online-Spieler erkennst du an ihrem Schild.`
         gameFrame.appendChild(this.label)
 
         window.addEventListener(`resize`, this.handleResize.bind(this)) 
-
-    
     }
 
-    enableTouchControl(){
+    displayTouchControl(){
         this.joystick.htmlElement.style.display = "block"
-        //this.joystick.container.setAttribute("transform","translate(0,0)")
     }
 
     get joystick(){
         return this._joystick
     }
     
-
     get svgElement(){
         return(this._svgElement);
     }
@@ -97,6 +99,10 @@ export class GameEnvironment{
                                     window.innerWidth is dynamic: ${window.innerWidth}, window.innerHeight: ${window.innerHeight}<br>
                                     this.viewBoxWidth: ${this.viewBoxWidth}, this.viewBoxHeight: ${this.viewBoxHeight}<br>
                                     this._svgElement.getAttribute("viewBox"): ${this._svgElement.getAttribute("viewBox")}`
+    }
+
+    setLabel(text: string){
+        this.label.innerHTML = text
     }
 
     handleSpacecraft(spacecraft: Spacecraft, option: string){
