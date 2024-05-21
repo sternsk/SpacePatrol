@@ -1,4 +1,4 @@
-import { Vector2D } from "./Vector2D.js";
+import { Vector2D } from "./Vector2D";
 
 export class Joystick {
     private _htmlElement: HTMLElement;

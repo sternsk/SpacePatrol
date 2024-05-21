@@ -1,8 +1,8 @@
 import { Spacecraft } from "./Spacecraft.js";
 import { GameEnvironment } from "./GameEnvironment.js";
 import { SpacecraftShape } from "./SpacecraftShape.js";
-import { keyboardController } from "./gameMenu.js";
-import { gameFrame } from "./gameMenu.js";
+import { keyboardController } from "./index.js";
+import { gameFrame } from "./index.js";
 import { Vector2D } from "./Vector2D.js";
 import { fontSize } from "./Spacecraft.js";
 
@@ -27,7 +27,8 @@ export class SpaceGame {
         this.spacecraft.type = type
         this.spacecraft.color = color
         if(id) this.spacecraft.id = id
-        this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type);
+        this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type)
+        this.spacecraft.touchControlType = this.spacecraft.type
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
         this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
         this.gameLoop();

@@ -1,26 +1,27 @@
 
-import { SpacecraftShape } from "./SpacecraftShape.js";
-import { Vector2D } from "./Vector2D.js";
-import { viewBoxWidth } from "./GameEnvironment.js";
-import { color } from "./gameMenu.js";
-import { time } from "console";
+import { SpacecraftShape } from "./SpacecraftShape.js"
+import { Vector2D } from "./Vector2D.js"
+import { viewBoxWidth } from "./GameEnvironment.js"
+import { color } from "./index.js"
+import { time } from "console"
 
 export let fontSize = viewBoxWidth/45
 
 export class Spacecraft {
     private _gElement: SVGGElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
-    private _type: string;
-    private _color: string;
+    private _type: string
+    private _color: string
     private _id: string
-    private _direction = 0;
+    private _touchControlType: string
+    private _direction = 0
     private _maneuverability = 2
-    private _impuls = new Vector2D();
-    private _location = new Vector2D();
-    private _npc = false;
+    private _impuls = new Vector2D()
+    private _location = new Vector2D()
+    private _npc = false
 
     private _lastUpdate: number = Date.now()
 
-    private _scale = 1;
+    private _scale = 1
     
     private _label: SVGTextElement | undefined;
     private _labelBorder: SVGRectElement | undefined;
@@ -29,12 +30,12 @@ export class Spacecraft {
         this._type = "rocket"
         this._color = "flün"
         this._id = "spacecraft"
-        
+        this._touchControlType = "spacecraft"
     }
 
     accelerate(thrust: number) {
         let vector = Vector2D.fromLengthAndAngle(thrust, this.direction);
-        this._impuls.add(vector);
+        this._impuls.add(vector)
     }
 
     applyLabel(svgElement: SVGElement){
@@ -66,9 +67,9 @@ export class Spacecraft {
         const newLength = this._impuls.length * (1-dampingFactor)
         this._impuls = Vector2D.fromLengthAndAngle(newLength, this._impuls.angle)
         
-        // Optional: Stoppe die Bewegung vollständig, wenn die Geschwindigkeit einen bestimmten Schwellenwert unterschreitet
+        //  Stoppe die Bewegung vollständig, wenn die Geschwindigkeit einen bestimmten Schwellenwert unterschreitet
          if (this._impuls.length < 0.01) {
-            this._impuls = new Vector2D(0, 0);
+            this._impuls = new Vector2D(0, 0)
         }
     }
 
@@ -102,8 +103,25 @@ export class Spacecraft {
     }
 
     handleTouchControl(vector: Vector2D){
-        this._impuls.add(vector)
-        this._direction = vector.angle
+        switch (this._touchControlType){
+        case `butterfly`:
+            this._impuls.add(vector)
+            this._direction = vector.angle
+            break
+        
+        case `spacecraft`:
+            // get horizontal and vertical values of the vector
+            const horizontalValue = vector.x
+            const verticalValue = vector.y
+
+            // add the vertical value to the impuls
+            this.accelerate(-verticalValue)
+
+            // adjust the rotation gradually to the horizontal value
+            this.rotate(horizontalValue*this._maneuverability*50) 
+            break
+        }
+        
     }
 
     pseudoOrbit(vector: Vector2D){
@@ -183,6 +201,13 @@ export class Spacecraft {
     set scale(scale: number){
         this._scale = scale
     }
+
+    set touchControlType(newType: string){
+        if(newType === "rokket" || newType === "rainbowRocket")
+            this._touchControlType = "spacecraft"
+        else this._touchControlType = "butterfly"
+    }
+
     setLabelText(text: string){
         if(this._label){
             this._label.setAttribute("font-family", "Arial")

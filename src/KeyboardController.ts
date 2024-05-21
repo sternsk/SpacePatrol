@@ -1,4 +1,4 @@
-import { gameFrame } from "./gameMenu.js";
+import { gameFrame } from "./index";
 
 export class KeyboardController {
     private keysPressed: {[key: string]: boolean} = {};

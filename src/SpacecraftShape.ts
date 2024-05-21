@@ -1,4 +1,4 @@
-import { color } from "./gameMenu.js";
+import { color } from "./index";
 
 export abstract class SpacecraftShape{
         
