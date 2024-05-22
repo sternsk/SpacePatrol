@@ -1,9 +1,10 @@
 import { SpacecraftShape } from "./SpacecraftShape"
 import { KeyboardController } from "./KeyboardController"
 import { Joystick } from "./Joystick"
+/*
 import * as Tone from 'tone'
 import { Midi } from '@tonejs/midi';
-
+*/
 /*export const availableTypes = ["rainbowRocket", 
                                 "rokket", 
                                 "bromber.svg", 
@@ -125,22 +126,22 @@ audioSelector.appendChild(option19)
 audioSelector.appendChild(option20)
 
 option17.setAttribute("value", "../resources/letusprogresstothecastleoffunk.mp3")
-option18.setAttribute("value", "../resources/letusprogress.mp3")
-option19.setAttribute("value", "../resources/letusprogress.mp3")
+option18.setAttribute("value", "../resources/letusprogresstothecastleoffunk.mp3")
+option19.setAttribute("value", "../resources/comfortably_numb.mid")
 option20.setAttribute("value", "../resources/letusprogress.mp3")
 
 option17.textContent = "Chose music"
-option18.textContent = "Let us progress to funk"
-option19.textContent = "Hear me"
-option20.textContent = "wonderwale"
+option18.textContent = "Let us progress to the castle of funk"
+option19.textContent = "comfortably_numb"
+option20.textContent = "hear me"
 
 const audioButton = document.createElement("button")
 audioButton.textContent = "Play Audio"
 audioButton.addEventListener("click", () =>{
     if(audioSelector.value.endsWith(`.mp3`))
         playAudio()
-    else if(audioSelector.value.endsWith(`.mid`))
-        playMidi()
+    //else if(audioSelector.value.endsWith(`.mid`))
+    //    playMidi()
     else
         console.log("unsupported file format")
 })
@@ -294,6 +295,7 @@ function playAudio(){
 
 
 // Funktion zum Abspielen von MIDI-Dateien mit 8-Bit-Effekt
+/*
 async function playMidi() {
     try {
         const response = await fetch(audioSelector.value);
@@ -328,7 +330,7 @@ async function playMidi() {
         console.error('Error loading or playing MIDI file:', error);
     }
 }
-
+*/
 async function startSpaceGame(){
     loopRunning = false
     console.log(`Commander ${idInputElement.value}, you depart in a ${color} ${typeSelector.value}. Game starts now!`)

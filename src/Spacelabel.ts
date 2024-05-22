@@ -1,4 +1,4 @@
-import { gameFrame } from "./index.js";
+import { gameFrame } from "./index";
 
 export class Spacelabel {
     private _labelElement = document.createElement("label");
