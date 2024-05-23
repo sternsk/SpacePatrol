@@ -1,4 +1,4 @@
-import { color } from "./index";
+import { color } from "./index.js";
 
 export abstract class SpacecraftShape{
         

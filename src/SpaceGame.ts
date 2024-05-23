@@ -1,10 +1,10 @@
-import { Spacecraft } from "./Spacecraft";
-import { GameEnvironment } from "./GameEnvironment";
-import { SpacecraftShape } from "./SpacecraftShape";
-import { keyboardController } from "./index";
-import { gameFrame } from "./index";
-import { Vector2D } from "./Vector2D";
-import { fontSize } from "./Spacecraft";
+import { Spacecraft } from "./Spacecraft.js";
+import { GameEnvironment } from "./GameEnvironment.js";
+import { SpacecraftShape } from "./SpacecraftShape.js";
+import { keyboardController } from "./index.js";
+import { gameFrame } from "./index.js";
+import { Vector2D } from "./Vector2D.js";
+import { fontSize } from "./Spacecraft.js";
 
 export class SpaceGame {
     private spacecraft: Spacecraft

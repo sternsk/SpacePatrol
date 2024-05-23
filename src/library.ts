@@ -1,4 +1,4 @@
-import { SpaceGame } from "./SpaceGame"
+import { SpaceGame } from "./SpaceGame.js"
 
 export function initGame(gameFrame: HTMLElement, type: string, color: string, id: string) {
     console.log("spaceGame loads")

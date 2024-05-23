@@ -1,6 +1,6 @@
-import { SpacecraftShape } from "./SpacecraftShape"
-import { KeyboardController } from "./KeyboardController"
-import { Joystick } from "./Joystick"
+import { SpacecraftShape } from "./SpacecraftShape.js"
+import { KeyboardController } from "./KeyboardController.js"
+import { Joystick } from "./Joystick.js"
 /*
 import * as Tone from 'tone'
 import { Midi } from '@tonejs/midi';
@@ -338,7 +338,7 @@ async function startSpaceGame(){
 
     try {
         // Dynamically import the library.js module
-        let lib = await import("./library");
+        let lib = await import("./library.js");
         
         // Call the initGame function from the imported module
         gameFrame.innerHTML = ""

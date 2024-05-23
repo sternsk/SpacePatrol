@@ -1,6 +1,6 @@
-import { Spacecraft } from "./Spacecraft";
-import { Joystick } from "./Joystick";
-import { gameFrame } from "./index";
+import { Spacecraft } from "./Spacecraft.js";
+import { Joystick } from "./Joystick.js";
+import { gameFrame } from "./index.js";
 
 export let viewBoxWidth = 200;
 

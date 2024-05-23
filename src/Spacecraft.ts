@@ -1,9 +1,8 @@
 
-import { SpacecraftShape } from "./SpacecraftShape"
-import { Vector2D } from "./Vector2D"
-import { viewBoxWidth } from "./GameEnvironment"
-import { color } from "./index"
-import { time } from "console"
+import { SpacecraftShape } from "./SpacecraftShape.js"
+import { Vector2D } from "./Vector2D.js"
+import { viewBoxWidth } from "./GameEnvironment.js"
+import { color } from "./index.js"
 
 export let fontSize = viewBoxWidth/45
 
