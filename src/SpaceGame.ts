@@ -36,8 +36,6 @@ export class SpaceGame {
         setInterval(() => {
             this.syncReality();
         }, 50);
-       
-        
     }
 
     async handleTouchEndEvent(){
@@ -56,21 +54,16 @@ export class SpaceGame {
         }
         
         this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
-        
-        this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus")
         this.updateElements();
-        
-
     }
 
     private updateElements() {
         this.spacecraft.update()
-        
+        this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus")
         this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale*7}"> 
-                                        user position: ${this.spacecraft.location.x.toFixed(0)}, ${this.spacecraft.location.y.toFixed(0)} </tspan>
-                                    <tspan x="${this.spacecraft.scale*7}" dy="1em"> 
-                                        viewPort position: ${this.spacecraft.gElement.getBoundingClientRect().left.toFixed(0)}, 
-                                                            ${this.spacecraft.gElement.getBoundingClientRect().top.toFixed(0)} </tspan>`);
+                                        ${this.spacecraft.id}</tspan>
+                                        <tspan x="${this.spacecraft.scale*7}"dy = ${fontSize}> 
+                                        direction: ${this.spacecraft.direction}</tspan>`)
         
         if(this.spacecrafts.length > 0){
             this.spacecrafts.forEach((spacecraft) => {
@@ -81,12 +74,15 @@ export class SpaceGame {
                     this.gameEnvironment.handleSpacecraft(spacecraft, "pseudoTorus")
                 }
                 spacecraft.update();
-                
+               
                 if(spacecraft.label){
+                    console.log(Date.now())
                     spacecraft.setLabelText(`<tspan x="${spacecraft.scale*7}"> 
                                             id: ${spacecraft.id} </tspan>
                                             <tspan x="${spacecraft.scale*7}" dy="${fontSize}">
-                                            time since last update: ${Date.now()-spacecraft.lastUpdate}</tspan>`);
+                                           lastUpdate: ${spacecraft.lastUpdate}</tspan>
+                                           <tspan x="${spacecraft.scale*7}" dy="${2*fontSize}">
+                                           Date.now(): ${Date.now()}</tspan>`);
                 }
             });
 

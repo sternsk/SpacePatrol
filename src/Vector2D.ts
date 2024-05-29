@@ -47,7 +47,8 @@ export class Vector2D{
     }
     
     get angle(){
-        return(Math.atan2(this._y, this._x)/Math.PI*180)
+        const angle = Math.atan2(this._y, this._x)/Math.PI*180
+        return(angle % 360)
     }
 
     get x(): number{

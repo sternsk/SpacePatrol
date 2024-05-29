@@ -1,4 +1,3 @@
-
 import { SpacecraftShape } from "./SpacecraftShape.js"
 import { Vector2D } from "./Vector2D.js"
 import { viewBoxWidth } from "./GameEnvironment.js"
@@ -73,10 +72,12 @@ export class Spacecraft {
     }
 
     async gradualBrake(){
-        while(this._impuls.length){
+        
+        while(this._impuls.length > .01){
             this.brake(.1)
             await this.delay(100)
         }
+        this._impuls = new Vector2D(0, 0)
     }
 
     private delay(ms: number){
@@ -102,13 +103,52 @@ export class Spacecraft {
     }
 
     handleTouchControl(vector: Vector2D){
-        switch (this._touchControlType){
-        case `butterfly`:
+        const deltaAngle = this._direction - vector.angle
+        switch (this._type){
+        case `rokket`:
             this._impuls.add(vector)
             this._direction = vector.angle
             break
         
-        case `spacecraft`:
+        case `rainbowRocket`:
+            this._impuls.add(vector)
+            if((deltaAngle > 0 && 
+                deltaAngle < 180) || 
+                deltaAngle < -180){
+                this.rotate(-5)
+            }
+            else if(deltaAngle < 0 || 
+                    deltaAngle > 180){
+                this.rotate(5)
+            }
+
+            break
+            
+        case `../resources/bromber.svg`:
+            this._impuls.add(vector)
+
+            if(deltaAngle > 0 && 
+                deltaAngle < 180) 
+                this.rotate(-deltaAngle) 
+            else if(deltaAngle < -180){
+                this.rotate(deltaAngle)
+            }
+            else if(deltaAngle < 0)
+                this.rotate(-deltaAngle) 
+            else if(deltaAngle > 180){
+                this.rotate(deltaAngle)
+            }
+
+            break
+            
+        case `../resources/blizzer.png`:
+            this._impuls.add(vector)
+            console.log(-100/deltaAngle)
+            if(deltaAngle != 0)
+                this.rotate(-180/deltaAngle)
+            break
+            
+        case `../resources/eye.svg`:
             // get horizontal and vertical values of the vector
             const horizontalValue = vector.x
             const verticalValue = vector.y
@@ -119,7 +159,12 @@ export class Spacecraft {
             // adjust the rotation gradually to the horizontal value
             this.rotate(horizontalValue*this._maneuverability*50) 
             break
+
+        default:
+            this._impuls.add(vector)
+            this._direction = vector.angle
         }
+
         
     }
 
@@ -134,7 +179,11 @@ export class Spacecraft {
 
     rotate(angle: number){
         this._direction += angle
-        this._direction = (this.direction%360+360)%360
+        if(this._direction > 180){
+            this._direction -= 360
+        }else if(this._direction < -180){
+            this._direction += 360
+        }
     }
 
     get direction(): number{
