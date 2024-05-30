@@ -51,14 +51,22 @@ export class SpaceGame {
             if(this.gameEnvironment.joystick.isTouched){
                 this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
             }
-            let tractorBeam = document.getElementById(`tractorBeam`) as unknown as SVGElement
+            let tractorBeam = document.getElementById("tractorBeam") as unknown as SVGElement
             if(this.gameEnvironment.joystick.fires && this.spacecrafts[0]){
-                // Remove existing tractor beam if it exists
-                if (tractorBeam) {
-                    tractorBeam.remove();
+                
+                if(!tractorBeam){
+                    tractorBeam = this.spacecraft.tractorBeam(this.spacecrafts[0].location)
+                    this.gameEnvironment.svgElement.appendChild(tractorBeam)
                 }
-                tractorBeam = this.spacecraft.tractorBeam(this.spacecrafts[0].location)
-                this.gameEnvironment.svgElement.appendChild(tractorBeam)
+                tractorBeam.style.display = "block"
+                tractorBeam.setAttribute("x1", `${this.spacecraft.location.x}`)
+                tractorBeam.setAttribute("y1", `${this.spacecraft.location.y}`)
+                tractorBeam.setAttribute("x2", `${this.spacecrafts[0].location.x}`)
+                tractorBeam.setAttribute("y2", `${this.spacecrafts[0].location.y}`)
+            } else if(!this.spacecrafts[0]&&tractorBeam){
+                tractorBeam.style.display = "none"
+            } else if(!this.gameEnvironment.joystick.fires&&tractorBeam){
+                tractorBeam.style.display = "none"
             }
         }
         
@@ -71,8 +79,7 @@ export class SpaceGame {
         this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus")
         this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale*7}"> 
                                         ${this.spacecraft.id}</tspan>
-                                        <tspan x="${this.spacecraft.scale*7}"dy = ${fontSize}> 
-                                        direction: ${this.spacecraft.direction}</tspan>`)
+                                        `)
         
         if(this.spacecrafts.length > 0){
             this.spacecrafts.forEach((spacecraft) => {

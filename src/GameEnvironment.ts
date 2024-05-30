@@ -65,7 +65,7 @@ export class GameEnvironment{
         this.label.style.border = "2px solid darkgreen"
         this.label.style.backgroundColor = "lightgrey"
         this.label.style.opacity = "0.8"
-        this.label.innerHTML = `Steuer dein Raumschiff mit den Pfeiltasten oder Touchfeld! <br>Andere online-Spieler erkennst du an ihrem Schild.`
+        this.label.innerHTML = `Steuere dein Raumschiff mit dem linken Feld, aktiviere den Strahl durch Druck auf das rechte Feld! <br>Andere online-Spieler erkennst du an ihrem Schild.`
         gameFrame.appendChild(this.label)
 
         window.addEventListener(`resize`, this.handleResize.bind(this)) 
