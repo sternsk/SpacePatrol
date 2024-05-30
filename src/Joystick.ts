@@ -3,16 +3,17 @@ import { Vector2D } from "./Vector2D.js";
 export class Joystick {
     private _htmlElement: HTMLElement;
     private _knobElement: HTMLElement;
+    private _fireButton: HTMLElement
     private _value = new Vector2D()
 
     private _isTouched = false
+    private _fires = false
 
     private touchEndObservers: (() => void)[] = []; // Array von Funktionen, die beim touchend-Ereignis aufgerufen werden
 
 
     constructor() {
         this._htmlElement = document.createElement("div")
-        
         this._htmlElement.setAttribute("style", `width: 200px; 
                                                         height: 200px; 
                                                         background-color: gray; 
@@ -33,6 +34,25 @@ export class Joystick {
                                                 left: 50%;
                                                 transform: translate(-50%, -50%);
                                                 `)
+
+                                                 this._htmlElement = document.createElement("div")
+        this._htmlElement.setAttribute("style", `width: 200px; 
+                                                        height: 200px; 
+                                                        background-color: gray; 
+                                                        opacity: .5;
+                                                        border-radius: 50%; 
+                                                        position: absolute;
+                                                        bottom: 20px;
+                                                        left: 10px;`)
+        this._fireButton = document.createElement("div")
+        this._fireButton.setAttribute("style", `width: 100px; 
+                                                        height: 100px; 
+                                                        background-color: darkgray; 
+                                                        opacity: .5;
+                                                        border-radius: 50%; 
+                                                        position: absolute;
+                                                        bottom: 80px;
+                                                        right: 50px;`)                                                        
         this._htmlElement.appendChild(this._knobElement)
         
         this.initEvents();
@@ -43,6 +63,15 @@ export class Joystick {
         this.touchEndObservers.push(observer);
     }
     
+    
+    get fireButton(): HTMLElement{
+        return(this._fireButton)
+    }
+
+    get fires(): boolean{
+        return this._fires;
+    }
+
     get htmlElement(): HTMLElement{
         return(this._htmlElement)
     }
@@ -62,6 +91,20 @@ export class Joystick {
         this._knobElement.addEventListener('touchstart', this.onTouchStart.bind(this));
         this._knobElement.addEventListener('touchmove', this.onTouchMove.bind(this));
         this._knobElement.addEventListener('touchend', this.onTouchEnd.bind(this));
+        this._fireButton.addEventListener('touchstart', this.fire.bind(this));
+        this._fireButton.addEventListener('touchend', this.fireEnd.bind(this));
+    }
+
+    private fire(event: TouchEvent){
+        this._fires = true
+        this.fireButton.style.backgroundColor = "darkgreen"
+        event.preventDefault();
+    }
+
+    private fireEnd(event: TouchEvent){
+        this._fires = false
+        this.fireButton.style.backgroundColor = "grey"
+        event.preventDefault();
     }
 
     private onTouchStart(event: TouchEvent) {

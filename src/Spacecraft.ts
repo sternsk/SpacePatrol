@@ -11,6 +11,7 @@ export class Spacecraft {
     private _color: string
     private _id: string
     private _touchControlType: string
+    private easing = false
     private _direction = 0
     private _maneuverability = 2
     private _impuls = new Vector2D()
@@ -103,7 +104,7 @@ export class Spacecraft {
     }
 
     handleTouchControl(vector: Vector2D){
-        const deltaAngle = this._direction - vector.angle
+        let deltaAngle = this._direction - vector.angle
         switch (this._type){
         case `rokket`:
             this._impuls.add(vector)
@@ -127,25 +128,25 @@ export class Spacecraft {
         case `../resources/bromber.svg`:
             this._impuls.add(vector)
 
-            if(deltaAngle > 0 && 
-                deltaAngle < 180) 
-                this.rotate(-deltaAngle) 
-            else if(deltaAngle < -180){
-                this.rotate(deltaAngle)
-            }
-            else if(deltaAngle < 0)
-                this.rotate(-deltaAngle) 
-            else if(deltaAngle > 180){
-                this.rotate(deltaAngle)
+            if(deltaAngle < -180)
+                deltaAngle +=360
+            if(deltaAngle > 180)
+                deltaAngle -=360
+            if(Math.abs(deltaAngle) > 8 ){ //prevent twikkling
+                this.rotate(-180/deltaAngle)
             }
 
             break
             
         case `../resources/blizzer.png`:
             this._impuls.add(vector)
-            console.log(-100/deltaAngle)
-            if(deltaAngle != 0)
-                this.rotate(-180/deltaAngle)
+
+            if(!this.easing){
+                this.easing = true
+                const startDirection = this._direction
+                this.ease(startDirection, vector.angle)
+            }
+            
             break
             
         case `../resources/eye.svg`:
@@ -166,6 +167,28 @@ export class Spacecraft {
         }
 
         
+    }
+
+    async ease(oldDirection: number, target: number){
+        const deltaAngle = target - this._direction
+        let easeValue: number
+        const steps = Math.ceil(Math.abs(deltaAngle))
+
+        for(let i = 1; i <= steps; i++){
+            easeValue = this.easeInOutBack(i/steps)
+            this._direction = oldDirection + easeValue * deltaAngle
+            await new Promise(resolve => setTimeout(resolve, 10)); // 100 ms delay
+        }
+        this.easing = false
+        
+    }
+    
+    easeInOutBack(x:number): number {
+        const c1 = 1.70158;
+        const c2 = c1 * 1.525;
+        return x < 0.5
+           ? (Math.pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2)) / 2
+           : (Math.pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
     }
 
     pseudoOrbit(vector: Vector2D){
@@ -268,6 +291,19 @@ export class Spacecraft {
             this._labelBorder.style.width = (this._label.getBBox().width* 1.1).toString()
             this._labelBorder.style.height = (this._label.getBBox().height* 1.1).toString()
         }
+    }
+
+    tractorBeam(vector: Vector2D): SVGElement{
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line")
+        line.setAttribute("id", `tractorBeam`)
+        line.setAttribute("x1", `${this._location.x}`)
+        line.setAttribute("y1", `${this._location.y}`)
+        line.setAttribute("x2", `${vector.x}`)
+        line.setAttribute("y2", `${vector.y}`)
+        line.setAttribute("stroke", "darkgreen")
+        line.setAttribute("stroke-width", "5px")
+        return line
+
     }
     
     update() {

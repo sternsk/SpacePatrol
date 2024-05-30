@@ -57,7 +57,7 @@ typeSelector.appendChild(option10)
 typeSelector.appendChild(option11)
 typeSelector.appendChild(option12)
 
-option1.setAttribute("value", "rainbowRocket")
+option1.setAttribute("value", "../resources/blizzer.png")
 option1.innerHTML = "disabled selected"
 option2.setAttribute("value", "rokket")
 option3.setAttribute("value", "rainbowRocket")

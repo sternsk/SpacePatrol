@@ -48,9 +48,18 @@ export class SpaceGame {
         });
         
         if(this.touchControl){
-            
-            if(this.gameEnvironment.joystick.isTouched)
-            this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
+            if(this.gameEnvironment.joystick.isTouched){
+                this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
+            }
+            let tractorBeam = document.getElementById(`tractorBeam`) as unknown as SVGElement
+            if(this.gameEnvironment.joystick.fires && this.spacecrafts[0]){
+                // Remove existing tractor beam if it exists
+                if (tractorBeam) {
+                    tractorBeam.remove();
+                }
+                tractorBeam = this.spacecraft.tractorBeam(this.spacecrafts[0].location)
+                this.gameEnvironment.svgElement.appendChild(tractorBeam)
+            }
         }
         
         this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
@@ -76,7 +85,6 @@ export class SpaceGame {
                 spacecraft.update();
                
                 if(spacecraft.label){
-                    console.log(Date.now())
                     spacecraft.setLabelText(`<tspan x="${spacecraft.scale*7}"> 
                                             id: ${spacecraft.id} </tspan>
                                             <tspan x="${spacecraft.scale*7}" dy="${fontSize}">

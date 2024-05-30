@@ -55,13 +55,14 @@ export class GameEnvironment{
         gameFrame.appendChild(this._svgElement)
         gameFrame.style.height = `${window.innerHeight}px`
         gameFrame.appendChild(this._joystick.htmlElement)
+        gameFrame.appendChild(this._joystick.fireButton)
         
         this.joystick.htmlElement.style.display = "none"
         
         this.label.style.position = "absolute"
         this.label.style.top = "10px"
         this.label.style.left = "10px"
-        this.label.style.border = "3px solid darkgreen"
+        this.label.style.border = "2px solid darkgreen"
         this.label.style.backgroundColor = "lightgrey"
         this.label.style.opacity = "0.8"
         this.label.innerHTML = `Steuer dein Raumschiff mit den Pfeiltasten oder Touchfeld! <br>Andere online-Spieler erkennst du an ihrem Schild.`
