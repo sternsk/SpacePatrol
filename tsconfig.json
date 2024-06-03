@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "ESNext",
-    "outDir": "../dist/SpacePatrol0120",
+    "outDir": "../dist/PlayMidi0111",
     "rootDir": "./src",
     "sourceMap": false,
     "allowJs": true,
@@ -10,14 +10,9 @@
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "skipLibCheck": true,
-    "lib": ["dom", "es5", "es6", "scripthost"],
     "moduleResolution": "node",
-    "baseUrl": "./src",
-    "paths": {
-      "tone": ["./node_modules/tone/build/Tone.js"]
-    }
+    "baseUrl": "./src"
   },
   "exclude": ["node_modules"],
-  "include": ["./src/**/*.ts",
-              "./node_modules/tone/**/*"]
+  "include": ["./src/**/*.ts"]
 }
