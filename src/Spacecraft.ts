@@ -122,7 +122,7 @@ export class Spacecraft {
         }
         if (!keysPressed[' ']) {
             if(this._device)
-            this._device.dispose()
+            this._device.deactivate()
         }
     }
 

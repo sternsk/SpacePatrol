@@ -27668,6 +27668,7 @@
           if (!this.activated) {
             for (let i = 0; i < this.count; i++) {
               const particle = document.createElementNS("http://www.w3.org/2000/svg", "path");
+              particle.setAttribute("class", "particle");
               particle.setAttribute("d", `M -2 ${-i * 5 - 2},
                                             L 0 ${-i * 5 - 10}, 
                                             L 2 ${-i * 5 - 2}`);
@@ -27678,20 +27679,62 @@
               console.log("activate!");
               this._gElem.appendChild(particle);
             }
+            this.activated = true;
           }
-          this.activated = true;
         }
         deactivate() {
           this._gElem.innerHTML = "";
           this.activated = false;
         }
         dispose() {
-          if (this._gElem.parentNode)
+          if (this._gElem && this._gElem.parentNode) {
+            this._gElem.innerHTML = "";
             this._gElem.parentNode.removeChild(this._gElem);
+          }
           this.activated = false;
         }
         get gElem() {
           return this._gElem;
+        }
+      };
+    }
+  });
+
+  // src/ovalShield.ts
+  var ovalShield;
+  var init_ovalShield = __esm({
+    "src/ovalShield.ts"() {
+      "use strict";
+      ovalShield = class {
+        constructor(shieldWidth, shieldHeight) {
+          this.name = "ovalShield";
+          this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
+          this.activated = false;
+          this._gElem.setAttribute("class", "boundingShield");
+          this.width = shieldWidth;
+          this.height = shieldHeight;
+        }
+        activate() {
+          if (!this.activated) {
+            const boundingOval = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+            boundingOval.setAttribute("cx", "0");
+            boundingOval.setAttribute("cy", "0");
+            boundingOval.setAttribute("rx", `${this.width * 2}`);
+            boundingOval.setAttribute("ry", `${this.height * 2}`);
+            boundingOval.setAttribute("stroke", "green");
+            boundingOval.setAttribute("vector-effect", "none");
+            boundingOval.setAttribute("stroke-width", "2px");
+            boundingOval.setAttribute("fill", "none");
+            this._gElem.appendChild(boundingOval);
+            this.activated = true;
+          }
+        }
+        deactivate() {
+          this._gElem.innerHTML = "";
+          this.activated = false;
+        }
+        dispose() {
+          throw new Error("Method not implemented.");
         }
       };
     }
@@ -27703,6 +27746,7 @@
     "src/DeviceFactory.ts"() {
       "use strict";
       init_TriangularBeam();
+      init_ovalShield();
       DeviceFactory = class {
         static createDevice(spacecraftType) {
           const deviceCreator = this.deviceMap[spacecraftType];
@@ -27715,7 +27759,7 @@
       };
       DeviceFactory.deviceMap = {
         "rokket": () => new TriangularBeam(),
-        "rainbowRocket": () => new TriangularBeam(),
+        "rainbowRocket": () => new ovalShield(6, 8),
         "blitzzer": () => new TriangularBeam(),
         "bromber": () => new TriangularBeam()
       };
@@ -27821,7 +27865,7 @@
           }
           if (!keysPressed[" "]) {
             if (this._device)
-              this._device.dispose();
+              this._device.deactivate();
           }
         }
         handleTouchControl(vector) {
@@ -28510,7 +28554,7 @@
 
   // src/index.ts
   init_GameMenu();
-  console.log("SpacePatrol0201 ver.2037");
+  console.log("SpacePatrol0201 ver.2133");
   var menu = new GameMenu();
   menu.loop();
 })();
