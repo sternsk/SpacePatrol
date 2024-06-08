@@ -28,8 +28,18 @@ export class Vector2D{
       }
     
     add(vector: Vector2D):void{
-        this._x += vector._x
-        this._y += vector._y
+        this._x += vector.x
+        this._y += vector.y
+    }
+
+    distanceTo(destination: Vector2D): number{
+        let distanceVector = new Vector2D(destination.x - this._x, destination.y - this._y )
+        return (distanceVector.length)
+    }
+
+    inverse(){
+        this._x = -this._x
+        this._y = -this._y
     }
 
     get length(){
@@ -37,7 +47,8 @@ export class Vector2D{
     }
     
     get angle(){
-        return(Math.atan2(this._y, this._x)/Math.PI*180)
+        const angle = Math.atan2(this._y, this._x)/Math.PI*180
+        return(angle % 360)
     }
 
     get x(): number{
@@ -48,6 +59,14 @@ export class Vector2D{
         return this._y
     }
 
+    set x(x: number){
+        this._x = x
+    }
+
+    set y(y: number){
+        this._y = y
+    }
+
     // Create a Vector2D object from a JSON representation
     static fromJSON(json: Record<string, number>): Vector2D {
         return new Vector2D(json.x, json.y);
@@ -55,6 +74,7 @@ export class Vector2D{
     
     // Convert Vector2D object to JSON representation
     toJSON(): Record<string, number> {
-        return { x: this._x, y: this._y };
+        return { x: this._x, 
+                y: this._y };
     }
 }

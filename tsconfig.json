@@ -1,22 +1,13 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
-    "module": "ESNext", 
-    "outDir": "../dist/SpacePatrol0112",
-    "rootDir": "./src",
-    "sourceMap": false,
-    "allowJs": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
+    "target": "ES6",
+    "module": "ESNext",
     "strict": true,
+    "esModuleInterop": true,
     "skipLibCheck": true,
-    "lib": ["dom", "es5", "es6", "scripthost"],
-    "moduleResolution": "node" 
-  },
-  "include": [
-    "./src/**/*.ts" // Include your source files
-  ],
-  "exclude": [
-    "./node_modules" // Exclude the node_modules directory
-  ]
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "baseUrl": "./",
+  }
 }

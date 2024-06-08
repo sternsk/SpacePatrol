@@ -1,8 +1,4 @@
-import { viewBoxLeft } from "./start.js"
-import { viewBoxTop } from "./start.js"
-import { viewBoxWidth } from "./start.js"
-import { viewBoxHeight } from "./start.js"
-import { color } from "./start.js"
+import { color } from "./GameMenu.js";
 
 export abstract class SpacecraftShape{
         
