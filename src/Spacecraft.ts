@@ -20,7 +20,7 @@ export class Spacecraft {
     private _location = new Vector2D()
     private _npc = false
 
-    _device?: Device
+    private _device?: Device
 
     private _lastUpdate: number = Date.now()
 
@@ -41,15 +41,17 @@ export class Spacecraft {
         this._impuls.add(vector)
     }
 
-    addDevice(type: string){
-        this._device = DeviceFactory.createDevice(type)
+    addDevice(type: string, args:any[]){
+        this._device = DeviceFactory.createDevice(type, ...args)
     }
 
     operate(){
-        
+        //aktiviere das Device
         this._device?.activate()
+        
+        // füge das gElement des Devices zum gElement des Spacecrafts hinzu.
         if(this._device?._gElem){
-            this._gElement.appendChild(this._device?._gElem)
+            this._gElement.appendChild(this._device._gElem)
         }
     }
 
@@ -120,10 +122,18 @@ export class Spacecraft {
         if (keysPressed[' ']) {
             this.operate()
         }
-        if (!keysPressed[' ']) {
-            if(this._device)
-            this._device.deactivate()
+        
+    }
+
+    onKeyUp(key: string) {
+        console.log(`Key released: ${key}`);
+        switch (key){
+            case " ":
+                if(this.device)
+                    this.device.deactivate()
+
         }
+
     }
 
     handleTouchControl(vector: Vector2D){
@@ -235,6 +245,12 @@ export class Spacecraft {
     get direction(): number{
         return this._direction
     }
+
+    get device(): Device | undefined{
+        if(this._device) return this._device
+        else return undefined
+    }
+
     get label(){
         return(this._label)
     }
@@ -316,18 +332,7 @@ export class Spacecraft {
         }
     }
 
-    tractorBeam(vector: Vector2D): SVGElement{
-        const line = document.createElementNS("http://www.w3.org/2000/svg", "line")
-        line.setAttribute("id", `tractorBeam`)
-        line.setAttribute("x1", `${this._location.x}`)
-        line.setAttribute("y1", `${this._location.y}`)
-        line.setAttribute("x2", `${vector.x}`)
-        line.setAttribute("y2", `${vector.y}`)
-        line.setAttribute("stroke", "darkgreen")
-        line.setAttribute("stroke-width", "5px")
-        return line
-
-    }
+    
     
     update() {
        // if(this._location instanceof Vector2D && this._impuls instanceof Vector2D)

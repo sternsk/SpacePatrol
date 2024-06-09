@@ -19,10 +19,13 @@ import { Midi } from '@tonejs/midi';
 export const gameFrame = document.getElementById("spacepatrolContainer")! as unknown as HTMLDivElement
 export const keyboardController = new KeyboardController(gameFrame)
 export let color: string        //initial color
+export let device: string
 
 export class GameMenu{
     joystick = new Joystick()
     typeSelector = document.createElement("select")
+    deviceSelector = document.createElement("select")
+    
     idInputElement = document.createElement("input")
     
     audioSelector = document.createElement("select")
@@ -64,6 +67,31 @@ export class GameMenu{
         const option10 = document.createElement("option")
         const option11 = document.createElement("option")
         const option12 = document.createElement("option")
+
+        const noDevice = document.createElement("option")
+        noDevice.innerHTML = "disabled selected"
+        noDevice.value = ""
+        noDevice.textContent = "Choose a Device"
+
+        const ovalShield = document.createElement("option")
+        ovalShield.value = "ovalShield"
+        ovalShield.textContent = "oval Shield"
+
+        const repulsorBeam = document.createElement("option")
+        repulsorBeam.value = "repulsorBeam"
+        repulsorBeam.textContent = "repulsor Beam"
+
+        const tractorBeam = document.createElement("option")
+        tractorBeam.value = "tractorBeam"
+        tractorBeam.textContent = "tractor Beam"
+
+        this.deviceSelector.appendChild(noDevice)
+        this.deviceSelector.appendChild(ovalShield)
+        this.deviceSelector.appendChild(repulsorBeam)
+        this.deviceSelector.appendChild(tractorBeam)
+        this.deviceSelector.addEventListener("change", () =>{
+        device = this.deviceSelector.value    
+        })
 
         this.typeSelector.appendChild(option1)
         this.typeSelector.appendChild(option2)
@@ -169,6 +197,7 @@ export class GameMenu{
         infoContent.textContent = "Left Right rotate, up down zoom"
 
         gameFrame.appendChild(this.typeSelector)
+        gameFrame.appendChild(this.deviceSelector)
         gameFrame.appendChild(colorSelector)
         gameFrame.appendChild(this.idInputElement)
         gameFrame.appendChild(startButton)
@@ -176,6 +205,7 @@ export class GameMenu{
         gameFrame.appendChild(audioButton)
         gameFrame.appendChild(infoContent)
         color = colorSelector.value       //initial color
+        device = this.deviceSelector.value
 
         this.previewSvgAspectRatio = this.viewBoxWidth / this.viewBoxHeight
 

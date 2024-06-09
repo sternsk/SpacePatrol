@@ -5,6 +5,7 @@ import { keyboardController } from "./GameMenu.js";
 import { gameFrame } from "./GameMenu.js";
 import { Vector2D } from "./Vector2D.js";
 import { fontSize } from "./Spacecraft.js";
+import { device } from "./GameMenu.js";
 
 export class SpaceGame {
     private spacecraft: Spacecraft
@@ -18,6 +19,7 @@ export class SpaceGame {
         this.gameEnvironment = new GameEnvironment();
         this.gameEnvironment.displayTouchControl()
         this.gameEnvironment.joystick.addObserver(() => this.handleTouchEndEvent());
+        this.setupKeyUpListener();
         
         gameFrame.focus(); //gameFrame erhält den Keyboard focus
         this.serverRequestHandler = new ServerRequestHandler();
@@ -27,11 +29,12 @@ export class SpaceGame {
         this.spacecraft.type = type
         this.spacecraft.color = color
         if(id) this.spacecraft.id = id
-        console.log(type)
-        this.spacecraft.addDevice(type)
         this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type)
-        this.spacecraft.touchControlType = this.spacecraft.type
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
+        console.log("device: "+device)
+        this.spacecraft.addDevice(`${device}`, [this.spacecraft.gElement.getBBox().width/3, 
+                                                this.spacecraft.gElement.getBBox().height/3])
+        this.spacecraft.touchControlType = this.spacecraft.type
         this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
         this.gameLoop();
        
@@ -53,27 +56,22 @@ export class SpaceGame {
             if(this.gameEnvironment.joystick.isTouched){
                 this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
             }
-            let tractorBeam = document.getElementById("tractorBeam") as unknown as SVGElement
-            if(this.gameEnvironment.joystick.fires && this.spacecrafts[0]){
-                
-                if(!tractorBeam){
-                    tractorBeam = this.spacecraft.tractorBeam(this.spacecrafts[0].location)
-                    this.gameEnvironment.svgElement.appendChild(tractorBeam)
-                }
-                tractorBeam.style.display = "block"
-                tractorBeam.setAttribute("x1", `${this.spacecraft.location.x}`)
-                tractorBeam.setAttribute("y1", `${this.spacecraft.location.y}`)
-                tractorBeam.setAttribute("x2", `${this.spacecrafts[0].location.x}`)
-                tractorBeam.setAttribute("y2", `${this.spacecrafts[0].location.y}`)
-            } else if(!this.spacecrafts[0]&&tractorBeam){
-                tractorBeam.style.display = "none"
-            } else if(!this.gameEnvironment.joystick.fires&&tractorBeam){
-                tractorBeam.style.display = "none"
+            if(this.gameEnvironment.joystick.fires){
+                this.spacecraft.operate()
+            }else if(this.spacecraft.device?.activated){
+                this.spacecraft.device.deactivate()
             }
+            
         }
         
         this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
         this.updateElements();
+    }
+
+    private setupKeyUpListener() {
+        keyboardController.onKeyUp((key) => {
+            this.spacecraft.onKeyUp(key);
+        });
     }
 
     private updateElements() {

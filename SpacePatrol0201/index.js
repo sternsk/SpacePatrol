@@ -341,8 +341,13 @@
         }
         handleKeyUp(event) {
           this.keysPressed[event.key] = false;
+          if (this.keyUpCallback) {
+            this.keyUpCallback(event.key);
+          }
         }
-        // Methode, um den Zustand einer Taste abzufragen
+        onKeyUp(callback) {
+          this.keyUpCallback = callback;
+        }
         isKeyPressed(key) {
           return this.keysPressed[key] || false;
         }
@@ -27700,17 +27705,17 @@
     }
   });
 
-  // src/ovalShield.ts
-  var ovalShield;
-  var init_ovalShield = __esm({
-    "src/ovalShield.ts"() {
+  // src/OvalShield.ts
+  var OvalShield;
+  var init_OvalShield = __esm({
+    "src/OvalShield.ts"() {
       "use strict";
-      ovalShield = class {
+      OvalShield = class {
         constructor(shieldWidth, shieldHeight) {
           this.name = "ovalShield";
           this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
           this.activated = false;
-          this._gElem.setAttribute("class", "boundingShield");
+          this._gElem.setAttribute("class", "ovalShield");
           this.width = shieldWidth;
           this.height = shieldHeight;
         }
@@ -27722,7 +27727,7 @@
             boundingOval.setAttribute("rx", `${this.width * 2}`);
             boundingOval.setAttribute("ry", `${this.height * 2}`);
             boundingOval.setAttribute("stroke", "green");
-            boundingOval.setAttribute("vector-effect", "none");
+            boundingOval.setAttribute("vector-effect", "none-scaling-stroke");
             boundingOval.setAttribute("stroke-width", "2px");
             boundingOval.setAttribute("fill", "none");
             this._gElem.appendChild(boundingOval);
@@ -27746,22 +27751,20 @@
     "src/DeviceFactory.ts"() {
       "use strict";
       init_TriangularBeam();
-      init_ovalShield();
+      init_OvalShield();
       DeviceFactory = class {
-        static createDevice(spacecraftType) {
-          const deviceCreator = this.deviceMap[spacecraftType];
+        static createDevice(type, ...args) {
+          const deviceCreator = this.deviceMap[type];
           if (deviceCreator) {
-            return deviceCreator();
+            return deviceCreator(...args);
           } else {
-            return new TriangularBeam();
+            return void 0;
           }
         }
       };
       DeviceFactory.deviceMap = {
-        "rokket": () => new TriangularBeam(),
-        "rainbowRocket": () => new ovalShield(6, 8),
-        "blitzzer": () => new TriangularBeam(),
-        "bromber": () => new TriangularBeam()
+        "triangularBeam": () => new TriangularBeam(),
+        "ovalShield": (...args) => new OvalShield(args[0], args[1])
       };
     }
   });
@@ -27797,14 +27800,14 @@
           let vector = Vector2D.fromLengthAndAngle(thrust, this.direction);
           this._impuls.add(vector);
         }
-        addDevice(type) {
-          this._device = DeviceFactory.createDevice(type);
+        addDevice(type, args) {
+          this._device = DeviceFactory.createDevice(type, ...args);
         }
         operate() {
-          var _a, _b, _c;
+          var _a, _b;
           (_a = this._device) == null ? void 0 : _a.activate();
           if ((_b = this._device) == null ? void 0 : _b._gElem) {
-            this._gElement.appendChild((_c = this._device) == null ? void 0 : _c._gElem);
+            this._gElement.appendChild(this._device._gElem);
           }
         }
         applyLabel(svgElement) {
@@ -27863,9 +27866,13 @@
           if (keysPressed[" "]) {
             this.operate();
           }
-          if (!keysPressed[" "]) {
-            if (this._device)
-              this._device.deactivate();
+        }
+        onKeyUp(key) {
+          console.log(`Key released: ${key}`);
+          switch (key) {
+            case " ":
+              if (this.device)
+                this.device.deactivate();
           }
         }
         handleTouchControl(vector) {
@@ -27949,6 +27956,10 @@
         get direction() {
           return this._direction;
         }
+        get device() {
+          if (this._device) return this._device;
+          else return void 0;
+        }
         get label() {
           return this._label;
         }
@@ -28013,17 +28024,6 @@
             this._labelBorder.style.width = (this._label.getBBox().width * 1.1).toString();
             this._labelBorder.style.height = (this._label.getBBox().height * 1.1).toString();
           }
-        }
-        tractorBeam(vector) {
-          const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
-          line.setAttribute("id", `tractorBeam`);
-          line.setAttribute("x1", `${this._location.x}`);
-          line.setAttribute("y1", `${this._location.y}`);
-          line.setAttribute("x2", `${vector.x}`);
-          line.setAttribute("y2", `${vector.y}`);
-          line.setAttribute("stroke", "darkgreen");
-          line.setAttribute("stroke-width", "5px");
-          return line;
         }
         update() {
           this._location.add(this._impuls);
@@ -28106,6 +28106,7 @@
       init_GameMenu();
       init_Vector2D();
       init_Spacecraft();
+      init_GameMenu();
       SpaceGame = class {
         constructor() {
           this.spacecrafts = [];
@@ -28114,6 +28115,7 @@
           this.gameEnvironment = new GameEnvironment();
           this.gameEnvironment.displayTouchControl();
           this.gameEnvironment.joystick.addObserver(() => this.handleTouchEndEvent());
+          this.setupKeyUpListener();
           gameFrame.focus();
           this.serverRequestHandler = new ServerRequestHandler();
         }
@@ -28121,11 +28123,14 @@
           this.spacecraft.type = type;
           this.spacecraft.color = color2;
           if (id) this.spacecraft.id = id;
-          console.log(type);
-          this.spacecraft.addDevice(type);
           this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type);
-          this.spacecraft.touchControlType = this.spacecraft.type;
           this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement);
+          console.log("device: " + device);
+          this.spacecraft.addDevice(`${device}`, [
+            this.spacecraft.gElement.getBBox().width / 3,
+            this.spacecraft.gElement.getBBox().height / 3
+          ]);
+          this.spacecraft.touchControlType = this.spacecraft.type;
           this.spacecraft.applyLabel(this.gameEnvironment.svgElement);
           this.gameLoop();
           setInterval(() => {
@@ -28138,6 +28143,7 @@
           });
         }
         gameLoop() {
+          var _a;
           requestAnimationFrame(() => {
             this.gameLoop();
           });
@@ -28145,25 +28151,19 @@
             if (this.gameEnvironment.joystick.isTouched) {
               this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value);
             }
-            let tractorBeam = document.getElementById("tractorBeam");
-            if (this.gameEnvironment.joystick.fires && this.spacecrafts[0]) {
-              if (!tractorBeam) {
-                tractorBeam = this.spacecraft.tractorBeam(this.spacecrafts[0].location);
-                this.gameEnvironment.svgElement.appendChild(tractorBeam);
-              }
-              tractorBeam.style.display = "block";
-              tractorBeam.setAttribute("x1", `${this.spacecraft.location.x}`);
-              tractorBeam.setAttribute("y1", `${this.spacecraft.location.y}`);
-              tractorBeam.setAttribute("x2", `${this.spacecrafts[0].location.x}`);
-              tractorBeam.setAttribute("y2", `${this.spacecrafts[0].location.y}`);
-            } else if (!this.spacecrafts[0] && tractorBeam) {
-              tractorBeam.style.display = "none";
-            } else if (!this.gameEnvironment.joystick.fires && tractorBeam) {
-              tractorBeam.style.display = "none";
+            if (this.gameEnvironment.joystick.fires) {
+              this.spacecraft.operate();
+            } else if ((_a = this.spacecraft.device) == null ? void 0 : _a.activated) {
+              this.spacecraft.device.deactivate();
             }
           }
           this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
           this.updateElements();
+        }
+        setupKeyUpListener() {
+          keyboardController.onKeyUp((key) => {
+            this.spacecraft.onKeyUp(key);
+          });
         }
         updateElements() {
           this.spacecraft.update();
@@ -28267,7 +28267,7 @@
   });
 
   // src/GameMenu.ts
-  var import_midi, gameFrame, keyboardController, color, GameMenu;
+  var import_midi, gameFrame, keyboardController, color, device, GameMenu;
   var init_GameMenu = __esm({
     "src/GameMenu.ts"() {
       "use strict";
@@ -28282,6 +28282,7 @@
         constructor() {
           this.joystick = new Joystick();
           this.typeSelector = document.createElement("select");
+          this.deviceSelector = document.createElement("select");
           this.idInputElement = document.createElement("input");
           this.audioSelector = document.createElement("select");
           this.loopRunning = true;
@@ -28310,6 +28311,26 @@
           const option10 = document.createElement("option");
           const option11 = document.createElement("option");
           const option12 = document.createElement("option");
+          const noDevice = document.createElement("option");
+          noDevice.innerHTML = "disabled selected";
+          noDevice.value = "";
+          noDevice.textContent = "Choose a Device";
+          const ovalShield = document.createElement("option");
+          ovalShield.value = "ovalShield";
+          ovalShield.textContent = "oval Shield";
+          const repulsorBeam = document.createElement("option");
+          repulsorBeam.value = "repulsorBeam";
+          repulsorBeam.textContent = "repulsor Beam";
+          const tractorBeam = document.createElement("option");
+          tractorBeam.value = "tractorBeam";
+          tractorBeam.textContent = "tractor Beam";
+          this.deviceSelector.appendChild(noDevice);
+          this.deviceSelector.appendChild(ovalShield);
+          this.deviceSelector.appendChild(repulsorBeam);
+          this.deviceSelector.appendChild(tractorBeam);
+          this.deviceSelector.addEventListener("change", () => {
+            device = this.deviceSelector.value;
+          });
           this.typeSelector.appendChild(option1);
           this.typeSelector.appendChild(option2);
           this.typeSelector.appendChild(option3);
@@ -28397,6 +28418,7 @@
           const infoContent = document.createElement("div");
           infoContent.textContent = "Left Right rotate, up down zoom";
           gameFrame.appendChild(this.typeSelector);
+          gameFrame.appendChild(this.deviceSelector);
           gameFrame.appendChild(colorSelector);
           gameFrame.appendChild(this.idInputElement);
           gameFrame.appendChild(startButton);
@@ -28404,6 +28426,7 @@
           gameFrame.appendChild(audioButton);
           gameFrame.appendChild(infoContent);
           color = colorSelector.value;
+          device = this.deviceSelector.value;
           this.previewSvgAspectRatio = this.viewBoxWidth / this.viewBoxHeight;
           this.previewSvg.style.position = "relative";
           const aspectRatio = window.innerWidth / window.innerHeight;
@@ -28554,7 +28577,7 @@
 
   // src/index.ts
   init_GameMenu();
-  console.log("SpacePatrol0201 ver.2133");
+  console.log("SpacePatrol0201 ver.0831");
   var menu = new GameMenu();
   menu.loop();
 })();
