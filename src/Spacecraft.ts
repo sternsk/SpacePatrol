@@ -126,7 +126,6 @@ export class Spacecraft {
     }
 
     onKeyUp(key: string) {
-        console.log(`Key released: ${key}`);
         switch (key){
             case " ":
                 if(this.device)

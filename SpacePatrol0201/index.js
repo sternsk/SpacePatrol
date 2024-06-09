@@ -27677,11 +27677,10 @@
               particle.setAttribute("d", `M -2 ${-i * 5 - 2},
                                             L 0 ${-i * 5 - 10}, 
                                             L 2 ${-i * 5 - 2}`);
-              particle.setAttribute("stroke", `rgb(${(i + 1) / this.count * 255}, ${(i + 1) / this.count * 255}, ${(i + 1) / this.count * 255}`);
+              particle.setAttribute("stroke", `rgb(${(i + 100) / this.count * 255}, ${i * 2 / this.count * 255}, ${i / 3 / this.count * 255}`);
               particle.setAttribute("stroke-width", "2px");
-              particle.setAttribute("fill", "black");
-              particle.setAttribute("opacity", `${i / 10 / this.count}`);
-              console.log("activate!");
+              particle.setAttribute("vector-effect", "non-scaling-stroke");
+              particle.setAttribute("fill", "none");
               this._gElem.appendChild(particle);
             }
             this.activated = true;
@@ -27758,12 +27757,12 @@
           if (deviceCreator) {
             return deviceCreator(...args);
           } else {
-            return void 0;
+            return new TriangularBeam();
           }
         }
       };
       DeviceFactory.deviceMap = {
-        "triangularBeam": () => new TriangularBeam(),
+        "repulsorBeam": () => new TriangularBeam(),
         "ovalShield": (...args) => new OvalShield(args[0], args[1])
       };
     }
@@ -27868,7 +27867,6 @@
           }
         }
         onKeyUp(key) {
-          console.log(`Key released: ${key}`);
           switch (key) {
             case " ":
               if (this.device)
