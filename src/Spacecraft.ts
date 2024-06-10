@@ -45,6 +45,13 @@ export class Spacecraft {
         this._device = DeviceFactory.createDevice(type, ...args)
     }
 
+    getDevice<T extends Device>(deviceType: new (...args: any[]) => T): T | null {
+        if (this.device instanceof deviceType) {
+            return this.device as T;
+        }
+        return null;
+    }
+
     operate(){
         //aktiviere das Device
         this._device?.activate()

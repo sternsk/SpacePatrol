@@ -27749,6 +27749,49 @@
     }
   });
 
+  // src/TractorBeam.ts
+  var TractorBeam;
+  var init_TractorBeam = __esm({
+    "src/TractorBeam.ts"() {
+      "use strict";
+      TractorBeam = class {
+        constructor() {
+          this.name = "tractorBeam";
+          this.target = { x: 0, y: 0 };
+          this.activated = false;
+          this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        }
+        activate() {
+          if (!this.activated) {
+            const beam = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            beam.setAttribute("x1", "0");
+            beam.setAttribute("y1", "0");
+            beam.setAttribute("x2", `${this.target.x}`);
+            beam.setAttribute("y2", `${this.target.y}`);
+            beam.setAttribute("stroke", "darkgreen");
+            beam.setAttribute("stroke-width", "5px");
+            beam.setAttribute("vector-effect", "non-scaling-stroke");
+            this._gElem.appendChild(beam);
+          }
+        }
+        deactivate() {
+          this._gElem.innerHTML = "";
+          this.activated = false;
+        }
+        dispose() {
+          if (this._gElem && this._gElem.parentNode) {
+            this._gElem.innerHTML = "";
+            this._gElem.parentNode.removeChild(this._gElem);
+          }
+          this.activated = false;
+        }
+        setTarget(target) {
+          this.target = target;
+        }
+      };
+    }
+  });
+
   // src/DeviceFactory.ts
   var DeviceFactory;
   var init_DeviceFactory = __esm({
@@ -27756,19 +27799,21 @@
       "use strict";
       init_TriangularBeam();
       init_OvalShield();
+      init_TractorBeam();
       DeviceFactory = class {
         static createDevice(type, ...args) {
           const deviceCreator = this.deviceMap[type];
           if (deviceCreator) {
             return deviceCreator(...args);
           } else {
-            return new TriangularBeam();
+            return new TractorBeam();
           }
         }
       };
       DeviceFactory.deviceMap = {
         "repulsorBeam": () => new TriangularBeam(),
-        "ovalShield": (...args) => new OvalShield(args[0], args[1])
+        "ovalShield": (...args) => new OvalShield(args[0], args[1]),
+        "tractorBeam": (...args) => new TractorBeam()
       };
     }
   });
@@ -27806,6 +27851,12 @@
         }
         addDevice(type, args) {
           this._device = DeviceFactory.createDevice(type, ...args);
+        }
+        getDevice(deviceType) {
+          if (this.device instanceof deviceType) {
+            return this.device;
+          }
+          return null;
         }
         operate() {
           var _a, _b;
@@ -28110,6 +28161,7 @@
       init_Vector2D();
       init_Spacecraft();
       init_GameMenu();
+      init_TractorBeam();
       SpaceGame = class {
         constructor() {
           this.spacecrafts = [];
@@ -28155,6 +28207,14 @@
               this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value);
             }
             if (this.gameEnvironment.joystick.fires) {
+              const tractorBeam = this.spacecraft.getDevice(TractorBeam);
+              console.log(tractorBeam);
+              if (tractorBeam && this.spacecrafts[0]) {
+                tractorBeam.setTarget({
+                  x: this.spacecrafts[0].location.x - this.spacecraft.location.x,
+                  y: this.spacecrafts[0].location.y - this.spacecraft.location.y
+                });
+              }
               this.spacecraft.operate();
             } else if ((_a = this.spacecraft.device) == null ? void 0 : _a.activated) {
               this.spacecraft.device.deactivate();
