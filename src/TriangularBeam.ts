@@ -9,21 +9,24 @@ export class TriangularBeam implements Device{
     constructor(){
     }
 
-    activate(){
+    async activate(){
         if(!this.activated){
+            this.activated = true
             for(let i = 0; i < this.count; i++){
                 const particle = document.createElementNS("http://www.w3.org/2000/svg", "path")
                 particle.setAttribute("class","particle")
-                particle.setAttribute("d",`M -2 ${-i*5-2},
+                particle.setAttribute("d",`M ${-2 * i -2} ${-i*5-2},
                                             L 0 ${-i*5-10}, 
-                                            L 2 ${-i*5-2}`)
-                particle.setAttribute("stroke",`rgb(${(i+100)/this.count*255}, ${(i*2)/this.count*255}, ${(i/3)/this.count*255}`)
+                                            L ${3 * i + 2} ${-i*5-2}`)
+                particle.setAttribute("stroke",`rgb(${i/this.count*255}, ${(i*2)/this.count*255}, ${(i/3)/this.count*255}`)
                 particle.setAttribute("stroke-width","2px")
                 particle.setAttribute("vector-effect","non-scaling-stroke")
                 
-                particle.setAttribute("fill","none")
-                //particle.setAttribute("opacity",`${-i / this.count + this.count}`)
-                //console.log(-this.count * i / this.count)
+                particle.setAttribute("fill",`rgb (${-i*255+255}, ${-i*255+255}, ${-i*255+255})`)
+                await new Promise(resolve => setTimeout(resolve, 100)); // 100 ms delay
+                
+                particle.setAttribute("opacity",`${i / this.count}`)
+                
                 this._gElem.appendChild(particle)
             }
             this.activated = true
