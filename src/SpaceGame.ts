@@ -64,7 +64,7 @@ export class SpaceGame {
                 // case the spacecraft has the device tractorBeam 
                 // Access and use the setTarget method of the TractorBeam device
                 const tractorBeam = this.spacecraft.getDevice<TractorBeam>(TractorBeam);
-                console.log(tractorBeam)
+                
                 if (tractorBeam && this.spacecrafts[0]) {
                     tractorBeam.setTarget({x: this.spacecrafts[0].location.x - this.spacecraft.location.x, 
                                             y: this.spacecrafts[0].location.y - this.spacecraft.location.y});

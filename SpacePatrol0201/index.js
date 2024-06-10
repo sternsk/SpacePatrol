@@ -28208,7 +28208,6 @@
             }
             if (this.gameEnvironment.joystick.fires) {
               const tractorBeam = this.spacecraft.getDevice(TractorBeam);
-              console.log(tractorBeam);
               if (tractorBeam && this.spacecrafts[0]) {
                 tractorBeam.setTarget({
                   x: this.spacecrafts[0].location.x - this.spacecraft.location.x,
