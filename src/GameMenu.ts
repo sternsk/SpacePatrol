@@ -20,6 +20,7 @@ export const gameFrame = document.getElementById("spacepatrolContainer")! as unk
 export const keyboardController = new KeyboardController(gameFrame)
 export let color: string        //initial color
 export let device: string
+export let viewBoxWidth = 100
 
 export class GameMenu{
     joystick = new Joystick()
@@ -38,7 +39,7 @@ export class GameMenu{
 
     viewBoxTop = -50
     viewBoxLeft = -50
-    viewBoxWidth = 100
+    
     viewBoxHeight = 100
 
     previewSvgAspectRatio: number
@@ -67,6 +68,7 @@ export class GameMenu{
         const option10 = document.createElement("option")
         const option11 = document.createElement("option")
         const option12 = document.createElement("option")
+        const homper = document.createElement("option")
 
         const noDevice = document.createElement("option")
         noDevice.innerHTML = "disabled selected"
@@ -97,6 +99,7 @@ export class GameMenu{
         this.typeSelector.appendChild(option2)
         this.typeSelector.appendChild(option3)
         this.typeSelector.appendChild(option4)
+        this.typeSelector.appendChild(homper)
         this.typeSelector.appendChild(option5)
         this.typeSelector.appendChild(option6)
         this.typeSelector.appendChild(option7)
@@ -111,6 +114,7 @@ export class GameMenu{
         option2.setAttribute("value", "rokket")
         option3.setAttribute("value", "rainbowRocket")
         option4.setAttribute("value", "../resources/bromber.svg")
+        homper.setAttribute("value", "../resources/homper.png")
         option5.setAttribute("value", "../resources/blizzer.png")
         option6.setAttribute("value", "../resources/flipps.svg")
         option7.setAttribute("value", "../resources/lopman.png")
@@ -124,6 +128,7 @@ export class GameMenu{
         option2.textContent = "rokket"
         option3.textContent = "rainbowRocket"
         option4.textContent = "bromber"
+        homper.textContent = "homper"
         option5.textContent = "blizzer"
         option6.textContent = "flipps"
         option7.textContent = "lopman"
@@ -207,7 +212,7 @@ export class GameMenu{
         color = colorSelector.value       //initial color
         device = this.deviceSelector.value
 
-        this.previewSvgAspectRatio = this.viewBoxWidth / this.viewBoxHeight
+        this.previewSvgAspectRatio = viewBoxWidth / this.viewBoxHeight
 
         this.previewSvg.style.position = "relative"
         //appy apply previewSvg to screen orientation
@@ -223,7 +228,7 @@ export class GameMenu{
         this.previewSvg.setAttribute("id", "previewSvg")
 
         this.previewSvg.setAttribute("tabindex", "0")
-        this.previewSvg.setAttribute("viewBox",`${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`)
+        this.previewSvg.setAttribute("viewBox",`${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`)
         this.previewSvg.style.zIndex = "-1"
         this.previewSvg.style.outline = "none"
 
@@ -255,11 +260,12 @@ export class GameMenu{
         if(this.joystick.isTouched){
             this.rotationImpuls = this.joystick.value.x * 100
             
-            this.viewBoxWidth += this.joystick.value.y * 10
-            this.viewBoxLeft = this.viewBoxWidth / -2
-            this.viewBoxHeight = this.viewBoxWidth * this.previewSvgAspectRatio
+            viewBoxWidth += this.joystick.value.y * 10
+            console.log(viewBoxWidth)
+            this.viewBoxLeft = viewBoxWidth / -2
+            this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio
             this.viewBoxTop = this.viewBoxHeight / -2
-            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`)
+            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`)
         }
         
         if (keyboardController.getKeysPressed()[`ArrowLeft`]){
@@ -269,17 +275,17 @@ export class GameMenu{
         }
         
         if (keyboardController.getKeysPressed()[`ArrowUp`]){
-            this.viewBoxWidth += this.viewBoxWidth / 10
-            this.viewBoxLeft = this.viewBoxWidth / -2
-            this.viewBoxHeight = this.viewBoxWidth * this.previewSvgAspectRatio
+            viewBoxWidth += viewBoxWidth / 10
+            this.viewBoxLeft = viewBoxWidth / -2
+            this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio
             this.viewBoxTop = this.viewBoxHeight / -2
-            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`)
+            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`)
         }else if(keyboardController.getKeysPressed()[`ArrowDown`]){
-            this.viewBoxWidth -= this.viewBoxWidth / 10
-            this.viewBoxLeft = this.viewBoxWidth / -2
-            this.viewBoxHeight = this.viewBoxWidth * this.previewSvgAspectRatio
+            viewBoxWidth -= viewBoxWidth / 10
+            this.viewBoxLeft = viewBoxWidth / -2
+            this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio
             this.viewBoxTop = this.viewBoxHeight / -2
-            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`)
+            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`)
         }
     
         this.rotationAngle += this.rotationImpuls

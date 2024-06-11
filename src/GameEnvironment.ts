@@ -1,8 +1,7 @@
 import { Spacecraft } from "./Spacecraft.js";
 import { Joystick } from "./Joystick.js";
-import { gameFrame } from "./GameMenu.js";
+import { gameFrame, viewBoxWidth } from "./GameMenu.js";
 
-export let viewBoxWidth = 200;
 
 export class GameEnvironment{
     screenAspectRatio: number
@@ -27,7 +26,7 @@ export class GameEnvironment{
             this.screenAspectRatio = .8
         }    
         
-        this.viewBoxWidth = viewBoxWidth
+        this.viewBoxWidth = viewBoxWidth * 3
         this.viewBoxToScreenRatio = this.viewBoxWidth / window.innerWidth
         this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio
         // center zero in viewBox
@@ -113,8 +112,8 @@ export class GameEnvironment{
                 break;
             case "pseudoTorus":
                 if(spacecraft.location.x < this.viewBoxLeft)
-                    spacecraft.location.x = this.viewBoxLeft + viewBoxWidth
-                if(spacecraft.location.x > this.viewBoxLeft + viewBoxWidth)
+                    spacecraft.location.x = this.viewBoxLeft + this.viewBoxWidth
+                if(spacecraft.location.x > this.viewBoxLeft + this.viewBoxWidth)
                     spacecraft.location.x = this.viewBoxLeft
                 if (spacecraft.location.y < this.viewBoxTop)
                     spacecraft.location.y = this.viewBoxTop + this.viewBoxHeight

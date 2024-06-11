@@ -1,6 +1,6 @@
 import { SpacecraftShape } from "./SpacecraftShape.js"
 import { Vector2D } from "./Vector2D.js"
-import { viewBoxWidth } from "./GameEnvironment.js"
+import { viewBoxWidth } from "./GameMenu.js"
 import { color } from "./GameMenu.js"
 import { Device } from "./Device.js"
 import { DeviceFactory } from "./DeviceFactory.js"
