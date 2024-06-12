@@ -69,6 +69,7 @@ export class GameMenu{
         const option11 = document.createElement("option")
         const option12 = document.createElement("option")
         const homper = document.createElement("option")
+        const repulsorJet = document.createElement("option")
 
         const noDevice = document.createElement("option")
         noDevice.innerHTML = "disabled selected"
@@ -99,6 +100,8 @@ export class GameMenu{
         this.typeSelector.appendChild(option2)
         this.typeSelector.appendChild(option3)
         this.typeSelector.appendChild(option4)
+        this.typeSelector.appendChild(repulsorJet)
+        
         this.typeSelector.appendChild(homper)
         this.typeSelector.appendChild(option5)
         this.typeSelector.appendChild(option6)
@@ -115,6 +118,7 @@ export class GameMenu{
         option3.setAttribute("value", "rainbowRocket")
         option4.setAttribute("value", "../resources/bromber.svg")
         homper.setAttribute("value", "../resources/homper.png")
+        repulsorJet.setAttribute("value", "../resources/repulsorJet.png")
         option5.setAttribute("value", "../resources/blizzer.png")
         option6.setAttribute("value", "../resources/flipps.svg")
         option7.setAttribute("value", "../resources/lopman.png")
@@ -128,7 +132,8 @@ export class GameMenu{
         option2.textContent = "rokket"
         option3.textContent = "rainbowRocket"
         option4.textContent = "bromber"
-        homper.textContent = "homper"
+        homper.textContent = "giga Jet"
+        repulsorJet.textContent = "repulsor Jet"
         option5.textContent = "blizzer"
         option6.textContent = "flipps"
         option7.textContent = "lopman"
@@ -151,12 +156,12 @@ export class GameMenu{
 
         option13.setAttribute("value", "brown")
         option14.setAttribute("value", "goldenrod")
-        option15.setAttribute("value", "beige")
-        option16.setAttribute("value", "lightblue")
+        option15.setAttribute("value", "black")
+        option16.setAttribute("value", "darkblue")
 
         option13.textContent = "brown"
         option14.textContent = "goldenrod"
-        option15.textContent = "beige"
+        option15.textContent = "beick"
         option16.textContent = "flün"
         
         this.idInputElement.setAttribute("type", "text")
@@ -377,9 +382,8 @@ export class GameMenu{
         
         this.loopRunning = false
         console.log("starting SpaceGame")
-        console.log(`Commander ${this.idInputElement.value}, you depart in a ${color} ${this.typeSelector.value}. Game starts now!`)
+        console.log(`Commander ${this.idInputElement.value}departs in a ${color} ${this.typeSelector.value}. Game starts now!`)
         
-
         try {
             // Dynamically import the library.js module
             let lib = await import("./library.js");
@@ -389,7 +393,6 @@ export class GameMenu{
             
             // check that the gameFrame is properly sized
             if(gameFrame.offsetWidth && gameFrame.offsetHeight){
-                console.log("gameFrame sized!")
                 lib.initGame(gameFrame, this.typeSelector.value, color, this.idInputElement.value);
             }
             else{

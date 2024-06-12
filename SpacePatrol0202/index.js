@@ -182,6 +182,7 @@
               box.setAttribute("width", "34");
               box.setAttribute("height", "52");
               additionalPaths.push(box);
+              break;
             case "helgram.png":
               gElement.setAttribute("transform", "translate(-50,220) scale(0.0393700787401575,0.0100000)");
               gElement.setAttribute("fill", `${color}`);
@@ -300,12 +301,14 @@
               additionalPaths.push(path0);
               path1.setAttribute("d", "M510 910 c0 -13 30 -13 50 0 11 7 7 10 -17 10 -18 0 -33 -4 -33 -10z");
               additionalPaths.push(path1);
+              break;
           }
           const imageUrl = `./${type}`;
           const image = document.createElementNS("http://www.w3.org/2000/svg", "image");
           image.href.baseVal = imageUrl;
           image.onload = () => {
             let imageWidth = image.getBBox().width;
+            console.log("imageWidth: " + imageWidth);
           };
           image.setAttribute("width", `50`);
           image.setAttribute("height", `50`);
@@ -28071,7 +28074,6 @@
           this.viewBoxTop = -this.viewBoxHeight / 2;
           this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
           this._svgElement.style.position = "absolute";
-          console.log(gameFrame.clientHeight);
           this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
           this._svgElement.setAttribute("tabindex", "0");
           const viewBoxBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -28373,6 +28375,7 @@
           const option11 = document.createElement("option");
           const option12 = document.createElement("option");
           const homper = document.createElement("option");
+          const repulsorJet = document.createElement("option");
           const noDevice = document.createElement("option");
           noDevice.innerHTML = "disabled selected";
           noDevice.value = "";
@@ -28397,6 +28400,7 @@
           this.typeSelector.appendChild(option2);
           this.typeSelector.appendChild(option3);
           this.typeSelector.appendChild(option4);
+          this.typeSelector.appendChild(repulsorJet);
           this.typeSelector.appendChild(homper);
           this.typeSelector.appendChild(option5);
           this.typeSelector.appendChild(option6);
@@ -28412,6 +28416,7 @@
           option3.setAttribute("value", "rainbowRocket");
           option4.setAttribute("value", "../resources/bromber.svg");
           homper.setAttribute("value", "../resources/homper.png");
+          repulsorJet.setAttribute("value", "../resources/repulsorJet.png");
           option5.setAttribute("value", "../resources/blizzer.png");
           option6.setAttribute("value", "../resources/flipps.svg");
           option7.setAttribute("value", "../resources/lopman.png");
@@ -28424,7 +28429,8 @@
           option2.textContent = "rokket";
           option3.textContent = "rainbowRocket";
           option4.textContent = "bromber";
-          homper.textContent = "homper";
+          homper.textContent = "giga Jet";
+          repulsorJet.textContent = "repulsor Jet";
           option5.textContent = "blizzer";
           option6.textContent = "flipps";
           option7.textContent = "lopman";
@@ -28444,11 +28450,11 @@
           colorSelector.appendChild(option16);
           option13.setAttribute("value", "brown");
           option14.setAttribute("value", "goldenrod");
-          option15.setAttribute("value", "beige");
-          option16.setAttribute("value", "lightblue");
+          option15.setAttribute("value", "black");
+          option16.setAttribute("value", "darkblue");
           option13.textContent = "brown";
           option14.textContent = "goldenrod";
-          option15.textContent = "beige";
+          option15.textContent = "beick";
           option16.textContent = "fl\xFCn";
           this.idInputElement.setAttribute("type", "text");
           this.idInputElement.setAttribute("placeholder", "enter your id");
@@ -28622,12 +28628,11 @@
           return __async(this, null, function* () {
             this.loopRunning = false;
             console.log("starting SpaceGame");
-            console.log(`Commander ${this.idInputElement.value}, you depart in a ${color} ${this.typeSelector.value}. Game starts now!`);
+            console.log(`Commander ${this.idInputElement.value}departs in a ${color} ${this.typeSelector.value}. Game starts now!`);
             try {
               let lib = yield Promise.resolve().then(() => (init_library(), library_exports));
               gameFrame.innerHTML = "";
               if (gameFrame.offsetWidth && gameFrame.offsetHeight) {
-                console.log("gameFrame sized!");
                 lib.initGame(gameFrame, this.typeSelector.value, color, this.idInputElement.value);
               } else {
                 console.log("Error getting gameFrame size!");
@@ -28643,7 +28648,7 @@
 
   // src/index.ts
   init_GameMenu();
-  console.log("SpacePatrol0201 ver.2302");
+  console.log("SpacePatrol0201 ver.2206");
   var menu = new GameMenu();
   menu.loop();
 })();

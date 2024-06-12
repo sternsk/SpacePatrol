@@ -35,7 +35,6 @@ export class GameEnvironment{
         
         this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         this._svgElement.style.position = "absolute"
-        console.log(gameFrame.clientHeight)
         
         this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
         this._svgElement.setAttribute("tabindex", "0")
