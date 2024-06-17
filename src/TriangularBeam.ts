@@ -17,10 +17,10 @@ export class TriangularBeam implements Device{
                 particle.setAttribute("d",`M -2 ${-i*5-2},
                                             L 0 ${-i*5-10}, 
                                             L 2 ${-i*5-2}`)
-                particle.setAttribute("stroke",`rgb(${(i+1)/this.count*255}, ${(i+1)/this.count*255}, ${(i+1)/this.count*255}`)
+                particle.setAttribute("stroke",`green`)
                 particle.setAttribute("stroke-width","2px")
                 particle.setAttribute("fill","black")
-                particle.setAttribute("opacity",`${i/10/this.count}`)
+                particle.setAttribute("opacity",`${i / this.count }`)
                 console.log("activate!")
                 this._gElem.appendChild(particle)
             }

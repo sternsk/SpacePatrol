@@ -4,7 +4,7 @@ import { OvalShield } from "./OvalShield.js";
 
 export abstract class DeviceFactory {
     private static deviceMap: { [key: string]: (...args: any[]) => Device } = {
-        'triangularBeam': () => new TriangularBeam(),
+        'repulsorBeam': () => new TriangularBeam(),
         'ovalShield': (...args: any[]) => new OvalShield(args[0], args[1]),
     };
 
@@ -13,7 +13,7 @@ export abstract class DeviceFactory {
         if (deviceCreator) {
             return deviceCreator(...args);
         } else {
-            return undefined; // Default device
+            return new TriangularBeam(); // Default device
         }
     }
 }

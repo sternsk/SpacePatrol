@@ -24,6 +24,12 @@
     return a;
   };
   var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
+  var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
+    get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
+  }) : x)(function(x) {
+    if (typeof require !== "undefined") return require.apply(this, arguments);
+    throw Error('Dynamic require of "' + x + '" is not supported');
+  });
   var __objRest = (source, exclude) => {
     var target = {};
     for (var prop in source)
@@ -39,7 +45,7 @@
   var __esm = (fn, res) => function __init() {
     return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
   };
-  var __commonJS = (cb, mod) => function __require() {
+  var __commonJS = (cb, mod) => function __require2() {
     return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
   };
   var __export = (target, all) => {
@@ -27064,30 +27070,6 @@
     }
   });
 
-  // node_modules/array-flatten/dist/index.js
-  var require_dist = __commonJS({
-    "node_modules/array-flatten/dist/index.js"(exports) {
-      "use strict";
-      Object.defineProperty(exports, "__esModule", { value: true });
-      function flatten(array) {
-        var result = [];
-        $flatten(array, result);
-        return result;
-      }
-      exports.flatten = flatten;
-      function $flatten(array, result) {
-        for (var i = 0; i < array.length; i++) {
-          var value = array[i];
-          if (Array.isArray(value)) {
-            $flatten(value, result);
-          } else {
-            result.push(value);
-          }
-        }
-      }
-    }
-  });
-
   // node_modules/@tonejs/midi/dist/Encode.js
   var require_Encode = __commonJS({
     "node_modules/@tonejs/midi/dist/Encode.js"(exports) {
@@ -27105,7 +27087,7 @@
       exports.encode = void 0;
       var midi_file_1 = require_midi_file();
       var Header_1 = require_Header();
-      var array_flatten_1 = require_dist();
+      var array_flatten_1 = __require("array-flatten");
       function encodeNote(note, channel) {
         return [
           {
@@ -27677,10 +27659,10 @@
               particle.setAttribute("d", `M -2 ${-i * 5 - 2},
                                             L 0 ${-i * 5 - 10}, 
                                             L 2 ${-i * 5 - 2}`);
-              particle.setAttribute("stroke", `rgb(${(i + 1) / this.count * 255}, ${(i + 1) / this.count * 255}, ${(i + 1) / this.count * 255}`);
+              particle.setAttribute("stroke", `green`);
               particle.setAttribute("stroke-width", "2px");
               particle.setAttribute("fill", "black");
-              particle.setAttribute("opacity", `${i / 10 / this.count}`);
+              particle.setAttribute("opacity", `${i / this.count}`);
               console.log("activate!");
               this._gElem.appendChild(particle);
             }
@@ -27758,12 +27740,12 @@
           if (deviceCreator) {
             return deviceCreator(...args);
           } else {
-            return void 0;
+            return new TriangularBeam();
           }
         }
       };
       DeviceFactory.deviceMap = {
-        "triangularBeam": () => new TriangularBeam(),
+        "repulsorBeam": () => new TriangularBeam(),
         "ovalShield": (...args) => new OvalShield(args[0], args[1])
       };
     }
