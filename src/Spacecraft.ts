@@ -1,6 +1,6 @@
 import { SpacecraftShape } from "./SpacecraftShape.js"
 import { Vector2D } from "./Vector2D.js"
-import { viewBoxWidth } from "./GameEnvironment.js"
+import { viewBoxWidth } from "./GameMenu.js"
 import { color } from "./GameMenu.js"
 import { Device } from "./Device.js"
 import { DeviceFactory } from "./DeviceFactory.js"
@@ -43,6 +43,13 @@ export class Spacecraft {
 
     addDevice(type: string, args:any[]){
         this._device = DeviceFactory.createDevice(type, ...args)
+    }
+
+    getDevice<T extends Device>(deviceType: new (...args: any[]) => T): T | null {
+        if (this.device instanceof deviceType) {
+            return this.device as T;
+        }
+        return null;
     }
 
     operate(){
@@ -126,7 +133,6 @@ export class Spacecraft {
     }
 
     onKeyUp(key: string) {
-        console.log(`Key released: ${key}`);
         switch (key){
             case " ":
                 if(this.device)

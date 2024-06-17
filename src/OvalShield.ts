@@ -28,7 +28,6 @@ export class OvalShield implements Device{
             boundingOval.setAttribute("fill", "none")
 
             this._gElem.appendChild(boundingOval)
-            
             this.activated = true
         }
     }

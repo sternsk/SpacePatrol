@@ -6,6 +6,7 @@ import { gameFrame } from "./GameMenu.js";
 import { Vector2D } from "./Vector2D.js";
 import { fontSize } from "./Spacecraft.js";
 import { device } from "./GameMenu.js";
+import { TractorBeam } from "./TractorBeam.js";
 
 export class SpaceGame {
     private spacecraft: Spacecraft
@@ -33,7 +34,10 @@ export class SpaceGame {
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
         console.log("device: "+device)
         this.spacecraft.addDevice(`${device}`, [this.spacecraft.gElement.getBBox().width/3, 
-                                                this.spacecraft.gElement.getBBox().height/3])
+                                                this.spacecraft.gElement.getBBox().height/3,
+                                                ])
+        
+
         this.spacecraft.touchControlType = this.spacecraft.type
         this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
         this.gameLoop();
@@ -57,7 +61,16 @@ export class SpaceGame {
                 this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
             }
             if(this.gameEnvironment.joystick.fires){
+                // case the spacecraft has the device tractorBeam 
+                // Access and use the setTarget method of the TractorBeam device
+                const tractorBeam = this.spacecraft.getDevice<TractorBeam>(TractorBeam);
+                
+                if (tractorBeam && this.spacecrafts[0]) {
+                    tractorBeam.setTarget({x: this.spacecrafts[0].location.x - this.spacecraft.location.x, 
+                                            y: this.spacecrafts[0].location.y - this.spacecraft.location.y});
+                }
                 this.spacecraft.operate()
+                
             }else if(this.spacecraft.device?.activated){
                 this.spacecraft.device.deactivate()
             }
@@ -156,7 +169,7 @@ export class SpaceGame {
 class ServerRequestHandler {
     async sendData(data: Record<string, any>) {
         try {
-            const response = await fetch('https://spacepatrol.zapto.org/sync', { //http://spacepatrolzone.dynv6.net  http://192.168.2.222:3000  http://localhost https://spacepatrol.zapto.org/sync
+            const response = await fetch('/api/main/SynchronizeSpaceObject', { //https://spacepatrol.zapto.org/sync// localhost:8080/api/main/SynchronizeSpaceObjects //http://spacepatrolzone.dynv6.net  http://192.168.2.222:3000   https://spacepatrol.zapto.org/sync
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

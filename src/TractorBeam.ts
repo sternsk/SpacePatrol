@@ -2,16 +2,17 @@ import { Device } from "./Device";
 
 export class TractorBeam implements Device{
     name = "tractorBeam";
-    target: {x:number, y:number}
+    target: {x: number, y:number} = {x:0,y:0}
     activated = false
+    _gElem: SVGGElement;
 
-    constructor(target: {x:number, y:number}){
+    constructor(){
         this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g")
-        this.target = target
+        
     }
 
     activate(): void {
-        if(this.activated){
+        if(!this.activated){
             const beam = document.createElementNS("http://www.w3.org/2000/svg", "line")
             beam.setAttribute("x1", "0")
             beam.setAttribute("y1", "0")
@@ -36,6 +37,9 @@ export class TractorBeam implements Device{
         }
         this.activated = false;
     }
-    _gElem: SVGGElement;
+    
+    setTarget(target:{x:number, y:number}){
+        this.target = target
+    }
 
 }

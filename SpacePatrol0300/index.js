@@ -24,12 +24,6 @@
     return a;
   };
   var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
-  var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
-    get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
-  }) : x)(function(x) {
-    if (typeof require !== "undefined") return require.apply(this, arguments);
-    throw Error('Dynamic require of "' + x + '" is not supported');
-  });
   var __objRest = (source, exclude) => {
     var target = {};
     for (var prop in source)
@@ -45,7 +39,7 @@
   var __esm = (fn, res) => function __init() {
     return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
   };
-  var __commonJS = (cb, mod) => function __require2() {
+  var __commonJS = (cb, mod) => function __require() {
     return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
   };
   var __export = (target, all) => {
@@ -188,6 +182,7 @@
               box.setAttribute("width", "34");
               box.setAttribute("height", "52");
               additionalPaths.push(box);
+              break;
             case "helgram.png":
               gElement.setAttribute("transform", "translate(-50,220) scale(0.0393700787401575,0.0100000)");
               gElement.setAttribute("fill", `${color}`);
@@ -306,12 +301,14 @@
               additionalPaths.push(path0);
               path1.setAttribute("d", "M510 910 c0 -13 30 -13 50 0 11 7 7 10 -17 10 -18 0 -33 -4 -33 -10z");
               additionalPaths.push(path1);
+              break;
           }
           const imageUrl = `./${type}`;
           const image = document.createElementNS("http://www.w3.org/2000/svg", "image");
           image.href.baseVal = imageUrl;
           image.onload = () => {
             let imageWidth = image.getBBox().width;
+            console.log("imageWidth: " + imageWidth);
           };
           image.setAttribute("width", `50`);
           image.setAttribute("height", `50`);
@@ -27070,6 +27067,30 @@
     }
   });
 
+  // node_modules/array-flatten/dist/index.js
+  var require_dist = __commonJS({
+    "node_modules/array-flatten/dist/index.js"(exports) {
+      "use strict";
+      Object.defineProperty(exports, "__esModule", { value: true });
+      function flatten(array) {
+        var result = [];
+        $flatten(array, result);
+        return result;
+      }
+      exports.flatten = flatten;
+      function $flatten(array, result) {
+        for (var i = 0; i < array.length; i++) {
+          var value = array[i];
+          if (Array.isArray(value)) {
+            $flatten(value, result);
+          } else {
+            result.push(value);
+          }
+        }
+      }
+    }
+  });
+
   // node_modules/@tonejs/midi/dist/Encode.js
   var require_Encode = __commonJS({
     "node_modules/@tonejs/midi/dist/Encode.js"(exports) {
@@ -27087,7 +27108,7 @@
       exports.encode = void 0;
       var midi_file_1 = require_midi_file();
       var Header_1 = require_Header();
-      var array_flatten_1 = __require("array-flatten");
+      var array_flatten_1 = require_dist();
       function encodeNote(note, channel) {
         return [
           {
@@ -27538,107 +27559,6 @@
     }
   });
 
-  // src/GameEnvironment.ts
-  var viewBoxWidth, GameEnvironment;
-  var init_GameEnvironment = __esm({
-    "src/GameEnvironment.ts"() {
-      "use strict";
-      init_Joystick();
-      init_GameMenu();
-      viewBoxWidth = 200;
-      GameEnvironment = class {
-        constructor() {
-          this.label = document.createElement("HTMLLabelElement");
-          this._joystick = new Joystick();
-          if (gameFrame.offsetHeight != 0) {
-            this.screenAspectRatio = gameFrame.offsetWidth / gameFrame.offsetHeight;
-          } else {
-            console.log("gameFrame not properly sized");
-            this.screenAspectRatio = 0.8;
-          }
-          this.viewBoxWidth = viewBoxWidth;
-          this.viewBoxToScreenRatio = this.viewBoxWidth / window.innerWidth;
-          this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio;
-          this.viewBoxLeft = -this.viewBoxWidth / 2;
-          this.viewBoxTop = -this.viewBoxHeight / 2;
-          this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-          this._svgElement.style.position = "absolute";
-          console.log(gameFrame.clientHeight);
-          this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
-          this._svgElement.setAttribute("tabindex", "0");
-          const viewBoxBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-          viewBoxBorder.setAttribute("x", `${this.viewBoxLeft}`);
-          viewBoxBorder.setAttribute("y", `${this.viewBoxTop}`);
-          viewBoxBorder.setAttribute("width", `${this.viewBoxWidth}`);
-          viewBoxBorder.setAttribute("height", `${this.viewBoxHeight}`);
-          viewBoxBorder.setAttribute("fill", `none`);
-          viewBoxBorder.setAttribute("stroke-width", `2px`);
-          viewBoxBorder.setAttribute("stroke", `green`);
-          this._svgElement.appendChild(viewBoxBorder);
-          gameFrame.appendChild(this._svgElement);
-          gameFrame.style.height = `${window.innerHeight}px`;
-          gameFrame.appendChild(this._joystick.htmlElement);
-          gameFrame.appendChild(this._joystick.fireButton);
-          this.joystick.htmlElement.style.display = "none";
-          this.label.style.position = "absolute";
-          this.label.style.top = "10px";
-          this.label.style.left = "10px";
-          this.label.style.border = "2px solid darkgreen";
-          this.label.style.backgroundColor = "lightgrey";
-          this.label.style.opacity = "0.8";
-          this.label.innerHTML = `Steuere dein Raumschiff mit dem linken Feld, aktiviere den Strahl durch Druck auf das rechte Feld! <br>Andere online-Spieler erkennst du an ihrem Schild.`;
-          gameFrame.appendChild(this.label);
-          window.addEventListener(`resize`, this.handleResize.bind(this));
-        }
-        displayTouchControl() {
-          this.joystick.htmlElement.style.display = "block";
-        }
-        get joystick() {
-          return this._joystick;
-        }
-        get svgElement() {
-          return this._svgElement;
-        }
-        handleResize() {
-          this.updateLabel();
-          gameFrame.style.width = `${window.innerWidth}px`;
-          gameFrame.style.height = `${window.innerHeight}px`;
-          this._svgElement.style.width = `${window.innerWidth}px`;
-          this._svgElement.style.height = `${window.innerHeight}px`;
-          this.viewBoxWidth = window.innerWidth * this.viewBoxToScreenRatio;
-          this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio;
-          this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
-        }
-        updateLabel() {
-          this.label.innerHTML = `gameFrame.clientWidth doesnt change: ${gameFrame.clientWidth}, gameFrame.clientHeight: ${gameFrame.clientHeight}<br>
-                                    window.innerWidth is dynamic: ${window.innerWidth}, window.innerHeight: ${window.innerHeight}<br>
-                                    this.viewBoxWidth: ${this.viewBoxWidth}, this.viewBoxHeight: ${this.viewBoxHeight}<br>
-                                    this._svgElement.getAttribute("viewBox"): ${this._svgElement.getAttribute("viewBox")}`;
-        }
-        setLabel(text) {
-          this.label.innerHTML = text;
-        }
-        handleSpacecraft(spacecraft, option) {
-          switch (option) {
-            case "pseudoOrbit":
-              spacecraft.pseudoOrbit;
-              break;
-            case "pseudoTorus":
-              if (spacecraft.location.x < this.viewBoxLeft)
-                spacecraft.location.x = this.viewBoxLeft + viewBoxWidth;
-              if (spacecraft.location.x > this.viewBoxLeft + viewBoxWidth)
-                spacecraft.location.x = this.viewBoxLeft;
-              if (spacecraft.location.y < this.viewBoxTop)
-                spacecraft.location.y = this.viewBoxTop + this.viewBoxHeight;
-              if (spacecraft.location.y > this.viewBoxTop + this.viewBoxHeight)
-                spacecraft.location.y = this.viewBoxTop;
-              break;
-          }
-        }
-      };
-    }
-  });
-
   // src/TriangularBeam.ts
   var TriangularBeam;
   var init_TriangularBeam = __esm({
@@ -27807,7 +27727,7 @@
       "use strict";
       init_SpacecraftShape();
       init_Vector2D();
-      init_GameEnvironment();
+      init_GameMenu();
       init_GameMenu();
       init_DeviceFactory();
       fontSize = viewBoxWidth / 45;
@@ -28130,6 +28050,105 @@
     }
   });
 
+  // src/GameEnvironment.ts
+  var GameEnvironment;
+  var init_GameEnvironment = __esm({
+    "src/GameEnvironment.ts"() {
+      "use strict";
+      init_Joystick();
+      init_GameMenu();
+      GameEnvironment = class {
+        constructor() {
+          this.label = document.createElement("HTMLLabelElement");
+          this._joystick = new Joystick();
+          if (gameFrame.offsetHeight != 0) {
+            this.screenAspectRatio = gameFrame.offsetWidth / gameFrame.offsetHeight;
+          } else {
+            console.log("gameFrame not properly sized");
+            this.screenAspectRatio = 0.8;
+          }
+          this.viewBoxWidth = viewBoxWidth * 3;
+          this.viewBoxToScreenRatio = this.viewBoxWidth / window.innerWidth;
+          this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio;
+          this.viewBoxLeft = -this.viewBoxWidth / 2;
+          this.viewBoxTop = -this.viewBoxHeight / 2;
+          this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          this._svgElement.style.position = "absolute";
+          this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+          this._svgElement.setAttribute("tabindex", "0");
+          const viewBoxBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          viewBoxBorder.setAttribute("x", `${this.viewBoxLeft}`);
+          viewBoxBorder.setAttribute("y", `${this.viewBoxTop}`);
+          viewBoxBorder.setAttribute("width", `${this.viewBoxWidth}`);
+          viewBoxBorder.setAttribute("height", `${this.viewBoxHeight}`);
+          viewBoxBorder.setAttribute("fill", `none`);
+          viewBoxBorder.setAttribute("stroke-width", `2px`);
+          viewBoxBorder.setAttribute("stroke", `green`);
+          this._svgElement.appendChild(viewBoxBorder);
+          gameFrame.appendChild(this._svgElement);
+          gameFrame.style.height = `${window.innerHeight}px`;
+          gameFrame.appendChild(this._joystick.htmlElement);
+          gameFrame.appendChild(this._joystick.fireButton);
+          this.joystick.htmlElement.style.display = "none";
+          this.label.style.position = "absolute";
+          this.label.style.top = "10px";
+          this.label.style.left = "10px";
+          this.label.style.border = "2px solid darkgreen";
+          this.label.style.backgroundColor = "lightgrey";
+          this.label.style.opacity = "0.8";
+          this.label.innerHTML = `Steuere dein Raumschiff mit dem linken Feld, aktiviere den Strahl durch Druck auf das rechte Feld! <br>Andere online-Spieler erkennst du an ihrem Schild.`;
+          gameFrame.appendChild(this.label);
+          window.addEventListener(`resize`, this.handleResize.bind(this));
+        }
+        displayTouchControl() {
+          this.joystick.htmlElement.style.display = "block";
+        }
+        get joystick() {
+          return this._joystick;
+        }
+        get svgElement() {
+          return this._svgElement;
+        }
+        handleResize() {
+          this.updateLabel();
+          gameFrame.style.width = `${window.innerWidth}px`;
+          gameFrame.style.height = `${window.innerHeight}px`;
+          this._svgElement.style.width = `${window.innerWidth}px`;
+          this._svgElement.style.height = `${window.innerHeight}px`;
+          this.viewBoxWidth = window.innerWidth * this.viewBoxToScreenRatio;
+          this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio;
+          this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+        }
+        updateLabel() {
+          this.label.innerHTML = `gameFrame.clientWidth doesnt change: ${gameFrame.clientWidth}, gameFrame.clientHeight: ${gameFrame.clientHeight}<br>
+                                    window.innerWidth is dynamic: ${window.innerWidth}, window.innerHeight: ${window.innerHeight}<br>
+                                    this.viewBoxWidth: ${this.viewBoxWidth}, this.viewBoxHeight: ${this.viewBoxHeight}<br>
+                                    this._svgElement.getAttribute("viewBox"): ${this._svgElement.getAttribute("viewBox")}`;
+        }
+        setLabel(text) {
+          this.label.innerHTML = text;
+        }
+        handleSpacecraft(spacecraft, option) {
+          switch (option) {
+            case "pseudoOrbit":
+              spacecraft.pseudoOrbit;
+              break;
+            case "pseudoTorus":
+              if (spacecraft.location.x < this.viewBoxLeft)
+                spacecraft.location.x = this.viewBoxLeft + this.viewBoxWidth;
+              if (spacecraft.location.x > this.viewBoxLeft + this.viewBoxWidth)
+                spacecraft.location.x = this.viewBoxLeft;
+              if (spacecraft.location.y < this.viewBoxTop)
+                spacecraft.location.y = this.viewBoxTop + this.viewBoxHeight;
+              if (spacecraft.location.y > this.viewBoxTop + this.viewBoxHeight)
+                spacecraft.location.y = this.viewBoxTop;
+              break;
+          }
+        }
+      };
+    }
+  });
+
   // src/SpaceGame.ts
   var SpaceGame, ServerRequestHandler;
   var init_SpaceGame = __esm({
@@ -28272,8 +28291,8 @@
         sendData(data) {
           return __async(this, null, function* () {
             try {
-              const response = yield fetch("https://spacepatrol.zapto.org/sync", {
-                //http://spacepatrolzone.dynv6.net  http://192.168.2.222:3000  http://localhost https://spacepatrol.zapto.org/sync
+              const response = yield fetch("/api/main/SynchronizeSpaceObject", {
+                //https://spacepatrol.zapto.org/sync// localhost:8080/api/main/SynchronizeSpaceObjects //http://spacepatrolzone.dynv6.net  http://192.168.2.222:3000   https://spacepatrol.zapto.org/sync
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json"
@@ -28311,7 +28330,7 @@
   });
 
   // src/GameMenu.ts
-  var import_midi, gameFrame, keyboardController, color, device, GameMenu;
+  var import_midi, gameFrame, keyboardController, color, device, viewBoxWidth, GameMenu;
   var init_GameMenu = __esm({
     "src/GameMenu.ts"() {
       "use strict";
@@ -28322,6 +28341,7 @@
       import_midi = __toESM(require_Midi(), 1);
       gameFrame = document.getElementById("spacepatrolContainer");
       keyboardController = new KeyboardController(gameFrame);
+      viewBoxWidth = 100;
       GameMenu = class {
         constructor() {
           this.joystick = new Joystick();
@@ -28334,7 +28354,6 @@
           this.rotationAngle = 0;
           this.viewBoxTop = -50;
           this.viewBoxLeft = -50;
-          this.viewBoxWidth = 100;
           this.viewBoxHeight = 100;
           this.previewSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
           this.keysPressed = {};
@@ -28355,6 +28374,8 @@
           const option10 = document.createElement("option");
           const option11 = document.createElement("option");
           const option12 = document.createElement("option");
+          const homper = document.createElement("option");
+          const repulsorJet = document.createElement("option");
           const noDevice = document.createElement("option");
           noDevice.innerHTML = "disabled selected";
           noDevice.value = "";
@@ -28379,6 +28400,8 @@
           this.typeSelector.appendChild(option2);
           this.typeSelector.appendChild(option3);
           this.typeSelector.appendChild(option4);
+          this.typeSelector.appendChild(repulsorJet);
+          this.typeSelector.appendChild(homper);
           this.typeSelector.appendChild(option5);
           this.typeSelector.appendChild(option6);
           this.typeSelector.appendChild(option7);
@@ -28387,11 +28410,13 @@
           this.typeSelector.appendChild(option10);
           this.typeSelector.appendChild(option11);
           this.typeSelector.appendChild(option12);
-          option1.setAttribute("value", "../resources/blizzer.png");
+          option1.setAttribute("value", "rokket");
           option1.innerHTML = "disabled selected";
           option2.setAttribute("value", "rokket");
           option3.setAttribute("value", "rainbowRocket");
           option4.setAttribute("value", "../resources/bromber.svg");
+          homper.setAttribute("value", "../resources/homper.png");
+          repulsorJet.setAttribute("value", "../resources/repulsorJet.png");
           option5.setAttribute("value", "../resources/blizzer.png");
           option6.setAttribute("value", "../resources/flipps.svg");
           option7.setAttribute("value", "../resources/lopman.png");
@@ -28404,6 +28429,8 @@
           option2.textContent = "rokket";
           option3.textContent = "rainbowRocket";
           option4.textContent = "bromber";
+          homper.textContent = "giga Jet";
+          repulsorJet.textContent = "repulsor Jet";
           option5.textContent = "blizzer";
           option6.textContent = "flipps";
           option7.textContent = "lopman";
@@ -28423,11 +28450,11 @@
           colorSelector.appendChild(option16);
           option13.setAttribute("value", "brown");
           option14.setAttribute("value", "goldenrod");
-          option15.setAttribute("value", "beige");
-          option16.setAttribute("value", "lightblue");
+          option15.setAttribute("value", "black");
+          option16.setAttribute("value", "darkblue");
           option13.textContent = "brown";
           option14.textContent = "goldenrod";
-          option15.textContent = "beige";
+          option15.textContent = "beick";
           option16.textContent = "fl\xFCn";
           this.idInputElement.setAttribute("type", "text");
           this.idInputElement.setAttribute("placeholder", "enter your id");
@@ -28471,7 +28498,7 @@
           gameFrame.appendChild(infoContent);
           color = colorSelector.value;
           device = this.deviceSelector.value;
-          this.previewSvgAspectRatio = this.viewBoxWidth / this.viewBoxHeight;
+          this.previewSvgAspectRatio = viewBoxWidth / this.viewBoxHeight;
           this.previewSvg.style.position = "relative";
           const aspectRatio = window.innerWidth / window.innerHeight;
           if (aspectRatio >= 1) {
@@ -28480,7 +28507,7 @@
           gameFrame.appendChild(this.previewSvg);
           this.previewSvg.setAttribute("id", "previewSvg");
           this.previewSvg.setAttribute("tabindex", "0");
-          this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+          this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`);
           this.previewSvg.style.zIndex = "-1";
           this.previewSvg.style.outline = "none";
           this.previewSvg.appendChild(SpacecraftShape.getCraftGElement(this.typeSelector.value));
@@ -28503,11 +28530,12 @@
           requestAnimationFrame(() => this.loop());
           if (this.joystick.isTouched) {
             this.rotationImpuls = this.joystick.value.x * 100;
-            this.viewBoxWidth += this.joystick.value.y * 10;
-            this.viewBoxLeft = this.viewBoxWidth / -2;
-            this.viewBoxHeight = this.viewBoxWidth * this.previewSvgAspectRatio;
+            viewBoxWidth += this.joystick.value.y * 10;
+            console.log(viewBoxWidth);
+            this.viewBoxLeft = viewBoxWidth / -2;
+            this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio;
             this.viewBoxTop = this.viewBoxHeight / -2;
-            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`);
           }
           if (keyboardController.getKeysPressed()[`ArrowLeft`]) {
             this.rotationImpuls -= 1;
@@ -28515,17 +28543,17 @@
             this.rotationImpuls += 1;
           }
           if (keyboardController.getKeysPressed()[`ArrowUp`]) {
-            this.viewBoxWidth += this.viewBoxWidth / 10;
-            this.viewBoxLeft = this.viewBoxWidth / -2;
-            this.viewBoxHeight = this.viewBoxWidth * this.previewSvgAspectRatio;
+            viewBoxWidth += viewBoxWidth / 10;
+            this.viewBoxLeft = viewBoxWidth / -2;
+            this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio;
             this.viewBoxTop = this.viewBoxHeight / -2;
-            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`);
           } else if (keyboardController.getKeysPressed()[`ArrowDown`]) {
-            this.viewBoxWidth -= this.viewBoxWidth / 10;
-            this.viewBoxLeft = this.viewBoxWidth / -2;
-            this.viewBoxHeight = this.viewBoxWidth * this.previewSvgAspectRatio;
+            viewBoxWidth -= viewBoxWidth / 10;
+            this.viewBoxLeft = viewBoxWidth / -2;
+            this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio;
             this.viewBoxTop = this.viewBoxHeight / -2;
-            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`);
           }
           this.rotationAngle += this.rotationImpuls;
           this.rotationAngle = (this.rotationAngle % 360 + 360) % 360;
@@ -28600,12 +28628,11 @@
           return __async(this, null, function* () {
             this.loopRunning = false;
             console.log("starting SpaceGame");
-            console.log(`Commander ${this.idInputElement.value}, you depart in a ${color} ${this.typeSelector.value}. Game starts now!`);
+            console.log(`Commander ${this.idInputElement.value}departs in a ${color} ${this.typeSelector.value}. Game starts now!`);
             try {
               let lib = yield Promise.resolve().then(() => (init_library(), library_exports));
               gameFrame.innerHTML = "";
               if (gameFrame.offsetWidth && gameFrame.offsetHeight) {
-                console.log("gameFrame sized!");
                 lib.initGame(gameFrame, this.typeSelector.value, color, this.idInputElement.value);
               } else {
                 console.log("Error getting gameFrame size!");
@@ -28621,7 +28648,7 @@
 
   // src/index.ts
   init_GameMenu();
-  console.log("SpacePatrol0201 ver.0831");
+  console.log("SpacePatrol0201 ver.2253");
   var menu = new GameMenu();
   menu.loop();
 })();

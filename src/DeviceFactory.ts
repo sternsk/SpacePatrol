@@ -1,11 +1,14 @@
 import { Device } from "./Device.js";
 import { TriangularBeam } from "./TriangularBeam.js";
 import { OvalShield } from "./OvalShield.js";
+import { TractorBeam } from "./TractorBeam.js";
+
 
 export abstract class DeviceFactory {
     private static deviceMap: { [key: string]: (...args: any[]) => Device } = {
         'repulsorBeam': () => new TriangularBeam(),
         'ovalShield': (...args: any[]) => new OvalShield(args[0], args[1]),
+        'tractorBeam': (...args: any[]) => new TractorBeam()
     };
 
     static createDevice(type: string, ...args: any[]): Device | undefined{
@@ -13,7 +16,7 @@ export abstract class DeviceFactory {
         if (deviceCreator) {
             return deviceCreator(...args);
         } else {
-            return new TriangularBeam(); // Default device
+            return new TractorBeam(); // Default device
         }
     }
 }

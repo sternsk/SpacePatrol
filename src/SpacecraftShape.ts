@@ -101,7 +101,7 @@ export abstract class SpacecraftShape{
                                         L 4 0
                                         L 4 -10`)
                 additionalPaths.push(path2)
-                break;
+                break;  
 
             case "bromber":
                 gElement.setAttribute("fill", "none");
@@ -116,6 +116,7 @@ export abstract class SpacecraftShape{
                 box.setAttribute("width", "34")
                 box.setAttribute("height", "52")
                 additionalPaths.push(box)
+                break;
 
             case "helgram.png":
                 gElement.setAttribute("transform", "translate(-50,220) scale(0.0393700787401575,0.0100000)")
@@ -237,6 +238,7 @@ export abstract class SpacecraftShape{
                 
                 path1.setAttribute("d", "M510 910 c0 -13 30 -13 50 0 11 7 7 10 -17 10 -18 0 -33 -4 -33 -10z")
                 additionalPaths.push(path1)
+                break;
         }
         
         const imageUrl = `./${type}`    
@@ -244,6 +246,7 @@ export abstract class SpacecraftShape{
         image.href.baseVal = imageUrl
         image.onload = () =>{
             let imageWidth = image.getBBox().width
+            console.log("imageWidth: "+imageWidth)
         }
         image.setAttribute("width", `50`)
         image.setAttribute("height", `50`)
