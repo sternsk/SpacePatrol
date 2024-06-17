@@ -169,7 +169,7 @@ export class SpaceGame {
 class ServerRequestHandler {
     async sendData(data: Record<string, any>) {
         try {
-            const response = await fetch('https://spacepatrol.zapto.org/sync', { //http://spacepatrolzone.dynv6.net  http://192.168.2.222:3000  http://localhost https://spacepatrol.zapto.org/sync
+            const response = await fetch('/api/main/SynchronizeSpaceObject', { //https://spacepatrol.zapto.org/sync// localhost:8080/api/main/SynchronizeSpaceObjects //http://spacepatrolzone.dynv6.net  http://192.168.2.222:3000   https://spacepatrol.zapto.org/sync
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
