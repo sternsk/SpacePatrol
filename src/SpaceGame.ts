@@ -13,8 +13,7 @@ export class SpaceGame {
     private spacecrafts: Spacecraft[] = [];
     private gameEnvironment: GameEnvironment;
     private touchControl = true
-    private serverRequestHandler: ServerRequestHandler;
-
+    
     constructor() {
         this.spacecraft = new Spacecraft();
         this.gameEnvironment = new GameEnvironment();
@@ -23,7 +22,7 @@ export class SpaceGame {
         this.setupKeyUpListener();
         
         gameFrame.focus(); //gameFrame erhält den Keyboard focus
-        this.serverRequestHandler = new ServerRequestHandler();
+        
     }
 
     init(type: string, color: string, id: string) {
@@ -42,9 +41,7 @@ export class SpaceGame {
         this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
         this.gameLoop();
        
-        setInterval(() => {
-            this.syncReality();
-        }, 50);
+        
     }
 
     async handleTouchEndEvent(){
@@ -116,79 +113,4 @@ export class SpaceGame {
 
         }
     }
-    private async syncReality(): Promise<void> {
-        
-        try {
-            // Send own status to server
-            // store the feedback in receivedData
-            const receivedData = await this.serverRequestHandler.sendData(this.spacecraft.toJSON());
-            
-            // Überprüfe, ob die empfangenen Daten ein Array sind
-            if (!Array.isArray(receivedData)) {
-                console.error('Received data is not in the expected format (array)');
-                return; // Beende die Funktion, um weitere Fehler zu vermeiden
-            }
-            // compare all Elements in the spacecrafts-Array with the receivedData and 
-            // delete the elements that are not in receivedData
-            this.spacecrafts = this.spacecrafts.filter(spacecraft =>{
-                const index = receivedData.findIndex(data => data.id === spacecraft.id)
-                if(index == -1){
-                    spacecraft.vanish();
-                    return false //Element entfernen
-                }
-                return true // Element beibehalten
-            })
-            
-            receivedData.forEach(element => {
-                // check if element of receivedData is already in spacecrafts-Array
-                const index = this.spacecrafts.findIndex(spacecraft => spacecraft.id === element.id)
-                
-                // if so and is not an npc, update the element in Spacecrafts-Array 
-                if(index !== -1 && !element.npc){
-                    this.spacecrafts[index].updateFromJSON(element)
-                } 
-                
-                // otherwise create a new spacecraft and add it to the svg-element
-                else if(index === -1){// make sure, not to create too many spacecrafts
-                    const spacecraft = Spacecraft.fromJSON(element)
-                    if(!spacecraft.npc) //npc dont get a label
-                        spacecraft.applyLabel(this.gameEnvironment.svgElement)
-                    this.spacecrafts.push(spacecraft)
-                    this.gameEnvironment.svgElement.appendChild(spacecraft.gElement)
-                }
-                
-                
-            });
-
-        } catch (error) {
-            console.error('Error syncing spacecraft data:', error);
-        }
-    }
 }
-
-class ServerRequestHandler {
-    async sendData(data: Record<string, any>) {
-        try {
-            const response = await fetch('/api/main/SynchronizeSpaceObject', { //https://spacepatrol.zapto.org/sync// localhost:8080/api/main/SynchronizeSpaceObjects //http://spacepatrolzone.dynv6.net  http://192.168.2.222:3000   https://spacepatrol.zapto.org/sync
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-
-            if (!response.ok) {
-                throw new Error('Failed to send data');
-            }
-
-          //  console.log('Data sent successfully, awaiting return');
-            return await response.json();
-            
-        } catch (error) {
-            throw error;
-        }
-    }
-
-    
-}
-
