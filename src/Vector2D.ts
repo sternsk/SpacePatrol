@@ -1,9 +1,8 @@
-export interface Vector2D{
-    _x: number
-    _y: number
-}
+
 
 export class Vector2D implements Vector2D{
+    _x: number
+    _y: number
     
     constructor(x: number = 0, y: number = 0){
         this._x = x;

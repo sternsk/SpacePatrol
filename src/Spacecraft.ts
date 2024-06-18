@@ -1,25 +1,26 @@
 import { SpacecraftShape } from "./SpacecraftShape.js"
-import { Vector2D } from "./Vector2D.js"
 import { viewBoxWidth } from "./GameMenu.js"
 import { color } from "./GameMenu.js"
 import { Device } from "./Device.js"
 import { DeviceFactory } from "./DeviceFactory.js"
-import { SpaceObjectStatus } from "./library.js"
+import { SpaceObjectStatus, polarVector, add } from "./library.js"
+import { Vector2d } from "./library.js"
 
 export let fontSize = viewBoxWidth/45
 
 export class Spacecraft implements SpaceObjectStatus{
 
-    private _gElement: SVGGElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
-    private _type: string
+    _location = {x: 0, y:0} as Vector2d;
+    _impuls = {x: 0, y:0} as Vector2d;
+    _direction = 0;
+    _id: string = "spacecraft";
+    _type: string = "rokket";
+    
+    private _gElement: SVGGElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
     private _color: string
-    private _id: string
     private _touchControlType: string
     private easing = false
-    private _direction = 0
     private _maneuverability = 2
-    private _impuls = new Vector2D()
-    private _location = new Vector2D()
     private _npc = false
 
     private _device?: Device
@@ -39,8 +40,8 @@ export class Spacecraft implements SpaceObjectStatus{
     }
 
     accelerate(thrust: number) {
-        let vector = Vector2D.fromLengthAndAngle(thrust, this.direction);
-        this._impuls.add(vector)
+        let vector = polarVector(thrust, this.direction);
+        this._impuls = add(this._impuls, vector)
     }
 
     addDevice(type: string, args:any[]){
