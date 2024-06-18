@@ -1,12 +1,25 @@
-import { Spacecraft } from "./Spacecraft.js";
+import { Spacecraft, fontSize } from "./Spacecraft.js";
 import { GameEnvironment } from "./GameEnvironment.js";
 import { SpacecraftShape } from "./SpacecraftShape.js";
-import { keyboardController } from "./GameMenu.js";
-import { gameFrame } from "./GameMenu.js";
+import { keyboardController, device, gameFrame } from "./GameMenu.js";
 import { Vector2D } from "./Vector2D.js";
-import { fontSize } from "./Spacecraft.js";
-import { device } from "./GameMenu.js";
 import { TractorBeam } from "./TractorBeam.js";
+import { evaluate, RequestDefinition, Vector2d } from "./library.js";
+
+type GameStateRequest = {
+    location: Vector2d;
+    impuls: Vector2d;
+    direction: number;
+    id: string;
+    type: string;
+};
+
+type GameStateResponse = {
+    success: boolean;
+    newGameState: any; // Replace `any` with your specific game state type
+};
+
+const gameStateUpdateRequestDef = new RequestDefinition<GameStateRequest, GameStateResponse>("updateGameState");
 
 export class SpaceGame {
     private spacecraft: Spacecraft
@@ -14,6 +27,7 @@ export class SpaceGame {
     private gameEnvironment: GameEnvironment;
     private touchControl = true
     
+
     constructor() {
         this.spacecraft = new Spacecraft();
         this.gameEnvironment = new GameEnvironment();
@@ -23,6 +37,25 @@ export class SpaceGame {
         
         gameFrame.focus(); //gameFrame erhält den Keyboard focus
         
+    }
+
+    private sendGameStateUpdate() {
+        const request: GameStateRequest = {
+            location: this.spacecraft.location,
+            impuls: this.spacecraft.impuls,
+            direction: this.spacecraft.direction,
+            id: this.spacecraft.id,
+            type: this.spacecraft.type
+        };
+
+        evaluate(gameStateUpdateRequestDef, request)
+            .then((response: GameStateResponse) => {
+                console.log("Update successful:", response);
+                // Handle the updated game state here
+            })
+            .catch((error) => {
+                console.error("Failed to update game state:", error);
+            });
     }
 
     init(type: string, color: string, id: string) {
@@ -41,7 +74,9 @@ export class SpaceGame {
         this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
         this.gameLoop();
        
-        
+        setInterval(() => {
+            this.sendGameStateUpdate();
+        }, 50);
     }
 
     async handleTouchEndEvent(){
