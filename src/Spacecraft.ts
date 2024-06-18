@@ -342,8 +342,6 @@ export class Spacecraft implements SpaceObjectStatus{
             this._labelBorder.style.height = (this._label.getBBox().height* 1.1).toString()
         }
     }
-
-    
     
     update() {
        // if(this._location instanceof Vector2D && this._impuls instanceof Vector2D)
@@ -356,52 +354,6 @@ export class Spacecraft implements SpaceObjectStatus{
             this._labelBorder.setAttribute("transform", `translate(${(this._location.x-7.5)+this.scale*7}, ${this._location.y})`)
         }
         
-    }
-
-    updateFromJSON(json: Record<string, any>): void{
-        this._direction = json.direction
-        this._impuls = Vector2D.fromJSON(json.impuls)
-        this._location = new Vector2D(json.location.x, json.location.y)
-        this._lastUpdate = json.lastUpdate
-    }
-
-    // Convert Spacecraft object to JSON representation
-    toJSON(): Record<string, any> {
-        this._lastUpdate = Date.now()
-        return {
-            type: this._type,
-            color: this._color,
-            id: this._id,
-            direction: this._direction,
-            impuls: this._impuls.toJSON(),
-            location: this._location.toJSON(),
-            lastUpdate: this._lastUpdate,  //apply timestamp each time the vessel is transformed to JSON
-            npc: this._npc
-
-        };
-    }
-
-    // Create a Spacecraft object from a JSON representation
-    static fromJSON(json: Record<string, any>): Spacecraft {
-        const spacecraft = new Spacecraft()
-        spacecraft._type = json.type
-        spacecraft._color = json.color
-        spacecraft._id = json.id
-        spacecraft._npc = json.npc
-        
-        spacecraft._direction = json.direction;
-        spacecraft._impuls = new (json.impuls.x, json.impuls.y)
-        spacecraft._location = new Vector2D(json.location.x, json.location.y) 
-        
-        spacecraft._gElement = SpacecraftShape.getCraftGElement(spacecraft.type)
-        return spacecraft;
-    }
-
-    // Update spacecraft properties from another spacecraft object
-    updateFrom(other: Spacecraft) {
-        this._direction = other.direction;
-        this._impuls = other._impuls;
-        this._location = other._location;
     }
 
     vanish(){
