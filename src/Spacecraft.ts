@@ -3,8 +3,8 @@ import { viewBoxWidth } from "./GameMenu.js"
 import { color } from "./GameMenu.js"
 import { Device } from "./Device.js"
 import { DeviceFactory } from "./DeviceFactory.js"
-import { SpaceObjectStatus, polarVector, add } from "./library.js"
-import { Vector2d } from "./library.js"
+import { SpaceObjectStatus, polarVector, add, length, angle, distanceBetween, Vector2d, inverse } from "./library.js"
+
 
 export let fontSize = viewBoxWidth/45
 
@@ -91,22 +91,24 @@ export class Spacecraft implements SpaceObjectStatus{
 
     brake(dampingFactor: number): void {
         // Verringere die Geschwindigkeit um den Dämpfungsfaktor
-        const newLength = this._impuls.length * (1-dampingFactor)
-        this._impuls = Vector2D.fromLengthAndAngle(newLength, this._impuls.angle)
+        const newLength = length(this._impuls) * (1-dampingFactor)
+        this._impuls = polarVector(newLength, angle(this._impuls))
         
         //  Stoppe die Bewegung vollständig, wenn die Geschwindigkeit einen bestimmten Schwellenwert unterschreitet
-         if (this._impuls.length < 0.01) {
-            this._impuls = new Vector2D(0, 0)
+         if (length(this._impuls) < 0.01) {
+            this._impuls.x = 0
+            this._impuls.y = 0
         }
     }
 
     async gradualBrake(){
         
-        while(this._impuls.length > .01){
+        while(length(this._impuls) > .01){
             this.brake(.1)
             await this.delay(100)
         }
-        this._impuls = new Vector2D(0, 0)
+        this._impuls.x = 0
+        this._impuls.y = 0
     }
 
     private delay(ms: number){
@@ -145,16 +147,16 @@ export class Spacecraft implements SpaceObjectStatus{
 
     }
 
-    handleTouchControl(vector: Vector2D){
-        let deltaAngle = this._direction - vector.angle
+    handleTouchControl(vector: Vector2d){
+        let deltaAngle = this._direction - angle(vector)
         switch (this._type){
         case `rokket`:
-            this._impuls.add(vector)
-            this._direction = vector.angle
+            add(this._impuls, vector)
+            this._direction = angle(vector)
             break
         
         case `rainbowRocket`:
-            this._impuls.add(vector)
+            add(this._impuls, vector)
             if((deltaAngle > 0 && 
                 deltaAngle < 180) || 
                 deltaAngle < -180){
@@ -168,7 +170,7 @@ export class Spacecraft implements SpaceObjectStatus{
             break
             
         case `../resources/bromber.svg`:
-            this._impuls.add(vector)
+            add(this._impuls, vector)
 
             if(deltaAngle < -180)
                 deltaAngle +=360
@@ -181,12 +183,12 @@ export class Spacecraft implements SpaceObjectStatus{
             break
             
         case `../resources/blizzer.png`:
-            this._impuls.add(vector)
+            add(this._impuls, vector)
 
             if(!this.easing){
                 this.easing = true
                 const startDirection = this._direction
-                this.ease(startDirection, vector.angle)
+                this.ease(startDirection, angle(vector))
             }
             
             break
@@ -204,8 +206,8 @@ export class Spacecraft implements SpaceObjectStatus{
             break
 
         default:
-            this._impuls.add(vector)
-            this._direction = vector.angle
+            add(this._impuls, vector)
+            this._direction = angle(vector)
         }
 
         
@@ -233,12 +235,12 @@ export class Spacecraft implements SpaceObjectStatus{
            : (Math.pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
     }
 
-    pseudoOrbit(vector: Vector2D){
-        const distance = this._location.distanceTo(vector)
+    pseudoOrbit(vector: Vector2d){
+        const distance = distanceBetween(vector, this._location)
         if (distance < viewBoxWidth/2)
             this._scale = Math.cos(distance/(viewBoxWidth/4) * Math.PI/4)
         if (distance > viewBoxWidth/2){
-            this.impuls.inverse()
+            inverse(this.impuls)
         }
     }
 
@@ -264,14 +266,14 @@ export class Spacecraft implements SpaceObjectStatus{
         return(this._label)
     }
 
-    get impuls(): Vector2D{
+    get impuls(): Vector2d{
         return this._impuls
     }
     get lastUpdate(): number{
         return this._lastUpdate
     }
 
-    get location(): Vector2D{
+    get location(): Vector2d{
         return this._location
     }
 
@@ -279,7 +281,7 @@ export class Spacecraft implements SpaceObjectStatus{
         return this._npc
     }
 
-    set location(location: Vector2D) {
+    set location(location: Vector2d) {
         this._location = location
     }
     get scale(){
@@ -345,7 +347,7 @@ export class Spacecraft implements SpaceObjectStatus{
     
     update() {
        // if(this._location instanceof Vector2D && this._impuls instanceof Vector2D)
-        this._location.add(this._impuls);
+        add(this._impuls, this._location);
         
         this.gElement.setAttribute("transform", `translate (${this._location.x} ${this._location.y}) scale (${this._scale}) rotate (${this.direction + 90})`)
         
@@ -388,7 +390,7 @@ export class Spacecraft implements SpaceObjectStatus{
         spacecraft._npc = json.npc
         
         spacecraft._direction = json.direction;
-        spacecraft._impuls = new Vector2D(json.impuls.x, json.impuls.y)
+        spacecraft._impuls = new (json.impuls.x, json.impuls.y)
         spacecraft._location = new Vector2D(json.location.x, json.location.y) 
         
         spacecraft._gElement = SpacecraftShape.getCraftGElement(spacecraft.type)
