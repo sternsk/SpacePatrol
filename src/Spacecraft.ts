@@ -4,10 +4,12 @@ import { viewBoxWidth } from "./GameMenu.js"
 import { color } from "./GameMenu.js"
 import { Device } from "./Device.js"
 import { DeviceFactory } from "./DeviceFactory.js"
+import { SpaceObjectStatus } from "./library.js"
 
 export let fontSize = viewBoxWidth/45
 
-export class Spacecraft {
+export class Spacecraft implements SpaceObjectStatus{
+
     private _gElement: SVGGElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
     private _type: string
     private _color: string

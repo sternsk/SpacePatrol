@@ -1,19 +1,13 @@
-export class Vector2D{
-    private _x;
-    private _y;
-    // properties length and angle are rather unused - might be deleted
-    private _length = 0;
-    private _angle = 0;
+export interface Vector2D{
+    _x: number
+    _y: number
+}
 
+export class Vector2D implements Vector2D{
+    
     constructor(x: number = 0, y: number = 0){
         this._x = x;
         this._y = y;
-
-        if(x != 0 || y != 0){
-            this._length = Math.sqrt(Math.pow(this._x, 2) + Math.pow(this._y, 2))
-            this._angle = Math.atan2(this._y, this._x)
-        }
-
     }
 
     static fromLengthAndAngle(length: number, angle: number): Vector2D { //get angle in degree
