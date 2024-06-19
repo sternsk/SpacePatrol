@@ -4,7 +4,7 @@ import { SpacecraftShape } from "./SpacecraftShape.js";
 import { keyboardController, device, gameFrame } from "./GameMenu.js";
 import { Vector2D } from "./Vector2D.js";
 import { TractorBeam } from "./TractorBeam.js";
-import { evaluate, RequestDefinition, Vector2d } from "./library.js";
+import { evaluate, RequestDefinition, SpaceObjectStatus, Vector2d } from "./library.js";
 
 
 export class SpaceGame {
@@ -42,7 +42,13 @@ export class SpaceGame {
         this.gameLoop();
        
         setInterval(() => {
-            this.spacecrafts = evaluate(new RequestDefinition("pathToServer"), this.spacecraft);
+            evaluate<SpaceObjectStatus, SpaceObjectStatus[]>(new RequestDefinition("pathToServer"), this.spacecraft)
+            .then(response => {
+                this.spacecrafts = response;
+            })
+            .catch(error => {
+                console.error("Failed to update spacecrafts:", error);
+            });
         }, 50);
     }
 
