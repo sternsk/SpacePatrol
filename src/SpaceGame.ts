@@ -6,20 +6,6 @@ import { Vector2D } from "./Vector2D.js";
 import { TractorBeam } from "./TractorBeam.js";
 import { evaluate, RequestDefinition, Vector2d } from "./library.js";
 
-type GameStateRequest = {
-    location: Vector2d;
-    impuls: Vector2d;
-    direction: number;
-    id: string;
-    type: string;
-};
-
-type GameStateResponse = {
-    success: boolean;
-    newGameState: any; // Replace `any` with your specific game state type
-};
-
-const gameStateUpdateRequestDef = new RequestDefinition<GameStateRequest, GameStateResponse>("updateGameState");
 
 export class SpaceGame {
     private spacecraft: Spacecraft
