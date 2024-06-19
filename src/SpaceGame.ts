@@ -25,25 +25,6 @@ export class SpaceGame {
         
     }
 
-    private sendGameStateUpdate() {
-        const request: GameStateRequest = {
-            location: this.spacecraft.location,
-            impuls: this.spacecraft.impuls,
-            direction: this.spacecraft.direction,
-            id: this.spacecraft.id,
-            type: this.spacecraft.type
-        };
-
-        evaluate(gameStateUpdateRequestDef, request)
-            .then((response: GameStateResponse) => {
-                console.log("Update successful:", response);
-                // Handle the updated game state here
-            })
-            .catch((error) => {
-                console.error("Failed to update game state:", error);
-            });
-    }
-
     init(type: string, color: string, id: string) {
         this.spacecraft.type = type
         this.spacecraft.color = color
@@ -61,7 +42,7 @@ export class SpaceGame {
         this.gameLoop();
        
         setInterval(() => {
-            this.sendGameStateUpdate();
+            this.spacecrafts = evaluate(new RequestDefinition("pathToServer"), this.spacecraft);
         }, 50);
     }
 
