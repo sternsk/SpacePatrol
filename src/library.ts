@@ -51,6 +51,8 @@ export class RequestDefinition<R, Res> {
     }
 }
 
+const syncSpaceObject = new RequestDefinition<SyncronizeSpaceObject, SpaceObjectStatus[]>("SynchronizedSpaceObject");
+
 export function evaluate<R, Res>(def: RequestDefinition<R, Res>, request: R): Promise<Res> {
     // use XMLHttpRequest or fetch from some lib to send you request and receive result:
     const paylod = JSON.stringify(request);
