@@ -6,14 +6,6 @@ export function initGame(gameFrame: HTMLElement, type: string, color: string, id
     game.init(type, color, id)
 }
 
-export interface SpaceObjectStatus {
-    location: Vector2d;
-    impuls: Vector2d;
-    direction: number;
-    id: string;
-    type: string;
-}
-
 export interface Vector2d{
     x: number
     y: number
@@ -51,7 +43,19 @@ export class RequestDefinition<R, Res> {
     }
 }
 
-const syncSpaceObject = new RequestDefinition<SyncronizeSpaceObject, SpaceObjectStatus[]>("SynchronizedSpaceObject");
+export interface SpaceObjectStatus {
+    location: Vector2d;
+    impuls: Vector2d;
+    direction: number;
+    id: string;
+    type: string;
+}
+
+export interface SyncronizeSpaceObject {
+    rocketStatus: SpaceObjectStatus;
+}
+
+export const syncSpaceObject = new RequestDefinition<SyncronizeSpaceObject, SpaceObjectStatus[]>("SynchronizedSpaceObject");
 
 export function evaluate<R, Res>(def: RequestDefinition<R, Res>, request: R): Promise<Res> {
     // use XMLHttpRequest or fetch from some lib to send you request and receive result:
