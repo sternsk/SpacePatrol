@@ -2,7 +2,7 @@ import { Spacecraft, fontSize } from "./Spacecraft.js";
 import { GameEnvironment } from "./GameEnvironment.js";
 import { SpacecraftShape } from "./SpacecraftShape.js";
 import { keyboardController, device, gameFrame } from "./GameMenu.js";
-import { Vector2D } from "./Vector2D.js";
+//import { Vector2D } from "./Vector2D.js";
 import { TractorBeam } from "./TractorBeam.js";
 import { evaluate, RequestDefinition, SpaceObjectStatus, SyncronizeSpaceObject, syncSpaceObject, Vector2d } from "./library.js";
 
@@ -103,6 +103,7 @@ export class SpaceGame {
     private updateElements() {
         this.spacecraft.update()
         this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus")
+        console.log("fontSize: "+fontSize)
         this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale*7}"> 
                                         ${this.spacecraft.id}</tspan>
                                         <tspan x="${this.spacecraft.scale*7}" dy="${fontSize}">
@@ -114,7 +115,7 @@ export class SpaceGame {
         if(this.spacecrafts.length > 0){
             this.spacecrafts.forEach((spacecraft) => {
                 if(spacecraft.npc){
-                    spacecraft.pseudoOrbit(new Vector2D(0,0)) 
+                    spacecraft.pseudoOrbit({x:0, y:0}) 
                 }
                 else{
                     this.gameEnvironment.handleSpacecraft(spacecraft, "pseudoTorus")

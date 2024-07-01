@@ -8,8 +8,13 @@ import { SpaceObjectStatus, polarVector, add, length, angle, distanceBetween, Ve
 
 
 export let fontSize = viewBoxWidth/20
+console.log("viewBoxWidth: "+viewBoxWidth)
+       
+
 
 export class Spacecraft implements SpaceObjectStatus{
+
+    
     
     // ersetze die properties durch objectStatus.property
     //
@@ -44,6 +49,7 @@ export class Spacecraft implements SpaceObjectStatus{
     private _labelBorder: SVGRectElement | undefined;
     
     constructor() {
+                
         this.objectStatus.type = "rocket"
         this._color = "flün"
         this.objectStatus.id = "spacecraft"

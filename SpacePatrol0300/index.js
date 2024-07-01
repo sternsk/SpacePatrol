@@ -532,6 +532,7 @@
       init_DeviceFactory();
       init_library();
       fontSize = viewBoxWidth / 20;
+      console.log("viewBoxWidth: " + viewBoxWidth);
       Spacecraft = class {
         constructor() {
           // ersetze die properties durch objectStatus.property
@@ -925,71 +926,6 @@
     }
   });
 
-  // src/Vector2D.ts
-  var Vector2D;
-  var init_Vector2D = __esm({
-    "src/Vector2D.ts"() {
-      "use strict";
-      Vector2D = class _Vector2D {
-        constructor(x = 0, y = 0) {
-          this._x = x;
-          this._y = y;
-        }
-        static fromLengthAndAngle(length2, angle2) {
-          if (angle2 >= 360 || angle2 < 0) {
-            angle2 = (angle2 % 360 + 360) % 360;
-          }
-          angle2 = angle2 / 180 * Math.PI;
-          const x = Math.cos(angle2) * length2;
-          const y = Math.sin(angle2) * length2;
-          return new _Vector2D(x, y);
-        }
-        add(vector) {
-          this._x += vector.x;
-          this._y += vector.y;
-        }
-        distanceTo(destination) {
-          let distanceVector = new _Vector2D(destination.x - this._x, destination.y - this._y);
-          return distanceVector.length;
-        }
-        inverse() {
-          this._x = -this._x;
-          this._y = -this._y;
-        }
-        get length() {
-          return Math.sqrt(Math.pow(this._x, 2) + Math.pow(this._y, 2));
-        }
-        get angle() {
-          const angle2 = Math.atan2(this._y, this._x) / Math.PI * 180;
-          return angle2 % 360;
-        }
-        get x() {
-          return this._x;
-        }
-        get y() {
-          return this._y;
-        }
-        set x(x) {
-          this._x = x;
-        }
-        set y(y) {
-          this._y = y;
-        }
-        // Create a Vector2D object from a JSON representation
-        static fromJSON(json) {
-          return new _Vector2D(json.x, json.y);
-        }
-        // Convert Vector2D object to JSON representation
-        toJSON() {
-          return {
-            x: this._x,
-            y: this._y
-          };
-        }
-      };
-    }
-  });
-
   // src/SpaceGame.ts
   var SpaceGame;
   var init_SpaceGame = __esm({
@@ -999,7 +935,6 @@
       init_GameEnvironment();
       init_SpacecraftShape();
       init_GameMenu();
-      init_Vector2D();
       init_TractorBeam();
       init_library();
       SpaceGame = class {
@@ -1077,6 +1012,7 @@
         updateElements() {
           this.spacecraft.update();
           this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus");
+          console.log("fontSize: " + fontSize);
           this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale * 7}"> 
                                         ${this.spacecraft.id}</tspan>
                                         <tspan x="${this.spacecraft.scale * 7}" dy="${fontSize}">
@@ -1087,7 +1023,7 @@
           if (this.spacecrafts.length > 0) {
             this.spacecrafts.forEach((spacecraft) => {
               if (spacecraft.npc) {
-                spacecraft.pseudoOrbit(new Vector2D(0, 0));
+                spacecraft.pseudoOrbit({ x: 0, y: 0 });
               } else {
                 this.gameEnvironment.handleSpacecraft(spacecraft, "pseudoTorus");
               }
@@ -28326,6 +28262,7 @@
       gameFrame = document.getElementById("spacepatrolContainer");
       keyboardController = new KeyboardController(gameFrame);
       viewBoxWidth = 100;
+      console.log("viewBoxWidth" + viewBoxWidth);
       GameMenu = class {
         constructor() {
           this.joystick = new Joystick();
@@ -28631,7 +28568,7 @@
 
   // src/index.ts
   init_GameMenu();
-  console.log("SpacePatrol0201 ver.1757");
+  console.log("SpacePatrol0201 ver.1931");
   var menu = new GameMenu();
   menu.loop();
 })();

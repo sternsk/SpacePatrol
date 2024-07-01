@@ -21,6 +21,7 @@ export const keyboardController = new KeyboardController(gameFrame)
 export let color: string        //initial color
 export let device: string
 export let viewBoxWidth = 100
+console.log("viewBoxWidth"+viewBoxWidth)
 
 export class GameMenu{
     joystick = new Joystick()
