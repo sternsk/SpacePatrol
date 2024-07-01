@@ -12,7 +12,8 @@ export interface Vector2d{
 }
 
 export function polarVector(length: number, angle: number): Vector2d{
-    return {x: Math.cos(angle)*length, y: Math.sin(angle)*length}
+    const radAngle = angle/180 * Math.PI
+    return {x: Math.cos(radAngle)*length, y: Math.sin(radAngle)*length}
 }
 
 export function add(v1: Vector2d, v2: Vector2d): Vector2d{
@@ -24,7 +25,7 @@ export function length(v: Vector2d): number{
 }
 
 export function angle(v: Vector2d): number{
-    return Math.atan2(v.y, v.x)
+    return Math.atan2(v.y, v.x) / Math.PI * 180
 }
 
 export function distanceBetween(start: Vector2d, destination: Vector2d): number{
@@ -55,11 +56,11 @@ export interface SyncronizeSpaceObject {
     rocketStatus: SpaceObjectStatus;
 }
 
-export const syncSpaceObject = new RequestDefinition<SyncronizeSpaceObject, SpaceObjectStatus[]>("SynchronizedSpaceObject");
+export const syncSpaceObject = new RequestDefinition<SyncronizeSpaceObject, SpaceObjectStatus[]>("SynchronizeSpaceObject");
 
 export function evaluate<R, Res>(def: RequestDefinition<R, Res>, request: R): Promise<Res> {
     // use XMLHttpRequest or fetch from some lib to send you request and receive result:
-    const paylod = JSON.stringify(request);
+    const payload = JSON.stringify(request);
 
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();

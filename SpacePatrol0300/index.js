@@ -361,6 +361,570 @@
     }
   });
 
+  // src/TriangularBeam.ts
+  var TriangularBeam;
+  var init_TriangularBeam = __esm({
+    "src/TriangularBeam.ts"() {
+      "use strict";
+      TriangularBeam = class {
+        constructor() {
+          this.name = "TriangularBeam";
+          this.count = 12;
+          this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
+          this.activated = false;
+        }
+        activate() {
+          return __async(this, null, function* () {
+            if (!this.activated) {
+              this.activated = true;
+              for (let i = 0; i < this.count; i++) {
+                const particle = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                particle.setAttribute("class", "particle");
+                particle.setAttribute("d", `M ${-2 * i - 2} ${-i * 5 - 2},
+                                            L 0 ${-i * 5 - 10}, 
+                                            L ${3 * i + 2} ${-i * 5 - 2}`);
+                particle.setAttribute("stroke", `rgb(${i / this.count * 255}, ${i * 2 / this.count * 255}, ${i / 3 / this.count * 255}`);
+                particle.setAttribute("stroke-width", "2px");
+                particle.setAttribute("vector-effect", "non-scaling-stroke");
+                particle.setAttribute("fill", `rgb (${-i * 255 + 255}, ${-i * 255 + 255}, ${-i * 255 + 255})`);
+                yield new Promise((resolve) => setTimeout(resolve, 100));
+                particle.setAttribute("opacity", `${i / this.count}`);
+                this._gElem.appendChild(particle);
+              }
+              this.activated = true;
+            }
+          });
+        }
+        deactivate() {
+          this._gElem.innerHTML = "";
+          this.activated = false;
+        }
+        dispose() {
+          if (this._gElem && this._gElem.parentNode) {
+            this._gElem.innerHTML = "";
+            this._gElem.parentNode.removeChild(this._gElem);
+          }
+          this.activated = false;
+        }
+        get gElem() {
+          return this._gElem;
+        }
+      };
+    }
+  });
+
+  // src/OvalShield.ts
+  var OvalShield;
+  var init_OvalShield = __esm({
+    "src/OvalShield.ts"() {
+      "use strict";
+      OvalShield = class {
+        constructor(shieldWidth, shieldHeight) {
+          this.name = "ovalShield";
+          this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
+          this.activated = false;
+          this._gElem.setAttribute("class", "ovalShield");
+          this.width = shieldWidth;
+          this.height = shieldHeight;
+        }
+        activate() {
+          if (!this.activated) {
+            const boundingOval = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+            boundingOval.setAttribute("cx", "0");
+            boundingOval.setAttribute("cy", "0");
+            boundingOval.setAttribute("rx", `${this.width * 2}`);
+            boundingOval.setAttribute("ry", `${this.height * 2}`);
+            boundingOval.setAttribute("stroke", "green");
+            boundingOval.setAttribute("vector-effect", "none-scaling-stroke");
+            boundingOval.setAttribute("stroke-width", "2px");
+            boundingOval.setAttribute("fill", "none");
+            this._gElem.appendChild(boundingOval);
+            this.activated = true;
+          }
+        }
+        deactivate() {
+          this._gElem.innerHTML = "";
+          this.activated = false;
+        }
+        dispose() {
+          throw new Error("Method not implemented.");
+        }
+      };
+    }
+  });
+
+  // src/TractorBeam.ts
+  var TractorBeam;
+  var init_TractorBeam = __esm({
+    "src/TractorBeam.ts"() {
+      "use strict";
+      TractorBeam = class {
+        constructor() {
+          this.name = "tractorBeam";
+          this.target = { x: 0, y: 0 };
+          this.activated = false;
+          this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        }
+        activate() {
+          if (!this.activated) {
+            const beam = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            beam.setAttribute("x1", "0");
+            beam.setAttribute("y1", "0");
+            beam.setAttribute("x2", `${this.target.x}`);
+            beam.setAttribute("y2", `${this.target.y}`);
+            beam.setAttribute("stroke", "darkgreen");
+            beam.setAttribute("stroke-width", "5px");
+            beam.setAttribute("vector-effect", "non-scaling-stroke");
+            this._gElem.appendChild(beam);
+          }
+        }
+        deactivate() {
+          this._gElem.innerHTML = "";
+          this.activated = false;
+        }
+        dispose() {
+          if (this._gElem && this._gElem.parentNode) {
+            this._gElem.innerHTML = "";
+            this._gElem.parentNode.removeChild(this._gElem);
+          }
+          this.activated = false;
+        }
+        setTarget(target) {
+          this.target = target;
+        }
+      };
+    }
+  });
+
+  // src/DeviceFactory.ts
+  var DeviceFactory;
+  var init_DeviceFactory = __esm({
+    "src/DeviceFactory.ts"() {
+      "use strict";
+      init_TriangularBeam();
+      init_OvalShield();
+      init_TractorBeam();
+      DeviceFactory = class {
+        static createDevice(type, ...args) {
+          const deviceCreator = this.deviceMap[type];
+          if (deviceCreator) {
+            return deviceCreator(...args);
+          } else {
+            return new TractorBeam();
+          }
+        }
+      };
+      DeviceFactory.deviceMap = {
+        "repulsorBeam": () => new TriangularBeam(),
+        "ovalShield": (...args) => new OvalShield(args[0], args[1]),
+        "tractorBeam": (...args) => new TractorBeam()
+      };
+    }
+  });
+
+  // src/Spacecraft.ts
+  var fontSize, Spacecraft;
+  var init_Spacecraft = __esm({
+    "src/Spacecraft.ts"() {
+      "use strict";
+      init_GameMenu();
+      init_GameMenu();
+      init_DeviceFactory();
+      init_library();
+      fontSize = viewBoxWidth / 20;
+      Spacecraft = class {
+        constructor() {
+          // ersetze die properties durch objectStatus.property
+          //
+          //_location = {x: 0, y:0} as Vector2d;
+          //_impuls = {x: 0, y:0} as Vector2d;
+          //_direction = 0;
+          //_id: string = "spacecraft";
+          //_type: string = "rokket";
+          this.objectStatus = {
+            location: { x: 0, y: 0 },
+            impuls: { x: 0, y: 0 },
+            direction: 0,
+            id: "spacecraft",
+            type: "rokket"
+          };
+          this._gElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
+          this.easing = false;
+          this._maneuverability = 2;
+          this._npc = false;
+          this._lastUpdate = Date.now();
+          this._scale = 1;
+          this.objectStatus.type = "rocket";
+          this._color = "fl\xFCn";
+          this.objectStatus.id = "spacecraft";
+          this._touchControlType = "spacecraft";
+        }
+        accelerate(thrust) {
+          console.log(thrust);
+          console.log(length(this.impuls));
+          let vector = polarVector(thrust, this.direction);
+          this.objectStatus.impuls = add(this.objectStatus.impuls, vector);
+        }
+        addDevice(type, args) {
+          this._device = DeviceFactory.createDevice(type, ...args);
+        }
+        getDevice(deviceType) {
+          if (this.device instanceof deviceType) {
+            return this.device;
+          }
+          return null;
+        }
+        operate() {
+          var _a, _b;
+          (_a = this._device) == null ? void 0 : _a.activate();
+          if ((_b = this._device) == null ? void 0 : _b._gElem) {
+            this._gElement.appendChild(this._device._gElem);
+          }
+        }
+        applyLabel(svgElement) {
+          this._labelBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          svgElement.appendChild(this._labelBorder);
+          this._labelBorder.setAttribute("x", `${this.scale * 6.7}`);
+          this._labelBorder.setAttribute("y", `${-fontSize}`);
+          this._labelBorder.setAttribute("stroke-width", "2px");
+          this._labelBorder.setAttribute("stroke", "grey");
+          this._labelBorder.setAttribute("vector-effect", "non-scaling-stroke");
+          this._labelBorder.setAttribute("fill", "lightgrey");
+          this._labelBorder.setAttribute("fill-opacity", ".8");
+          this._label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          svgElement.appendChild(this._label);
+          this._label.setAttribute("font-size", `${fontSize}px`);
+          this._label.innerHTML = `<tspan x="${this._scale * 7}">label text, yet to be written`;
+          setTimeout(() => {
+            if (this._labelBorder && this._label) {
+              this._labelBorder.style.width = (this._label.getBBox().width * 1.1).toString();
+              this._labelBorder.style.height = (this._label.getBBox().height * 1.1).toString();
+            }
+          });
+        }
+        brake(dampingFactor) {
+          const newLength = length(this.objectStatus.impuls) * (1 - dampingFactor);
+          this.objectStatus.impuls = polarVector(newLength, angle(this.objectStatus.impuls));
+          if (length(this.objectStatus.impuls) < 0.01) {
+            this.objectStatus.impuls.x = 0;
+            this.objectStatus.impuls.y = 0;
+          }
+        }
+        gradualBrake() {
+          return __async(this, null, function* () {
+            while (length(this.objectStatus.impuls) > 0.01) {
+              this.brake(0.1);
+              yield this.delay(100);
+            }
+            this.objectStatus.impuls.x = 0;
+            this.objectStatus.impuls.y = 0;
+          });
+        }
+        delay(ms) {
+          return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+        handleKeyboardInput(keysPressed) {
+          if (keysPressed["ArrowLeft"]) {
+            this.rotate(-this._maneuverability);
+          }
+          if (keysPressed["ArrowRight"]) {
+            this.rotate(this._maneuverability);
+          }
+          if (keysPressed["ArrowUp"]) {
+            this.accelerate(this._maneuverability / 100);
+          }
+          if (keysPressed["ArrowDown"]) {
+            this.brake(this._maneuverability / 10);
+          }
+          if (keysPressed[" "]) {
+            this.operate();
+          }
+        }
+        onKeyUp(key) {
+          switch (key) {
+            case " ":
+              if (this.device)
+                this.device.deactivate();
+          }
+        }
+        handleTouchControl(vector) {
+          let deltaAngle = this.objectStatus.direction - angle(vector);
+          switch (this.objectStatus.type) {
+            case `rokket`:
+              add(this.objectStatus.impuls, vector);
+              this.objectStatus.direction = angle(vector);
+              break;
+            case `rainbowRocket`:
+              add(this.objectStatus.impuls, vector);
+              if (deltaAngle > 0 && deltaAngle < 180 || deltaAngle < -180) {
+                this.rotate(-5);
+              } else if (deltaAngle < 0 || deltaAngle > 180) {
+                this.rotate(5);
+              }
+              break;
+            case `../resources/bromber.svg`:
+              add(this.objectStatus.impuls, vector);
+              if (deltaAngle < -180)
+                deltaAngle += 360;
+              if (deltaAngle > 180)
+                deltaAngle -= 360;
+              if (Math.abs(deltaAngle) > 8) {
+                this.rotate(-180 / deltaAngle);
+              }
+              break;
+            case `../resources/blizzer.png`:
+              add(this.objectStatus.impuls, vector);
+              if (!this.easing) {
+                this.easing = true;
+                const startDirection = this.objectStatus.direction;
+                this.ease(startDirection, angle(vector));
+              }
+              break;
+            case `../resources/eye.svg`:
+              const horizontalValue = vector.x;
+              const verticalValue = vector.y;
+              this.accelerate(-verticalValue);
+              this.rotate(horizontalValue * this._maneuverability * 50);
+              break;
+            default:
+              add(this.objectStatus.impuls, vector);
+              this.objectStatus.direction = angle(vector);
+          }
+        }
+        ease(oldDirection, target) {
+          return __async(this, null, function* () {
+            const deltaAngle = target - this.objectStatus.direction;
+            let easeValue;
+            const steps = Math.ceil(Math.abs(deltaAngle));
+            for (let i = 1; i <= steps; i++) {
+              easeValue = this.easeInOutBack(i / steps);
+              this.objectStatus.direction = oldDirection + easeValue * deltaAngle;
+              yield new Promise((resolve) => setTimeout(resolve, 10));
+            }
+            this.easing = false;
+          });
+        }
+        easeInOutBack(x) {
+          const c1 = 1.70158;
+          const c2 = c1 * 1.525;
+          return x < 0.5 ? Math.pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2) / 2 : (Math.pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
+        }
+        pseudoOrbit(vector) {
+          const distance = distanceBetween(vector, this.objectStatus.location);
+          if (distance < viewBoxWidth / 2)
+            this._scale = Math.cos(distance / (viewBoxWidth / 4) * Math.PI / 4);
+          if (distance > viewBoxWidth / 2) {
+            inverse(this.impuls);
+          }
+        }
+        rotate(angle2) {
+          this.objectStatus.direction += angle2;
+          if (this.objectStatus.direction > 180) {
+            this.objectStatus.direction -= 360;
+          } else if (this.objectStatus.direction < -180) {
+            this.objectStatus.direction += 360;
+          }
+        }
+        get direction() {
+          return this.objectStatus.direction;
+        }
+        get device() {
+          if (this._device) return this._device;
+          else return void 0;
+        }
+        get label() {
+          return this._label;
+        }
+        get impuls() {
+          return this.objectStatus.impuls;
+        }
+        get lastUpdate() {
+          return this._lastUpdate;
+        }
+        get location() {
+          return this.objectStatus.location;
+        }
+        get npc() {
+          return this._npc;
+        }
+        set location(location) {
+          this.objectStatus.location = location;
+        }
+        get scale() {
+          return this._scale;
+        }
+        get type() {
+          return this.objectStatus.type;
+        }
+        set type(type) {
+          this.objectStatus.type = type;
+        }
+        get color() {
+          return this._color;
+        }
+        set color(color2) {
+          this._color = color2;
+        }
+        get id() {
+          return this.objectStatus.id;
+        }
+        set id(id) {
+          this.objectStatus.id = id;
+        }
+        get gElement() {
+          return this._gElement;
+        }
+        set gElement(g) {
+          this._gElement = g;
+        }
+        set scale(scale) {
+          this._scale = scale;
+        }
+        set touchControlType(newType) {
+          if (newType === "rokket" || newType === "rainbowRocket")
+            this._touchControlType = "spacecraft";
+          else this._touchControlType = "butterfly";
+        }
+        setLabelText(text) {
+          if (this._label) {
+            this._label.setAttribute("font-family", "Arial");
+            this._label.setAttribute("stroke-width", ".05");
+            this._label.setAttribute("stroke", `${color}`);
+            this._label.innerHTML = text;
+          }
+          if (this._labelBorder && this._label) {
+            this._labelBorder.style.width = (this._label.getBBox().width * 1.1).toString();
+            this._labelBorder.style.height = (this._label.getBBox().height * 1.1).toString();
+          }
+        }
+        update() {
+          this.location = add(this.objectStatus.impuls, this.objectStatus.location);
+          this.gElement.setAttribute("transform", `translate (${this.objectStatus.location.x} ${this.objectStatus.location.y}) scale (${this._scale}) rotate (${this.direction + 90})`);
+          if (this._label && this._labelBorder) {
+            this._label.setAttribute("transform", `translate(${this.objectStatus.location.x} ${this.objectStatus.location.y})`);
+            this._labelBorder.setAttribute("transform", `translate(${this.objectStatus.location.x - 7.5 + this.scale * 7}, ${this.objectStatus.location.y})`);
+          }
+        }
+        vanish() {
+          const animate = () => {
+            var _a, _b, _c, _d;
+            if (this._scale > 0.1) {
+              this._scale -= this._scale / 100;
+              this.update();
+              requestAnimationFrame(animate);
+            } else {
+              (_a = this._gElement.parentNode) == null ? void 0 : _a.removeChild(this._gElement);
+              if (this._label) {
+                (_b = this._label.parentNode) == null ? void 0 : _b.removeChild(this._label);
+                (_d = (_c = this._labelBorder) == null ? void 0 : _c.parentNode) == null ? void 0 : _d.removeChild(this._labelBorder);
+              }
+            }
+          };
+          animate();
+        }
+      };
+    }
+  });
+
+  // src/GameEnvironment.ts
+  var GameEnvironment;
+  var init_GameEnvironment = __esm({
+    "src/GameEnvironment.ts"() {
+      "use strict";
+      init_Joystick();
+      init_GameMenu();
+      GameEnvironment = class {
+        constructor() {
+          this.label = document.createElement("HTMLLabelElement");
+          this._joystick = new Joystick();
+          if (gameFrame.offsetHeight != 0) {
+            this.screenAspectRatio = gameFrame.offsetWidth / gameFrame.offsetHeight;
+          } else {
+            console.log("gameFrame not properly sized");
+            this.screenAspectRatio = 0.8;
+          }
+          this.viewBoxWidth = viewBoxWidth * 3;
+          this.viewBoxToScreenRatio = this.viewBoxWidth / window.innerWidth;
+          this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio;
+          this.viewBoxLeft = -this.viewBoxWidth / 2;
+          this.viewBoxTop = -this.viewBoxHeight / 2;
+          this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          this._svgElement.style.position = "absolute";
+          this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+          this._svgElement.setAttribute("tabindex", "0");
+          const viewBoxBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          viewBoxBorder.setAttribute("x", `${this.viewBoxLeft}`);
+          viewBoxBorder.setAttribute("y", `${this.viewBoxTop}`);
+          viewBoxBorder.setAttribute("width", `${this.viewBoxWidth}`);
+          viewBoxBorder.setAttribute("height", `${this.viewBoxHeight}`);
+          viewBoxBorder.setAttribute("fill", `none`);
+          viewBoxBorder.setAttribute("stroke-width", `2px`);
+          viewBoxBorder.setAttribute("stroke", `green`);
+          this._svgElement.appendChild(viewBoxBorder);
+          gameFrame.appendChild(this._svgElement);
+          gameFrame.style.height = `${window.innerHeight}px`;
+          gameFrame.appendChild(this._joystick.htmlElement);
+          gameFrame.appendChild(this._joystick.fireButton);
+          this.joystick.htmlElement.style.display = "none";
+          this.label.style.position = "absolute";
+          this.label.style.top = "10px";
+          this.label.style.left = "10px";
+          this.label.style.border = "2px solid darkgreen";
+          this.label.style.backgroundColor = "lightgrey";
+          this.label.style.opacity = "0.8";
+          this.label.innerHTML = `Steuere dein Raumschiff mit dem linken Feld, aktiviere den Strahl durch Druck auf das rechte Feld! <br>Andere online-Spieler erkennst du an ihrem Schild.`;
+          gameFrame.appendChild(this.label);
+          window.addEventListener(`resize`, this.handleResize.bind(this));
+        }
+        displayTouchControl() {
+          this.joystick.htmlElement.style.display = "block";
+        }
+        get joystick() {
+          return this._joystick;
+        }
+        get svgElement() {
+          return this._svgElement;
+        }
+        handleResize() {
+          this.updateLabel();
+          gameFrame.style.width = `${window.innerWidth}px`;
+          gameFrame.style.height = `${window.innerHeight}px`;
+          this._svgElement.style.width = `${window.innerWidth}px`;
+          this._svgElement.style.height = `${window.innerHeight}px`;
+          this.viewBoxWidth = window.innerWidth * this.viewBoxToScreenRatio;
+          this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio;
+          this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+        }
+        updateLabel() {
+          this.label.innerHTML = `gameFrame.clientWidth doesnt change: ${gameFrame.clientWidth}, gameFrame.clientHeight: ${gameFrame.clientHeight}<br>
+                                    window.innerWidth is dynamic: ${window.innerWidth}, window.innerHeight: ${window.innerHeight}<br>
+                                    this.viewBoxWidth: ${this.viewBoxWidth}, this.viewBoxHeight: ${this.viewBoxHeight}<br>
+                                    this._svgElement.getAttribute("viewBox"): ${this._svgElement.getAttribute("viewBox")}`;
+        }
+        setLabel(text) {
+          this.label.innerHTML = text;
+        }
+        handleSpacecraft(spacecraft, option) {
+          switch (option) {
+            case "pseudoOrbit":
+              spacecraft.pseudoOrbit;
+              break;
+            case "pseudoTorus":
+              if (spacecraft.location.x < this.viewBoxLeft)
+                spacecraft.location.x = this.viewBoxLeft + this.viewBoxWidth;
+              if (spacecraft.location.x > this.viewBoxLeft + this.viewBoxWidth)
+                spacecraft.location.x = this.viewBoxLeft;
+              if (spacecraft.location.y < this.viewBoxTop)
+                spacecraft.location.y = this.viewBoxTop + this.viewBoxHeight;
+              if (spacecraft.location.y > this.viewBoxTop + this.viewBoxHeight)
+                spacecraft.location.y = this.viewBoxTop;
+              break;
+          }
+        }
+      };
+    }
+  });
+
   // src/Vector2D.ts
   var Vector2D;
   var init_Vector2D = __esm({
@@ -368,23 +932,16 @@
       "use strict";
       Vector2D = class _Vector2D {
         constructor(x = 0, y = 0) {
-          // properties length and angle are rather unused - might be deleted
-          this._length = 0;
-          this._angle = 0;
           this._x = x;
           this._y = y;
-          if (x != 0 || y != 0) {
-            this._length = Math.sqrt(Math.pow(this._x, 2) + Math.pow(this._y, 2));
-            this._angle = Math.atan2(this._y, this._x);
-          }
         }
-        static fromLengthAndAngle(length, angle) {
-          if (angle >= 360 || angle < 0) {
-            angle = (angle % 360 + 360) % 360;
+        static fromLengthAndAngle(length2, angle2) {
+          if (angle2 >= 360 || angle2 < 0) {
+            angle2 = (angle2 % 360 + 360) % 360;
           }
-          angle = angle / 180 * Math.PI;
-          const x = Math.cos(angle) * length;
-          const y = Math.sin(angle) * length;
+          angle2 = angle2 / 180 * Math.PI;
+          const x = Math.cos(angle2) * length2;
+          const y = Math.sin(angle2) * length2;
           return new _Vector2D(x, y);
         }
         add(vector) {
@@ -403,8 +960,8 @@
           return Math.sqrt(Math.pow(this._x, 2) + Math.pow(this._y, 2));
         }
         get angle() {
-          const angle = Math.atan2(this._y, this._x) / Math.PI * 180;
-          return angle % 360;
+          const angle2 = Math.atan2(this._y, this._x) / Math.PI * 180;
+          return angle2 % 360;
         }
         get x() {
           return this._x;
@@ -433,16 +990,212 @@
     }
   });
 
+  // src/SpaceGame.ts
+  var SpaceGame;
+  var init_SpaceGame = __esm({
+    "src/SpaceGame.ts"() {
+      "use strict";
+      init_Spacecraft();
+      init_GameEnvironment();
+      init_SpacecraftShape();
+      init_GameMenu();
+      init_Vector2D();
+      init_TractorBeam();
+      init_library();
+      SpaceGame = class {
+        constructor() {
+          this.spacecrafts = [];
+          this.touchControl = true;
+          this.spacecraft = new Spacecraft();
+          this.gameEnvironment = new GameEnvironment();
+          this.gameEnvironment.displayTouchControl();
+          this.gameEnvironment.joystick.addObserver(() => this.handleTouchEndEvent());
+          this.setupKeyUpListener();
+          gameFrame.focus();
+        }
+        init(type, color2, id) {
+          this.spacecraft.type = type;
+          this.spacecraft.color = color2;
+          if (id) this.spacecraft.id = id;
+          this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type);
+          this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement);
+          console.log("device: " + device);
+          this.spacecraft.addDevice(`${device}`, [
+            this.spacecraft.gElement.getBBox().width / 3,
+            this.spacecraft.gElement.getBBox().height / 3
+          ]);
+          this.spacecraft.touchControlType = this.spacecraft.type;
+          this.spacecraft.applyLabel(this.gameEnvironment.svgElement);
+          this.gameLoop();
+          setInterval(() => {
+            const request = {};
+            request.rocketStatus = this.spacecraft.objectStatus;
+            evaluate(syncSpaceObject, request).then((response) => {
+              this.syncReality(response);
+            }).catch((error) => {
+              console.error("Failed to update spacecrafts:", error);
+            });
+          }, 50);
+        }
+        syncReality(reality) {
+        }
+        handleTouchEndEvent() {
+          return __async(this, null, function* () {
+            this.spacecraft.gradualBrake();
+          });
+        }
+        gameLoop() {
+          var _a;
+          requestAnimationFrame(() => {
+            this.gameLoop();
+          });
+          if (this.touchControl) {
+            if (this.gameEnvironment.joystick.isTouched) {
+              this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value);
+            }
+            if (this.gameEnvironment.joystick.fires) {
+              const tractorBeam = this.spacecraft.getDevice(TractorBeam);
+              if (tractorBeam && this.spacecrafts[0]) {
+                tractorBeam.setTarget({
+                  x: this.spacecrafts[0].location.x - this.spacecraft.location.x,
+                  y: this.spacecrafts[0].location.y - this.spacecraft.location.y
+                });
+              }
+              this.spacecraft.operate();
+            } else if ((_a = this.spacecraft.device) == null ? void 0 : _a.activated) {
+              this.spacecraft.device.deactivate();
+            }
+          }
+          this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
+          this.updateElements();
+        }
+        setupKeyUpListener() {
+          keyboardController.onKeyUp((key) => {
+            this.spacecraft.onKeyUp(key);
+          });
+        }
+        updateElements() {
+          this.spacecraft.update();
+          this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus");
+          this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale * 7}"> 
+                                        ${this.spacecraft.id}</tspan>
+                                        <tspan x="${this.spacecraft.scale * 7}" dy="${fontSize}">
+                                        location: ${this.spacecraft.location.x.toFixed(0)}, ${this.spacecraft.location.y.toFixed(0)}</tspan>
+                                        <tspan x="${this.spacecraft.scale * 7}" dy="${fontSize}">
+                                        direction: ${this.spacecraft.direction}</tspan>
+                                        `);
+          if (this.spacecrafts.length > 0) {
+            this.spacecrafts.forEach((spacecraft) => {
+              if (spacecraft.npc) {
+                spacecraft.pseudoOrbit(new Vector2D(0, 0));
+              } else {
+                this.gameEnvironment.handleSpacecraft(spacecraft, "pseudoTorus");
+              }
+              spacecraft.update();
+              if (spacecraft.label) {
+                spacecraft.setLabelText(`<tspan x="${spacecraft.scale * 7}"> 
+                                            id: ${spacecraft.id} </tspan>
+                                            <tspan x="${spacecraft.scale * 7}" dy="${fontSize}">
+                                           lastUpdate: ${spacecraft.lastUpdate}</tspan>
+                                           <tspan x="${spacecraft.scale * 7}" dy="${2 * fontSize}">
+                                           Date.now(): ${Date.now()}</tspan>`);
+              }
+            });
+          }
+        }
+      };
+    }
+  });
+
+  // src/library.ts
+  var library_exports = {};
+  __export(library_exports, {
+    RequestDefinition: () => RequestDefinition2,
+    add: () => add,
+    angle: () => angle,
+    distanceBetween: () => distanceBetween,
+    evaluate: () => evaluate,
+    initGame: () => initGame,
+    inverse: () => inverse,
+    length: () => length,
+    polarVector: () => polarVector,
+    syncSpaceObject: () => syncSpaceObject
+  });
+  function initGame(gameFrame2, type, color2, id) {
+    console.log("spaceGame loads");
+    const game = new SpaceGame();
+    game.init(type, color2, id);
+  }
+  function polarVector(length2, angle2) {
+    const radAngle = angle2 / 180 * Math.PI;
+    return { x: Math.cos(radAngle) * length2, y: Math.sin(radAngle) * length2 };
+  }
+  function add(v1, v2) {
+    return { x: v1.x + v2.x, y: v1.y + v2.y };
+  }
+  function length(v) {
+    return Math.sqrt(v.x * v.x + v.y * v.y);
+  }
+  function angle(v) {
+    return Math.atan2(v.y, v.x) / Math.PI * 180;
+  }
+  function distanceBetween(start2, destination) {
+    let distanceVector = { x: destination.x - start2.x, y: destination.y - start2.y };
+    return length(distanceVector);
+  }
+  function inverse(v) {
+    return { x: -v.x, y: -v.y };
+  }
+  function evaluate(def, request) {
+    const payload = JSON.stringify(request);
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `/api/main/${def.path}`, true);
+      xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              resolve(response);
+            } catch (error) {
+              reject(new Error("Failed to parse response: " + xhr.responseText));
+            }
+          } else {
+            reject(new Error("Request failed with status: " + xhr.status));
+          }
+        }
+      };
+      xhr.onerror = () => {
+        reject(new Error("Network error"));
+      };
+      xhr.send(JSON.stringify(request));
+    });
+  }
+  var RequestDefinition2, syncSpaceObject;
+  var init_library = __esm({
+    "src/library.ts"() {
+      "use strict";
+      init_SpaceGame();
+      RequestDefinition2 = class {
+        constructor(path) {
+          this.path = path;
+        }
+      };
+      syncSpaceObject = new RequestDefinition2("SynchronizeSpaceObject");
+    }
+  });
+
   // src/Joystick.ts
   var Joystick;
   var init_Joystick = __esm({
     "src/Joystick.ts"() {
       "use strict";
-      init_Vector2D();
+      init_library();
       Joystick = class {
         // Array von Funktionen, die beim touchend-Ereignis aufgerufen werden
         constructor() {
-          this._value = new Vector2D();
+          this._value = { x: 0, y: 0 };
           this._isTouched = false;
           this._fires = false;
           this.touchEndObservers = [];
@@ -506,6 +1259,7 @@
           return this._knobElement;
         }
         get value() {
+          console.log(length(this._value));
           return this._value;
         }
         initEvents() {
@@ -538,24 +1292,24 @@
           const centerY = this._htmlElement.offsetHeight / 2;
           const distance = Math.sqrt(__pow(offsetX - centerX, 2) + __pow(offsetY - centerY, 2));
           const relativDistance = distance / centerX;
-          const angle = Math.atan2(offsetY - centerY, offsetX - centerX);
+          const angle2 = Math.atan2(offsetY - centerY, offsetX - centerX);
           if (distance <= centerX) {
             this._knobElement.style.left = `${offsetX}px`;
             this._knobElement.style.top = `${offsetY}px`;
           } else {
-            const x = centerX + centerX * Math.cos(angle);
-            const y = centerY + centerY * Math.sin(angle);
+            const x = centerX + centerX * Math.cos(angle2);
+            const y = centerY + centerY * Math.sin(angle2);
             this._knobElement.style.left = `${x}px`;
             this._knobElement.style.top = `${y}px`;
           }
-          this._value = Vector2D.fromLengthAndAngle(relativDistance / 10, angle / Math.PI * 180);
+          this._value = { x: Math.cos(angle2 * relativDistance / 10), y: Math.sin(angle2) * relativDistance / 10 };
         }
         onTouchEnd(event) {
           event.preventDefault();
           this._isTouched = false;
           this._knobElement.style.left = "50%";
           this._knobElement.style.top = "50%";
-          this._value = new Vector2D(0, 0);
+          this._value = { x: 0, y: 0 };
           this.touchEndObservers.forEach((observer) => observer());
         }
       };
@@ -857,7 +1611,7 @@
             }
           }, {
             key: "add",
-            value: function add(automationEvent) {
+            value: function add2(automationEvent) {
               var eventTime = getEventTime(automationEvent);
               if (isCancelAndHoldAutomationEvent(automationEvent) || isCancelScheduledValuesAutomationEvent(automationEvent)) {
                 var index = this._automationEvents.findIndex(function(currentAutomationEvent) {
@@ -888,11 +1642,11 @@
                   if (lastAutomationEvent !== void 0 && isSetValueCurveAutomationEvent(lastAutomationEvent) && lastAutomationEvent.startTime + lastAutomationEvent.duration > eventTime) {
                     var duration = eventTime - lastAutomationEvent.startTime;
                     var ratio = (lastAutomationEvent.values.length - 1) / lastAutomationEvent.duration;
-                    var length = Math.max(2, 1 + Math.ceil(duration * ratio));
-                    var fraction = duration / (length - 1) * ratio;
-                    var values = lastAutomationEvent.values.slice(0, length);
+                    var length2 = Math.max(2, 1 + Math.ceil(duration * ratio));
+                    var fraction = duration / (length2 - 1) * ratio;
+                    var values = lastAutomationEvent.values.slice(0, length2);
                     if (fraction < 1) {
-                      for (var i = 1; i < length; i += 1) {
+                      for (var i = 1; i < length2; i += 1) {
                         var factor = fraction * i % 1;
                         values[i] = lastAutomationEvent.values[i - 1] * (1 - factor) + lastAutomationEvent.values[i] * factor;
                       }
@@ -1675,11 +2429,11 @@
             if (nativeOfflineAudioContextConstructor2 === null) {
               throw new Error("Missing the native OfflineAudioContext constructor.");
             }
-            const { length, numberOfChannels, sampleRate } = __spreadValues(__spreadValues({}, DEFAULT_OPTIONS2), options);
+            const { length: length2, numberOfChannels, sampleRate } = __spreadValues(__spreadValues({}, DEFAULT_OPTIONS2), options);
             if (nativeOfflineAudioContext === null) {
               nativeOfflineAudioContext = new nativeOfflineAudioContextConstructor2(1, 1, 44100);
             }
-            const audioBuffer = nativeAudioBufferConstructor2 !== null && cacheTestResult2(testNativeAudioBufferConstructorSupport, testNativeAudioBufferConstructorSupport) ? new nativeAudioBufferConstructor2({ length, numberOfChannels, sampleRate }) : nativeOfflineAudioContext.createBuffer(numberOfChannels, length, sampleRate);
+            const audioBuffer = nativeAudioBufferConstructor2 !== null && cacheTestResult2(testNativeAudioBufferConstructorSupport, testNativeAudioBufferConstructorSupport) ? new nativeAudioBufferConstructor2({ length: length2, numberOfChannels, sampleRate }) : nativeOfflineAudioContext.createBuffer(numberOfChannels, length2, sampleRate);
             if (audioBuffer.numberOfChannels === 0) {
               throw createNotSupportedError2();
             }
@@ -3417,8 +4171,8 @@
         const arrays = [];
         for (let i = 0; i < x; i += 1) {
           const array = [];
-          const length = typeof y === "number" ? y : y[i];
-          for (let j = 0; j < length; j += 1) {
+          const length2 = typeof y === "number" ? y : y[i];
+          for (let j = 0; j < length2; j += 1) {
             array.push(new Float32Array(128));
           }
           arrays.push(array);
@@ -3454,10 +4208,10 @@
       init_get_audio_worklet_processor();
       init_is_owned_by_context();
       processBuffer = (proxy, renderedBuffer, nativeOfflineAudioContext, options, outputChannelCount, processorConstructor, exposeCurrentFrameAndCurrentTime2) => __async(void 0, null, function* () {
-        const length = renderedBuffer === null ? Math.ceil(proxy.context.length / 128) * 128 : renderedBuffer.length;
+        const length2 = renderedBuffer === null ? Math.ceil(proxy.context.length / 128) * 128 : renderedBuffer.length;
         const numberOfInputChannels = options.channelCount * options.numberOfInputs;
         const numberOfOutputChannels = outputChannelCount.reduce((sum, value) => sum + value, 0);
-        const processedBuffer = numberOfOutputChannels === 0 ? null : nativeOfflineAudioContext.createBuffer(numberOfOutputChannels, length, nativeOfflineAudioContext.sampleRate);
+        const processedBuffer = numberOfOutputChannels === 0 ? null : nativeOfflineAudioContext.createBuffer(numberOfOutputChannels, length2, nativeOfflineAudioContext.sampleRate);
         if (processorConstructor === void 0) {
           throw new Error("Missing the processor constructor.");
         }
@@ -3466,7 +4220,7 @@
         const inputs = createNestedArrays(options.numberOfInputs, options.channelCount);
         const outputs = createNestedArrays(options.numberOfOutputs, outputChannelCount);
         const parameters = Array.from(proxy.parameters.keys()).reduce((prmtrs, name) => __spreadProps(__spreadValues({}, prmtrs), { [name]: new Float32Array(128) }), {});
-        for (let i = 0; i < length; i += 128) {
+        for (let i = 0; i < length2; i += 128) {
           if (options.numberOfInputs > 0 && renderedBuffer !== null) {
             for (let j = 0; j < options.numberOfInputs; j += 1) {
               for (let k = 0; k < options.channelCount; k += 1) {
@@ -3710,8 +4464,8 @@
           createBiquadFilter() {
             return new biquadFilterNodeConstructor2(this);
           }
-          createBuffer(numberOfChannels, length, sampleRate) {
-            return new audioBufferConstructor2({ length, numberOfChannels, sampleRate });
+          createBuffer(numberOfChannels, length2, sampleRate) {
+            return new audioBufferConstructor2({ length: length2, numberOfChannels, sampleRate });
           }
           createBufferSource() {
             return new audioBufferSourceNodeConstructor2(this);
@@ -4355,12 +5109,12 @@
   var init_create_native_offline_audio_context = __esm({
     "node_modules/standardized-audio-context/build/es2019/factories/create-native-offline-audio-context.js"() {
       createCreateNativeOfflineAudioContext = (createNotSupportedError2, nativeOfflineAudioContextConstructor2) => {
-        return (numberOfChannels, length, sampleRate) => {
+        return (numberOfChannels, length2, sampleRate) => {
           if (nativeOfflineAudioContextConstructor2 === null) {
             throw new Error("Missing the native OfflineAudioContext constructor.");
           }
           try {
-            return new nativeOfflineAudioContextConstructor2(numberOfChannels, length, sampleRate);
+            return new nativeOfflineAudioContextConstructor2(numberOfChannels, length2, sampleRate);
           } catch (err) {
             if (err.name === "SyntaxError") {
               throw createNotSupportedError2();
@@ -5790,8 +6544,8 @@
       createMinimalOfflineAudioContextConstructor = (cacheTestResult2, createInvalidStateError2, createNativeOfflineAudioContext2, minimalBaseAudioContextConstructor2, startRendering2) => {
         return class MinimalOfflineAudioContext extends minimalBaseAudioContextConstructor2 {
           constructor(options) {
-            const { length, numberOfChannels, sampleRate } = __spreadValues(__spreadValues({}, DEFAULT_OPTIONS15), options);
-            const nativeOfflineAudioContext = createNativeOfflineAudioContext2(numberOfChannels, length, sampleRate);
+            const { length: length2, numberOfChannels, sampleRate } = __spreadValues(__spreadValues({}, DEFAULT_OPTIONS15), options);
+            const nativeOfflineAudioContext = createNativeOfflineAudioContext2(numberOfChannels, length2, sampleRate);
             if (!cacheTestResult2(testPromiseSupport, () => testPromiseSupport(nativeOfflineAudioContext))) {
               nativeOfflineAudioContext.addEventListener("statechange", /* @__PURE__ */ (() => {
                 let i = 0;
@@ -5810,7 +6564,7 @@
               })());
             }
             super(nativeOfflineAudioContext, numberOfChannels);
-            this._length = length;
+            this._length = length2;
             this._nativeOfflineAudioContext = nativeOfflineAudioContext;
             this._state = null;
           }
@@ -5952,8 +6706,8 @@
         nativeAnalyserNode.getFloatTimeDomainData = (array) => {
           const byteTimeDomainData = new Uint8Array(array.length);
           nativeAnalyserNode.getByteTimeDomainData(byteTimeDomainData);
-          const length = Math.max(byteTimeDomainData.length, nativeAnalyserNode.fftSize);
-          for (let i = 0; i < length; i += 1) {
+          const length2 = Math.max(byteTimeDomainData.length, nativeAnalyserNode.fftSize);
+          for (let i = 0; i < length2; i += 1) {
             array[i] = (byteTimeDomainData[i] - 128) * 78125e-7;
           }
           return array;
@@ -6713,8 +7467,8 @@
                     }
                   }
                   if (processorConstructor.parameterDescriptors !== void 0) {
-                    const length = processorConstructor.parameterDescriptors.length;
-                    for (let j = 0; j < length; j += 1) {
+                    const length2 = processorConstructor.parameterDescriptors.length;
+                    for (let j = 0; j < length2; j += 1) {
                       const constantSourceNode = constantSourceNodes[j];
                       constantSourceNode.disconnect(inputChannelMergerNode, 0, numberOfInputChannels + j);
                       constantSourceNode.stop();
@@ -7231,8 +7985,8 @@
               if (frequencyHz.length !== magResponse.length || magResponse.length !== phaseResponse.length) {
                 throw createInvalidAccessError2();
               }
-              const length = frequencyHz.length;
-              for (let i = 0; i < length; i += 1) {
+              const length2 = frequencyHz.length;
+              for (let i = 0; i < length2; i += 1) {
                 const omega = -Math.PI * (frequencyHz[i] / nyquist);
                 const z = [Math.cos(omega), Math.sin(omega)];
                 const numerator = evaluatePolynomial(convertedFeedforward, z);
@@ -8114,16 +8868,16 @@
                 const positiveCurve = new Float32Array(curveLength + 2 - curveLength % 2);
                 negativeCurve[0] = value[0];
                 positiveCurve[0] = -value[curveLength - 1];
-                const length = Math.ceil((curveLength + 1) / 2);
+                const length2 = Math.ceil((curveLength + 1) / 2);
                 const centerIndex = (curveLength + 1) / 2 - 1;
-                for (let i = 1; i < length; i += 1) {
-                  const theoreticIndex = i / length * centerIndex;
+                for (let i = 1; i < length2; i += 1) {
+                  const theoreticIndex = i / length2 * centerIndex;
                   const lowerIndex = Math.floor(theoreticIndex);
                   const upperIndex = Math.ceil(theoreticIndex);
                   negativeCurve[i] = lowerIndex === upperIndex ? value[lowerIndex] : (1 - (theoreticIndex - lowerIndex)) * value[lowerIndex] + (1 - (upperIndex - theoreticIndex)) * value[upperIndex];
                   positiveCurve[i] = lowerIndex === upperIndex ? -value[curveLength - 1 - lowerIndex] : -((1 - (theoreticIndex - lowerIndex)) * value[curveLength - 1 - lowerIndex]) - (1 - (upperIndex - theoreticIndex)) * value[curveLength - 1 - upperIndex];
                 }
-                negativeCurve[length] = curveLength % 2 === 1 ? value[length - 1] : (value[length - 2] + value[length - 1]) / 2;
+                negativeCurve[length2] = curveLength % 2 === 1 ? value[length2 - 1] : (value[length2 - 2] + value[length2 - 1]) / 2;
                 negativeWaveShaperNode.curve = negativeCurve;
                 positiveWaveShaperNode.curve = positiveCurve;
               }
@@ -8224,8 +8978,8 @@
             } else {
               throw new Error("The given parameters are not valid.");
             }
-            const { length, numberOfChannels, sampleRate } = __spreadValues(__spreadValues({}, DEFAULT_OPTIONS16), options);
-            const nativeOfflineAudioContext = createNativeOfflineAudioContext2(numberOfChannels, length, sampleRate);
+            const { length: length2, numberOfChannels, sampleRate } = __spreadValues(__spreadValues({}, DEFAULT_OPTIONS16), options);
+            const nativeOfflineAudioContext = createNativeOfflineAudioContext2(numberOfChannels, length2, sampleRate);
             if (!cacheTestResult2(testPromiseSupport, () => testPromiseSupport(nativeOfflineAudioContext))) {
               nativeOfflineAudioContext.addEventListener("statechange", /* @__PURE__ */ (() => {
                 let i = 0;
@@ -8244,7 +8998,7 @@
               })());
             }
             super(nativeOfflineAudioContext, numberOfChannels);
-            this._length = length;
+            this._length = length2;
             this._nativeOfflineAudioContext = nativeOfflineAudioContext;
             this._state = null;
           }
@@ -9345,8 +10099,8 @@
           });
           const audioBufferSourceNode = nativeContext.createBufferSource();
           const whenConnected = () => {
-            const length = channelMergerNode.numberOfInputs;
-            for (let i = 0; i < length; i += 1) {
+            const length2 = channelMergerNode.numberOfInputs;
+            for (let i = 0; i < length2; i += 1) {
               audioBufferSourceNode.connect(channelMergerNode, 0, i);
             }
           };
@@ -9379,11 +10133,11 @@
         if (curve === null) {
           return false;
         }
-        const length = curve.length;
-        if (length % 2 !== 0) {
-          return curve[Math.floor(length / 2)] !== 0;
+        const length2 = curve.length;
+        if (length2 % 2 !== 0) {
+          return curve[Math.floor(length2 / 2)] !== 0;
         }
-        return curve[length / 2 - 1] + curve[length / 2] !== 0;
+        return curve[length2 / 2 - 1] + curve[length2 / 2] !== 0;
       };
     }
   });
@@ -13467,8 +14221,8 @@
   function createAudioContext(options) {
     return new audioContextConstructor(options);
   }
-  function createOfflineAudioContext(channels, length, sampleRate) {
-    return new offlineAudioContextConstructor(channels, length, sampleRate);
+  function createOfflineAudioContext(channels, length2, sampleRate) {
+    return new offlineAudioContextConstructor(channels, length2, sampleRate);
   }
   function createAudioWorkletNode(context2, name, options) {
     assert(isDefined(audioWorkletNodeConstructor), "AudioWorkletNode only works in a secure context (https or localhost)");
@@ -14365,8 +15119,8 @@
         createBiquadFilter() {
           return this._context.createBiquadFilter();
         }
-        createBuffer(numberOfChannels, length, sampleRate) {
-          return this._context.createBuffer(numberOfChannels, length, sampleRate);
+        createBuffer(numberOfChannels, length2, sampleRate) {
+          return this._context.createBuffer(numberOfChannels, length2, sampleRate);
         }
         createChannelMerger(numberOfInputs) {
           return this._context.createChannelMerger(numberOfInputs);
@@ -15083,8 +15837,8 @@
           const startSamples = Math.floor(start2 * this.sampleRate);
           const endSamples = Math.floor(end * this.sampleRate);
           assert(startSamples < endSamples, "The start time must be less than the end time");
-          const length = endSamples - startSamples;
-          const retBuffer = getContext().createBuffer(this.numberOfChannels, length, this.sampleRate);
+          const length2 = endSamples - startSamples;
+          const retBuffer = getContext().createBuffer(this.numberOfChannels, length2, this.sampleRate);
           for (let channel = 0; channel < this.numberOfChannels; channel++) {
             retBuffer.copyToChannel(this.getChannelData(channel).subarray(startSamples, endSamples), channel);
           }
@@ -19275,9 +20029,9 @@
          * // map the input signal from [-1, 1] to [0, 10]
          * shaper.setMap((val, index) => (val + 1) * 5);
          */
-        setMap(mapping, length = 1024) {
-          const array = new Float32Array(length);
-          for (let i = 0, len = length; i < len; i++) {
+        setMap(mapping, length2 = 1024) {
+          const array = new Float32Array(length2);
+          for (let i = 0, len = length2; i < len; i++) {
             const normalized = i / (len - 1) * 2 - 1;
             array[i] = mapping(normalized, i);
           }
@@ -20502,9 +21256,9 @@
   });
 
   // node_modules/tone/build/esm/source/oscillator/OscillatorInterface.js
-  function generateWaveform(instance, length) {
+  function generateWaveform(instance, length2) {
     return __awaiter(this, void 0, void 0, function* () {
-      const duration = length / instance.context.sampleRate;
+      const duration = length2 / instance.context.sampleRate;
       const context2 = new OfflineContext(1, duration, instance.context.sampleRate);
       const clone = new instance.constructor(Object.assign(instance.get(), {
         // should do 2 iterations
@@ -20937,8 +21691,8 @@
           this.type = this._type;
         }
         asArray() {
-          return __awaiter(this, arguments, void 0, function* (length = 1024) {
-            return generateWaveform(this, length);
+          return __awaiter(this, arguments, void 0, function* (length2 = 1024) {
+            return generateWaveform(this, length2);
           });
         }
         dispose() {
@@ -21134,8 +21888,8 @@
           this._carrier.partials = partials;
         }
         asArray() {
-          return __awaiter(this, arguments, void 0, function* (length = 1024) {
-            return generateWaveform(this, length);
+          return __awaiter(this, arguments, void 0, function* (length2 = 1024) {
+            return generateWaveform(this, length2);
           });
         }
         /**
@@ -21288,8 +22042,8 @@
           this._carrier.partials = partials;
         }
         asArray() {
-          return __awaiter(this, arguments, void 0, function* (length = 1024) {
-            return generateWaveform(this, length);
+          return __awaiter(this, arguments, void 0, function* (length2 = 1024) {
+            return generateWaveform(this, length2);
           });
         }
         /**
@@ -21427,8 +22181,8 @@
           this._triangle.type = type;
         }
         asArray() {
-          return __awaiter(this, arguments, void 0, function* (length = 1024) {
-            return generateWaveform(this, length);
+          return __awaiter(this, arguments, void 0, function* (length2 = 1024) {
+            return generateWaveform(this, length2);
           });
         }
         /**
@@ -21617,8 +22371,8 @@
           this._type = this._oscillators[0].type;
         }
         asArray() {
-          return __awaiter(this, arguments, void 0, function* (length = 1024) {
-            return generateWaveform(this, length);
+          return __awaiter(this, arguments, void 0, function* (length2 = 1024) {
+            return generateWaveform(this, length2);
           });
         }
         /**
@@ -21742,8 +22496,8 @@
           this._modulator.phase = phase;
         }
         asArray() {
-          return __awaiter(this, arguments, void 0, function* (length = 1024) {
-            return generateWaveform(this, length);
+          return __awaiter(this, arguments, void 0, function* (length2 = 1024) {
+            return generateWaveform(this, length2);
           });
         }
         /**
@@ -22066,8 +22820,8 @@
           }
         }
         asArray() {
-          return __awaiter(this, arguments, void 0, function* (length = 1024) {
-            return generateWaveform(this, length);
+          return __awaiter(this, arguments, void 0, function* (length2 = 1024) {
+            return generateWaveform(this, length2);
           });
         }
         dispose() {
@@ -22945,8 +23699,8 @@
          * envelope to fit the length.
          */
         asArray() {
-          return __awaiter(this, arguments, void 0, function* (length = 1024) {
-            const duration = length / this.context.sampleRate;
+          return __awaiter(this, arguments, void 0, function* (length2 = 1024) {
+            const duration = length2 / this.context.sampleRate;
             const context2 = new OfflineContext(1, duration, this.context.sampleRate);
             const attackPortion = this.toSeconds(this.attack) + this.toSeconds(this.decay);
             const envelopeDuration = attackPortion + this.toSeconds(this.release);
@@ -25449,63 +26203,63 @@
             if (eventTypeByte === 255) {
               event2.meta = true;
               var metatypeByte = p.readUInt8();
-              var length = p.readVarInt();
+              var length2 = p.readVarInt();
               switch (metatypeByte) {
                 case 0:
                   event2.type = "sequenceNumber";
-                  if (length !== 2) throw "Expected length for sequenceNumber event is 2, got " + length;
+                  if (length2 !== 2) throw "Expected length for sequenceNumber event is 2, got " + length2;
                   event2.number = p.readUInt16();
                   return event2;
                 case 1:
                   event2.type = "text";
-                  event2.text = p.readString(length);
+                  event2.text = p.readString(length2);
                   return event2;
                 case 2:
                   event2.type = "copyrightNotice";
-                  event2.text = p.readString(length);
+                  event2.text = p.readString(length2);
                   return event2;
                 case 3:
                   event2.type = "trackName";
-                  event2.text = p.readString(length);
+                  event2.text = p.readString(length2);
                   return event2;
                 case 4:
                   event2.type = "instrumentName";
-                  event2.text = p.readString(length);
+                  event2.text = p.readString(length2);
                   return event2;
                 case 5:
                   event2.type = "lyrics";
-                  event2.text = p.readString(length);
+                  event2.text = p.readString(length2);
                   return event2;
                 case 6:
                   event2.type = "marker";
-                  event2.text = p.readString(length);
+                  event2.text = p.readString(length2);
                   return event2;
                 case 7:
                   event2.type = "cuePoint";
-                  event2.text = p.readString(length);
+                  event2.text = p.readString(length2);
                   return event2;
                 case 32:
                   event2.type = "channelPrefix";
-                  if (length != 1) throw "Expected length for channelPrefix event is 1, got " + length;
+                  if (length2 != 1) throw "Expected length for channelPrefix event is 1, got " + length2;
                   event2.channel = p.readUInt8();
                   return event2;
                 case 33:
                   event2.type = "portPrefix";
-                  if (length != 1) throw "Expected length for portPrefix event is 1, got " + length;
+                  if (length2 != 1) throw "Expected length for portPrefix event is 1, got " + length2;
                   event2.port = p.readUInt8();
                   return event2;
                 case 47:
                   event2.type = "endOfTrack";
-                  if (length != 0) throw "Expected length for endOfTrack event is 0, got " + length;
+                  if (length2 != 0) throw "Expected length for endOfTrack event is 0, got " + length2;
                   return event2;
                 case 81:
                   event2.type = "setTempo";
-                  if (length != 3) throw "Expected length for setTempo event is 3, got " + length;
+                  if (length2 != 3) throw "Expected length for setTempo event is 3, got " + length2;
                   event2.microsecondsPerBeat = p.readUInt24();
                   return event2;
                 case 84:
                   event2.type = "smpteOffset";
-                  if (length != 5) throw "Expected length for smpteOffset event is 5, got " + length;
+                  if (length2 != 5) throw "Expected length for smpteOffset event is 5, got " + length2;
                   var hourByte = p.readUInt8();
                   var FRAME_RATES = { 0: 24, 32: 25, 64: 29, 96: 30 };
                   event2.frameRate = FRAME_RATES[hourByte & 96];
@@ -25517,10 +26271,10 @@
                   return event2;
                 case 88:
                   event2.type = "timeSignature";
-                  if (length != 2 && length != 4) throw "Expected length for timeSignature event is 4 or 2, got " + length;
+                  if (length2 != 2 && length2 != 4) throw "Expected length for timeSignature event is 4 or 2, got " + length2;
                   event2.numerator = p.readUInt8();
                   event2.denominator = 1 << p.readUInt8();
-                  if (length === 4) {
+                  if (length2 === 4) {
                     event2.metronome = p.readUInt8();
                     event2.thirtyseconds = p.readUInt8();
                   } else {
@@ -25530,29 +26284,29 @@
                   return event2;
                 case 89:
                   event2.type = "keySignature";
-                  if (length != 2) throw "Expected length for keySignature event is 2, got " + length;
+                  if (length2 != 2) throw "Expected length for keySignature event is 2, got " + length2;
                   event2.key = p.readInt8();
                   event2.scale = p.readUInt8();
                   return event2;
                 case 127:
                   event2.type = "sequencerSpecific";
-                  event2.data = p.readBytes(length);
+                  event2.data = p.readBytes(length2);
                   return event2;
                 default:
                   event2.type = "unknownMeta";
-                  event2.data = p.readBytes(length);
+                  event2.data = p.readBytes(length2);
                   event2.metatypeByte = metatypeByte;
                   return event2;
               }
             } else if (eventTypeByte == 240) {
               event2.type = "sysEx";
-              var length = p.readVarInt();
-              event2.data = p.readBytes(length);
+              var length2 = p.readVarInt();
+              event2.data = p.readBytes(length2);
               return event2;
             } else if (eventTypeByte == 247) {
               event2.type = "endSysEx";
-              var length = p.readVarInt();
-              event2.data = p.readBytes(length);
+              var length2 = p.readVarInt();
+              event2.data = p.readBytes(length2);
               return event2;
             } else {
               throw "Unrecognised MIDI event type byte: " + eventTypeByte;
@@ -25682,11 +26436,11 @@
       };
       Parser.prototype.readChunk = function() {
         var id = this.readString(4);
-        var length = this.readUInt32();
-        var data = this.readBytes(length);
+        var length2 = this.readUInt32();
+        var data = this.readBytes(length2);
         return {
           id,
-          length,
+          length: length2,
           data
         };
       };
@@ -27559,776 +28313,6 @@
     }
   });
 
-  // src/TriangularBeam.ts
-  var TriangularBeam;
-  var init_TriangularBeam = __esm({
-    "src/TriangularBeam.ts"() {
-      "use strict";
-      TriangularBeam = class {
-        constructor() {
-          this.name = "TriangularBeam";
-          this.count = 12;
-          this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
-          this.activated = false;
-        }
-        activate() {
-          return __async(this, null, function* () {
-            if (!this.activated) {
-              this.activated = true;
-              for (let i = 0; i < this.count; i++) {
-                const particle = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                particle.setAttribute("class", "particle");
-                particle.setAttribute("d", `M ${-2 * i - 2} ${-i * 5 - 2},
-                                            L 0 ${-i * 5 - 10}, 
-                                            L ${3 * i + 2} ${-i * 5 - 2}`);
-                particle.setAttribute("stroke", `rgb(${i / this.count * 255}, ${i * 2 / this.count * 255}, ${i / 3 / this.count * 255}`);
-                particle.setAttribute("stroke-width", "2px");
-                particle.setAttribute("vector-effect", "non-scaling-stroke");
-                particle.setAttribute("fill", `rgb (${-i * 255 + 255}, ${-i * 255 + 255}, ${-i * 255 + 255})`);
-                yield new Promise((resolve) => setTimeout(resolve, 100));
-                particle.setAttribute("opacity", `${i / this.count}`);
-                this._gElem.appendChild(particle);
-              }
-              this.activated = true;
-            }
-          });
-        }
-        deactivate() {
-          this._gElem.innerHTML = "";
-          this.activated = false;
-        }
-        dispose() {
-          if (this._gElem && this._gElem.parentNode) {
-            this._gElem.innerHTML = "";
-            this._gElem.parentNode.removeChild(this._gElem);
-          }
-          this.activated = false;
-        }
-        get gElem() {
-          return this._gElem;
-        }
-      };
-    }
-  });
-
-  // src/OvalShield.ts
-  var OvalShield;
-  var init_OvalShield = __esm({
-    "src/OvalShield.ts"() {
-      "use strict";
-      OvalShield = class {
-        constructor(shieldWidth, shieldHeight) {
-          this.name = "ovalShield";
-          this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
-          this.activated = false;
-          this._gElem.setAttribute("class", "ovalShield");
-          this.width = shieldWidth;
-          this.height = shieldHeight;
-        }
-        activate() {
-          if (!this.activated) {
-            const boundingOval = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
-            boundingOval.setAttribute("cx", "0");
-            boundingOval.setAttribute("cy", "0");
-            boundingOval.setAttribute("rx", `${this.width * 2}`);
-            boundingOval.setAttribute("ry", `${this.height * 2}`);
-            boundingOval.setAttribute("stroke", "green");
-            boundingOval.setAttribute("vector-effect", "none-scaling-stroke");
-            boundingOval.setAttribute("stroke-width", "2px");
-            boundingOval.setAttribute("fill", "none");
-            this._gElem.appendChild(boundingOval);
-            this.activated = true;
-          }
-        }
-        deactivate() {
-          this._gElem.innerHTML = "";
-          this.activated = false;
-        }
-        dispose() {
-          throw new Error("Method not implemented.");
-        }
-      };
-    }
-  });
-
-  // src/TractorBeam.ts
-  var TractorBeam;
-  var init_TractorBeam = __esm({
-    "src/TractorBeam.ts"() {
-      "use strict";
-      TractorBeam = class {
-        constructor() {
-          this.name = "tractorBeam";
-          this.target = { x: 0, y: 0 };
-          this.activated = false;
-          this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
-        }
-        activate() {
-          if (!this.activated) {
-            const beam = document.createElementNS("http://www.w3.org/2000/svg", "line");
-            beam.setAttribute("x1", "0");
-            beam.setAttribute("y1", "0");
-            beam.setAttribute("x2", `${this.target.x}`);
-            beam.setAttribute("y2", `${this.target.y}`);
-            beam.setAttribute("stroke", "darkgreen");
-            beam.setAttribute("stroke-width", "5px");
-            beam.setAttribute("vector-effect", "non-scaling-stroke");
-            this._gElem.appendChild(beam);
-          }
-        }
-        deactivate() {
-          this._gElem.innerHTML = "";
-          this.activated = false;
-        }
-        dispose() {
-          if (this._gElem && this._gElem.parentNode) {
-            this._gElem.innerHTML = "";
-            this._gElem.parentNode.removeChild(this._gElem);
-          }
-          this.activated = false;
-        }
-        setTarget(target) {
-          this.target = target;
-        }
-      };
-    }
-  });
-
-  // src/DeviceFactory.ts
-  var DeviceFactory;
-  var init_DeviceFactory = __esm({
-    "src/DeviceFactory.ts"() {
-      "use strict";
-      init_TriangularBeam();
-      init_OvalShield();
-      init_TractorBeam();
-      DeviceFactory = class {
-        static createDevice(type, ...args) {
-          const deviceCreator = this.deviceMap[type];
-          if (deviceCreator) {
-            return deviceCreator(...args);
-          } else {
-            return new TractorBeam();
-          }
-        }
-      };
-      DeviceFactory.deviceMap = {
-        "repulsorBeam": () => new TriangularBeam(),
-        "ovalShield": (...args) => new OvalShield(args[0], args[1]),
-        "tractorBeam": (...args) => new TractorBeam()
-      };
-    }
-  });
-
-  // src/Spacecraft.ts
-  var fontSize, Spacecraft;
-  var init_Spacecraft = __esm({
-    "src/Spacecraft.ts"() {
-      "use strict";
-      init_SpacecraftShape();
-      init_Vector2D();
-      init_GameMenu();
-      init_GameMenu();
-      init_DeviceFactory();
-      fontSize = viewBoxWidth / 45;
-      Spacecraft = class _Spacecraft {
-        constructor() {
-          this._gElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
-          this.easing = false;
-          this._direction = 0;
-          this._maneuverability = 2;
-          this._impuls = new Vector2D();
-          this._location = new Vector2D();
-          this._npc = false;
-          this._lastUpdate = Date.now();
-          this._scale = 1;
-          this._type = "rocket";
-          this._color = "fl\xFCn";
-          this._id = "spacecraft";
-          this._touchControlType = "spacecraft";
-        }
-        accelerate(thrust) {
-          let vector = Vector2D.fromLengthAndAngle(thrust, this.direction);
-          this._impuls.add(vector);
-        }
-        addDevice(type, args) {
-          this._device = DeviceFactory.createDevice(type, ...args);
-        }
-        getDevice(deviceType) {
-          if (this.device instanceof deviceType) {
-            return this.device;
-          }
-          return null;
-        }
-        operate() {
-          var _a, _b;
-          (_a = this._device) == null ? void 0 : _a.activate();
-          if ((_b = this._device) == null ? void 0 : _b._gElem) {
-            this._gElement.appendChild(this._device._gElem);
-          }
-        }
-        applyLabel(svgElement) {
-          this._labelBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-          svgElement.appendChild(this._labelBorder);
-          this._labelBorder.setAttribute("x", `${this.scale * 6.7}`);
-          this._labelBorder.setAttribute("y", `${-fontSize}`);
-          this._labelBorder.setAttribute("stroke-width", "2px");
-          this._labelBorder.setAttribute("stroke", "grey");
-          this._labelBorder.setAttribute("vector-effect", "non-scaling-stroke");
-          this._labelBorder.setAttribute("fill", "lightgrey");
-          this._labelBorder.setAttribute("fill-opacity", ".8");
-          this._label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-          svgElement.appendChild(this._label);
-          this._label.setAttribute("font-size", `${fontSize}px`);
-          this._label.innerHTML = `<tspan x="${this._scale * 7}">label text not set yet, yet to be written`;
-          setTimeout(() => {
-            if (this._labelBorder && this._label) {
-              this._labelBorder.style.width = (this._label.getBBox().width * 1.1).toString();
-              this._labelBorder.style.height = (this._label.getBBox().height * 1.1).toString();
-            }
-          });
-        }
-        brake(dampingFactor) {
-          const newLength = this._impuls.length * (1 - dampingFactor);
-          this._impuls = Vector2D.fromLengthAndAngle(newLength, this._impuls.angle);
-          if (this._impuls.length < 0.01) {
-            this._impuls = new Vector2D(0, 0);
-          }
-        }
-        gradualBrake() {
-          return __async(this, null, function* () {
-            while (this._impuls.length > 0.01) {
-              this.brake(0.1);
-              yield this.delay(100);
-            }
-            this._impuls = new Vector2D(0, 0);
-          });
-        }
-        delay(ms) {
-          return new Promise((resolve) => setTimeout(resolve, ms));
-        }
-        handleKeyboardInput(keysPressed) {
-          if (keysPressed["ArrowLeft"]) {
-            this.rotate(-this._maneuverability);
-          }
-          if (keysPressed["ArrowRight"]) {
-            this.rotate(this._maneuverability);
-          }
-          if (keysPressed["ArrowUp"]) {
-            this.accelerate(this._maneuverability / 100);
-          }
-          if (keysPressed["ArrowDown"]) {
-            this.brake(this._maneuverability / 10);
-          }
-          if (keysPressed[" "]) {
-            this.operate();
-          }
-        }
-        onKeyUp(key) {
-          switch (key) {
-            case " ":
-              if (this.device)
-                this.device.deactivate();
-          }
-        }
-        handleTouchControl(vector) {
-          let deltaAngle = this._direction - vector.angle;
-          switch (this._type) {
-            case `rokket`:
-              this._impuls.add(vector);
-              this._direction = vector.angle;
-              break;
-            case `rainbowRocket`:
-              this._impuls.add(vector);
-              if (deltaAngle > 0 && deltaAngle < 180 || deltaAngle < -180) {
-                this.rotate(-5);
-              } else if (deltaAngle < 0 || deltaAngle > 180) {
-                this.rotate(5);
-              }
-              break;
-            case `../resources/bromber.svg`:
-              this._impuls.add(vector);
-              if (deltaAngle < -180)
-                deltaAngle += 360;
-              if (deltaAngle > 180)
-                deltaAngle -= 360;
-              if (Math.abs(deltaAngle) > 8) {
-                this.rotate(-180 / deltaAngle);
-              }
-              break;
-            case `../resources/blizzer.png`:
-              this._impuls.add(vector);
-              if (!this.easing) {
-                this.easing = true;
-                const startDirection = this._direction;
-                this.ease(startDirection, vector.angle);
-              }
-              break;
-            case `../resources/eye.svg`:
-              const horizontalValue = vector.x;
-              const verticalValue = vector.y;
-              this.accelerate(-verticalValue);
-              this.rotate(horizontalValue * this._maneuverability * 50);
-              break;
-            default:
-              this._impuls.add(vector);
-              this._direction = vector.angle;
-          }
-        }
-        ease(oldDirection, target) {
-          return __async(this, null, function* () {
-            const deltaAngle = target - this._direction;
-            let easeValue;
-            const steps = Math.ceil(Math.abs(deltaAngle));
-            for (let i = 1; i <= steps; i++) {
-              easeValue = this.easeInOutBack(i / steps);
-              this._direction = oldDirection + easeValue * deltaAngle;
-              yield new Promise((resolve) => setTimeout(resolve, 10));
-            }
-            this.easing = false;
-          });
-        }
-        easeInOutBack(x) {
-          const c1 = 1.70158;
-          const c2 = c1 * 1.525;
-          return x < 0.5 ? Math.pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2) / 2 : (Math.pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
-        }
-        pseudoOrbit(vector) {
-          const distance = this._location.distanceTo(vector);
-          if (distance < viewBoxWidth / 2)
-            this._scale = Math.cos(distance / (viewBoxWidth / 4) * Math.PI / 4);
-          if (distance > viewBoxWidth / 2) {
-            this.impuls.inverse();
-          }
-        }
-        rotate(angle) {
-          this._direction += angle;
-          if (this._direction > 180) {
-            this._direction -= 360;
-          } else if (this._direction < -180) {
-            this._direction += 360;
-          }
-        }
-        get direction() {
-          return this._direction;
-        }
-        get device() {
-          if (this._device) return this._device;
-          else return void 0;
-        }
-        get label() {
-          return this._label;
-        }
-        get impuls() {
-          return this._impuls;
-        }
-        get lastUpdate() {
-          return this._lastUpdate;
-        }
-        get location() {
-          return this._location;
-        }
-        get npc() {
-          return this._npc;
-        }
-        set location(location) {
-          this._location = location;
-        }
-        get scale() {
-          return this._scale;
-        }
-        get type() {
-          return this._type;
-        }
-        set type(type) {
-          this._type = type;
-        }
-        get color() {
-          return this._color;
-        }
-        set color(color2) {
-          this._color = color2;
-        }
-        get id() {
-          return this._id;
-        }
-        set id(id) {
-          this._id = id;
-        }
-        get gElement() {
-          return this._gElement;
-        }
-        set gElement(g) {
-          this._gElement = g;
-        }
-        set scale(scale) {
-          this._scale = scale;
-        }
-        set touchControlType(newType) {
-          if (newType === "rokket" || newType === "rainbowRocket")
-            this._touchControlType = "spacecraft";
-          else this._touchControlType = "butterfly";
-        }
-        setLabelText(text) {
-          if (this._label) {
-            this._label.setAttribute("font-family", "Arial");
-            this._label.setAttribute("stroke-width", ".05");
-            this._label.setAttribute("stroke", `${color}`);
-            this._label.innerHTML = text;
-          }
-          if (this._labelBorder && this._label) {
-            this._labelBorder.style.width = (this._label.getBBox().width * 1.1).toString();
-            this._labelBorder.style.height = (this._label.getBBox().height * 1.1).toString();
-          }
-        }
-        update() {
-          this._location.add(this._impuls);
-          this.gElement.setAttribute("transform", `translate (${this._location.x} ${this._location.y}) scale (${this._scale}) rotate (${this.direction + 90})`);
-          if (this._label && this._labelBorder) {
-            this._label.setAttribute("transform", `translate(${this._location.x} ${this._location.y})`);
-            this._labelBorder.setAttribute("transform", `translate(${this._location.x - 7.5 + this.scale * 7}, ${this._location.y})`);
-          }
-        }
-        updateFromJSON(json) {
-          this._direction = json.direction;
-          this._impuls = Vector2D.fromJSON(json.impuls);
-          this._location = new Vector2D(json.location.x, json.location.y);
-          this._lastUpdate = json.lastUpdate;
-        }
-        // Convert Spacecraft object to JSON representation
-        toJSON() {
-          this._lastUpdate = Date.now();
-          return {
-            type: this._type,
-            color: this._color,
-            id: this._id,
-            direction: this._direction,
-            impuls: this._impuls.toJSON(),
-            location: this._location.toJSON(),
-            lastUpdate: this._lastUpdate,
-            //apply timestamp each time the vessel is transformed to JSON
-            npc: this._npc
-          };
-        }
-        // Create a Spacecraft object from a JSON representation
-        static fromJSON(json) {
-          const spacecraft = new _Spacecraft();
-          spacecraft._type = json.type;
-          spacecraft._color = json.color;
-          spacecraft._id = json.id;
-          spacecraft._npc = json.npc;
-          spacecraft._direction = json.direction;
-          spacecraft._impuls = new Vector2D(json.impuls.x, json.impuls.y);
-          spacecraft._location = new Vector2D(json.location.x, json.location.y);
-          spacecraft._gElement = SpacecraftShape.getCraftGElement(spacecraft.type);
-          return spacecraft;
-        }
-        // Update spacecraft properties from another spacecraft object
-        updateFrom(other) {
-          this._direction = other.direction;
-          this._impuls = other._impuls;
-          this._location = other._location;
-        }
-        vanish() {
-          const animate = () => {
-            var _a, _b, _c, _d;
-            if (this._scale > 0.1) {
-              this._scale -= this._scale / 100;
-              this.update();
-              requestAnimationFrame(animate);
-            } else {
-              (_a = this._gElement.parentNode) == null ? void 0 : _a.removeChild(this._gElement);
-              if (this._label) {
-                (_b = this._label.parentNode) == null ? void 0 : _b.removeChild(this._label);
-                (_d = (_c = this._labelBorder) == null ? void 0 : _c.parentNode) == null ? void 0 : _d.removeChild(this._labelBorder);
-              }
-            }
-          };
-          animate();
-        }
-      };
-    }
-  });
-
-  // src/GameEnvironment.ts
-  var GameEnvironment;
-  var init_GameEnvironment = __esm({
-    "src/GameEnvironment.ts"() {
-      "use strict";
-      init_Joystick();
-      init_GameMenu();
-      GameEnvironment = class {
-        constructor() {
-          this.label = document.createElement("HTMLLabelElement");
-          this._joystick = new Joystick();
-          if (gameFrame.offsetHeight != 0) {
-            this.screenAspectRatio = gameFrame.offsetWidth / gameFrame.offsetHeight;
-          } else {
-            console.log("gameFrame not properly sized");
-            this.screenAspectRatio = 0.8;
-          }
-          this.viewBoxWidth = viewBoxWidth * 3;
-          this.viewBoxToScreenRatio = this.viewBoxWidth / window.innerWidth;
-          this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio;
-          this.viewBoxLeft = -this.viewBoxWidth / 2;
-          this.viewBoxTop = -this.viewBoxHeight / 2;
-          this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-          this._svgElement.style.position = "absolute";
-          this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
-          this._svgElement.setAttribute("tabindex", "0");
-          const viewBoxBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-          viewBoxBorder.setAttribute("x", `${this.viewBoxLeft}`);
-          viewBoxBorder.setAttribute("y", `${this.viewBoxTop}`);
-          viewBoxBorder.setAttribute("width", `${this.viewBoxWidth}`);
-          viewBoxBorder.setAttribute("height", `${this.viewBoxHeight}`);
-          viewBoxBorder.setAttribute("fill", `none`);
-          viewBoxBorder.setAttribute("stroke-width", `2px`);
-          viewBoxBorder.setAttribute("stroke", `green`);
-          this._svgElement.appendChild(viewBoxBorder);
-          gameFrame.appendChild(this._svgElement);
-          gameFrame.style.height = `${window.innerHeight}px`;
-          gameFrame.appendChild(this._joystick.htmlElement);
-          gameFrame.appendChild(this._joystick.fireButton);
-          this.joystick.htmlElement.style.display = "none";
-          this.label.style.position = "absolute";
-          this.label.style.top = "10px";
-          this.label.style.left = "10px";
-          this.label.style.border = "2px solid darkgreen";
-          this.label.style.backgroundColor = "lightgrey";
-          this.label.style.opacity = "0.8";
-          this.label.innerHTML = `Steuere dein Raumschiff mit dem linken Feld, aktiviere den Strahl durch Druck auf das rechte Feld! <br>Andere online-Spieler erkennst du an ihrem Schild.`;
-          gameFrame.appendChild(this.label);
-          window.addEventListener(`resize`, this.handleResize.bind(this));
-        }
-        displayTouchControl() {
-          this.joystick.htmlElement.style.display = "block";
-        }
-        get joystick() {
-          return this._joystick;
-        }
-        get svgElement() {
-          return this._svgElement;
-        }
-        handleResize() {
-          this.updateLabel();
-          gameFrame.style.width = `${window.innerWidth}px`;
-          gameFrame.style.height = `${window.innerHeight}px`;
-          this._svgElement.style.width = `${window.innerWidth}px`;
-          this._svgElement.style.height = `${window.innerHeight}px`;
-          this.viewBoxWidth = window.innerWidth * this.viewBoxToScreenRatio;
-          this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio;
-          this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
-        }
-        updateLabel() {
-          this.label.innerHTML = `gameFrame.clientWidth doesnt change: ${gameFrame.clientWidth}, gameFrame.clientHeight: ${gameFrame.clientHeight}<br>
-                                    window.innerWidth is dynamic: ${window.innerWidth}, window.innerHeight: ${window.innerHeight}<br>
-                                    this.viewBoxWidth: ${this.viewBoxWidth}, this.viewBoxHeight: ${this.viewBoxHeight}<br>
-                                    this._svgElement.getAttribute("viewBox"): ${this._svgElement.getAttribute("viewBox")}`;
-        }
-        setLabel(text) {
-          this.label.innerHTML = text;
-        }
-        handleSpacecraft(spacecraft, option) {
-          switch (option) {
-            case "pseudoOrbit":
-              spacecraft.pseudoOrbit;
-              break;
-            case "pseudoTorus":
-              if (spacecraft.location.x < this.viewBoxLeft)
-                spacecraft.location.x = this.viewBoxLeft + this.viewBoxWidth;
-              if (spacecraft.location.x > this.viewBoxLeft + this.viewBoxWidth)
-                spacecraft.location.x = this.viewBoxLeft;
-              if (spacecraft.location.y < this.viewBoxTop)
-                spacecraft.location.y = this.viewBoxTop + this.viewBoxHeight;
-              if (spacecraft.location.y > this.viewBoxTop + this.viewBoxHeight)
-                spacecraft.location.y = this.viewBoxTop;
-              break;
-          }
-        }
-      };
-    }
-  });
-
-  // src/SpaceGame.ts
-  var SpaceGame, ServerRequestHandler;
-  var init_SpaceGame = __esm({
-    "src/SpaceGame.ts"() {
-      "use strict";
-      init_Spacecraft();
-      init_GameEnvironment();
-      init_SpacecraftShape();
-      init_GameMenu();
-      init_GameMenu();
-      init_Vector2D();
-      init_Spacecraft();
-      init_GameMenu();
-      init_TractorBeam();
-      SpaceGame = class {
-        constructor() {
-          this.spacecrafts = [];
-          this.touchControl = true;
-          this.spacecraft = new Spacecraft();
-          this.gameEnvironment = new GameEnvironment();
-          this.gameEnvironment.displayTouchControl();
-          this.gameEnvironment.joystick.addObserver(() => this.handleTouchEndEvent());
-          this.setupKeyUpListener();
-          gameFrame.focus();
-          this.serverRequestHandler = new ServerRequestHandler();
-        }
-        init(type, color2, id) {
-          this.spacecraft.type = type;
-          this.spacecraft.color = color2;
-          if (id) this.spacecraft.id = id;
-          this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type);
-          this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement);
-          console.log("device: " + device);
-          this.spacecraft.addDevice(`${device}`, [
-            this.spacecraft.gElement.getBBox().width / 3,
-            this.spacecraft.gElement.getBBox().height / 3
-          ]);
-          this.spacecraft.touchControlType = this.spacecraft.type;
-          this.spacecraft.applyLabel(this.gameEnvironment.svgElement);
-          this.gameLoop();
-          setInterval(() => {
-            this.syncReality();
-          }, 50);
-        }
-        handleTouchEndEvent() {
-          return __async(this, null, function* () {
-            this.spacecraft.gradualBrake();
-          });
-        }
-        gameLoop() {
-          var _a;
-          requestAnimationFrame(() => {
-            this.gameLoop();
-          });
-          if (this.touchControl) {
-            if (this.gameEnvironment.joystick.isTouched) {
-              this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value);
-            }
-            if (this.gameEnvironment.joystick.fires) {
-              const tractorBeam = this.spacecraft.getDevice(TractorBeam);
-              if (tractorBeam && this.spacecrafts[0]) {
-                tractorBeam.setTarget({
-                  x: this.spacecrafts[0].location.x - this.spacecraft.location.x,
-                  y: this.spacecrafts[0].location.y - this.spacecraft.location.y
-                });
-              }
-              this.spacecraft.operate();
-            } else if ((_a = this.spacecraft.device) == null ? void 0 : _a.activated) {
-              this.spacecraft.device.deactivate();
-            }
-          }
-          this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
-          this.updateElements();
-        }
-        setupKeyUpListener() {
-          keyboardController.onKeyUp((key) => {
-            this.spacecraft.onKeyUp(key);
-          });
-        }
-        updateElements() {
-          this.spacecraft.update();
-          this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus");
-          this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale * 7}"> 
-                                        ${this.spacecraft.id}</tspan>
-                                        `);
-          if (this.spacecrafts.length > 0) {
-            this.spacecrafts.forEach((spacecraft) => {
-              if (spacecraft.npc) {
-                spacecraft.pseudoOrbit(new Vector2D(0, 0));
-              } else {
-                this.gameEnvironment.handleSpacecraft(spacecraft, "pseudoTorus");
-              }
-              spacecraft.update();
-              if (spacecraft.label) {
-                spacecraft.setLabelText(`<tspan x="${spacecraft.scale * 7}"> 
-                                            id: ${spacecraft.id} </tspan>
-                                            <tspan x="${spacecraft.scale * 7}" dy="${fontSize}">
-                                           lastUpdate: ${spacecraft.lastUpdate}</tspan>
-                                           <tspan x="${spacecraft.scale * 7}" dy="${2 * fontSize}">
-                                           Date.now(): ${Date.now()}</tspan>`);
-              }
-            });
-          }
-        }
-        syncReality() {
-          return __async(this, null, function* () {
-            try {
-              const receivedData = yield this.serverRequestHandler.sendData(this.spacecraft.toJSON());
-              if (!Array.isArray(receivedData)) {
-                console.error("Received data is not in the expected format (array)");
-                return;
-              }
-              this.spacecrafts = this.spacecrafts.filter((spacecraft) => {
-                const index = receivedData.findIndex((data) => data.id === spacecraft.id);
-                if (index == -1) {
-                  spacecraft.vanish();
-                  return false;
-                }
-                return true;
-              });
-              receivedData.forEach((element) => {
-                const index = this.spacecrafts.findIndex((spacecraft) => spacecraft.id === element.id);
-                if (index !== -1 && !element.npc) {
-                  this.spacecrafts[index].updateFromJSON(element);
-                } else if (index === -1) {
-                  const spacecraft = Spacecraft.fromJSON(element);
-                  if (!spacecraft.npc)
-                    spacecraft.applyLabel(this.gameEnvironment.svgElement);
-                  this.spacecrafts.push(spacecraft);
-                  this.gameEnvironment.svgElement.appendChild(spacecraft.gElement);
-                }
-              });
-            } catch (error) {
-              console.error("Error syncing spacecraft data:", error);
-            }
-          });
-        }
-      };
-      ServerRequestHandler = class {
-        sendData(data) {
-          return __async(this, null, function* () {
-            try {
-              const response = yield fetch("/api/main/SynchronizeSpaceObject", {
-                //https://spacepatrol.zapto.org/sync// localhost:8080/api/main/SynchronizeSpaceObjects //http://spacepatrolzone.dynv6.net  http://192.168.2.222:3000   https://spacepatrol.zapto.org/sync
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                body: JSON.stringify(data)
-              });
-              if (!response.ok) {
-                throw new Error("Failed to send data");
-              }
-              return yield response.json();
-            } catch (error) {
-              throw error;
-            }
-          });
-        }
-      };
-    }
-  });
-
-  // src/library.ts
-  var library_exports = {};
-  __export(library_exports, {
-    initGame: () => initGame
-  });
-  function initGame(gameFrame2, type, color2, id) {
-    console.log("spaceGame loads");
-    const game = new SpaceGame();
-    game.init(type, color2, id);
-  }
-  var init_library = __esm({
-    "src/library.ts"() {
-      "use strict";
-      init_SpaceGame();
-    }
-  });
-
   // src/GameMenu.ts
   var import_midi, gameFrame, keyboardController, color, device, viewBoxWidth, GameMenu;
   var init_GameMenu = __esm({
@@ -28531,7 +28515,6 @@
           if (this.joystick.isTouched) {
             this.rotationImpuls = this.joystick.value.x * 100;
             viewBoxWidth += this.joystick.value.y * 10;
-            console.log(viewBoxWidth);
             this.viewBoxLeft = viewBoxWidth / -2;
             this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio;
             this.viewBoxTop = this.viewBoxHeight / -2;
@@ -28648,7 +28631,7 @@
 
   // src/index.ts
   init_GameMenu();
-  console.log("SpacePatrol0201 ver.2253");
+  console.log("SpacePatrol0201 ver.1757");
   var menu = new GameMenu();
   menu.loop();
 })();

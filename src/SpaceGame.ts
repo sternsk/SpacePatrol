@@ -4,7 +4,7 @@ import { SpacecraftShape } from "./SpacecraftShape.js";
 import { keyboardController, device, gameFrame } from "./GameMenu.js";
 import { Vector2D } from "./Vector2D.js";
 import { TractorBeam } from "./TractorBeam.js";
-import { evaluate, RequestDefinition, SpaceObjectStatus, syncSpaceObject, Vector2d } from "./library.js";
+import { evaluate, RequestDefinition, SpaceObjectStatus, SyncronizeSpaceObject, syncSpaceObject, Vector2d } from "./library.js";
 
 
 export class SpaceGame {
@@ -37,19 +37,27 @@ export class SpaceGame {
                                                 ])
         
 
-        this.spacecraft.touchControlType = this.spacecraft.type
+            this.spacecraft.touchControlType = this.spacecraft.type
         this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
         this.gameLoop();
        
         setInterval(() => {
-            evaluate<SpaceObjectStatus, SpaceObjectStatus[]>(syncSpaceObject, this.spacecraft)
+            
+            const request = {} as SyncronizeSpaceObject
+            request.rocketStatus = this.spacecraft.objectStatus
+            
+            evaluate(syncSpaceObject, request)
             .then(response => {
-                this.spacecrafts = response;
+                this.syncReality(response)
             })
             .catch(error => {
                 console.error("Failed to update spacecrafts:", error);
             });
         }, 50);
+    }
+
+    syncReality(reality: SpaceObjectStatus[]){
+
     }
 
     async handleTouchEndEvent(){
@@ -97,6 +105,10 @@ export class SpaceGame {
         this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus")
         this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale*7}"> 
                                         ${this.spacecraft.id}</tspan>
+                                        <tspan x="${this.spacecraft.scale*7}" dy="${fontSize}">
+                                        location: ${this.spacecraft.location.x.toFixed(0)}, ${this.spacecraft.location.y.toFixed(0)}</tspan>
+                                        <tspan x="${this.spacecraft.scale*7}" dy="${fontSize}">
+                                        direction: ${this.spacecraft.direction}</tspan>
                                         `)
         
         if(this.spacecrafts.length > 0){

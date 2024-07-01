@@ -1,6 +1,6 @@
+import { Vector2d } from "./library";
 
-
-export class Vector2D implements Vector2D{
+export class Vector2D {
     _x: number
     _y: number
     

@@ -266,7 +266,6 @@ export class GameMenu{
             this.rotationImpuls = this.joystick.value.x * 100
             
             viewBoxWidth += this.joystick.value.y * 10
-            console.log(viewBoxWidth)
             this.viewBoxLeft = viewBoxWidth / -2
             this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio
             this.viewBoxTop = this.viewBoxHeight / -2

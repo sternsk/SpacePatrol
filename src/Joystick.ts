@@ -1,10 +1,12 @@
-import { Vector2D } from "./Vector2D.js";
+//import { Vector2D } from "./Vector2D.js";
+
+import { Vector2d, length } from "./library.js";
 
 export class Joystick {
     private _htmlElement: HTMLElement;
     private _knobElement: HTMLElement;
     private _fireButton: HTMLElement
-    private _value = new Vector2D()
+    private _value: Vector2d = {x:0, y:0} as Vector2d
 
     private _isTouched = false
     private _fires = false
@@ -83,8 +85,10 @@ export class Joystick {
         return(this._knobElement)
     }
 
-    get value(): Vector2D{
+    get value(): Vector2d{
+        console.log(length(this._value))
         return this._value
+        
     }
 
     private initEvents() {
@@ -136,7 +140,7 @@ export class Joystick {
             this._knobElement.style.left = `${x}px`;
             this._knobElement.style.top = `${y}px`;
         }
-        this._value = Vector2D.fromLengthAndAngle(relativDistance/10, angle/Math.PI*180)
+        this._value = {x: Math.cos(angle * relativDistance/10), y: Math.sin(angle) * relativDistance/10}
     }
 
     private onTouchEnd(event: TouchEvent) {
@@ -147,7 +151,7 @@ export class Joystick {
         this._knobElement.style.left = '50%';
         this._knobElement.style.top = '50%';
         
-        this._value = new Vector2D(0,0)
+        this._value = {x:0, y:0}
 
         // Benachrichtige alle Beobachter über das touchend-Ereignis
         this.touchEndObservers.forEach(observer => observer());
