@@ -6,23 +6,19 @@ import { keyboardController, device, gameFrame } from "./GameMenu.js";
 import { TractorBeam } from "./TractorBeam.js";
 import { evaluate, RequestDefinition, SpaceObjectStatus, SyncronizeSpaceObject, syncSpaceObject, Vector2d } from "./library.js";
 
-
 export class SpaceGame {
     private spacecraft: Spacecraft
     private spacecrafts: Spacecraft[] = [];
     private gameEnvironment: GameEnvironment;
     private touchControl = true
     
-
     constructor() {
         this.spacecraft = new Spacecraft();
         this.gameEnvironment = new GameEnvironment();
         this.gameEnvironment.displayTouchControl()
         this.gameEnvironment.joystick.addObserver(() => this.handleTouchEndEvent());
-        this.setupKeyUpListener();
-        
-        gameFrame.focus(); //gameFrame erhält den Keyboard focus
-        
+        this.setupKeyUpListener();      
+        gameFrame.focus(); //gameFrame erhält den Keyboard focus      
     }
 
     init(type: string, color: string, id: string) {
@@ -35,7 +31,6 @@ export class SpaceGame {
         this.spacecraft.addDevice(`${device}`, [this.spacecraft.gElement.getBBox().width/3, 
                                                 this.spacecraft.gElement.getBBox().height/3,
                                                 ])
-        
 
             this.spacecraft.touchControlType = this.spacecraft.type
         this.spacecraft.applyLabel(this.gameEnvironment.svgElement)

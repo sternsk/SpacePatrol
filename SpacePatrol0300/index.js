@@ -527,11 +527,11 @@
   var init_Spacecraft = __esm({
     "src/Spacecraft.ts"() {
       "use strict";
-      init_GameMenu();
+      init_src();
       init_GameMenu();
       init_DeviceFactory();
       init_library();
-      fontSize = viewBoxWidth / 20;
+      fontSize = 12;
       console.log("viewBoxWidth: " + viewBoxWidth);
       Spacecraft = class {
         constructor() {
@@ -595,7 +595,7 @@
           this._label = document.createElementNS("http://www.w3.org/2000/svg", "text");
           svgElement.appendChild(this._label);
           this._label.setAttribute("font-size", `${fontSize}px`);
-          this._label.innerHTML = `<tspan x="${this._scale * 7}">label text, yet to be written`;
+          this._label.innerHTML = `<tspan x="${this._scale * 7}">label text is yet to be written`;
           setTimeout(() => {
             if (this._labelBorder && this._label) {
               this._labelBorder.style.width = (this._label.getBBox().width * 1.1).toString();
@@ -834,6 +834,7 @@
       "use strict";
       init_Joystick();
       init_GameMenu();
+      init_src();
       GameEnvironment = class {
         constructor() {
           this.label = document.createElement("HTMLLabelElement");
@@ -28250,18 +28251,18 @@
   });
 
   // src/GameMenu.ts
-  var import_midi, gameFrame, keyboardController, color, device, viewBoxWidth, GameMenu;
+  var import_midi, gameFrame, keyboardController, color, device, GameMenu;
   var init_GameMenu = __esm({
     "src/GameMenu.ts"() {
       "use strict";
       init_SpacecraftShape();
       init_KeyboardController();
       init_Joystick();
+      init_src();
       init_esm();
       import_midi = __toESM(require_Midi(), 1);
       gameFrame = document.getElementById("spacepatrolContainer");
       keyboardController = new KeyboardController(gameFrame);
-      viewBoxWidth = 100;
       console.log("viewBoxWidth" + viewBoxWidth);
       GameMenu = class {
         constructor() {
@@ -28278,6 +28279,7 @@
           this.viewBoxHeight = 100;
           this.previewSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
           this.keysPressed = {};
+          this.viewBoxWidth = viewBoxWidth;
           gameFrame.setAttribute("tabIndex", "0");
           gameFrame.style.position = "fixed";
           gameFrame.style.width = `${window.innerWidth}px`;
@@ -28451,11 +28453,11 @@
           requestAnimationFrame(() => this.loop());
           if (this.joystick.isTouched) {
             this.rotationImpuls = this.joystick.value.x * 100;
-            viewBoxWidth += this.joystick.value.y * 10;
+            this.viewBoxWidth += this.joystick.value.y * 10;
             this.viewBoxLeft = viewBoxWidth / -2;
             this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio;
             this.viewBoxTop = this.viewBoxHeight / -2;
-            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`);
+            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
           }
           if (keyboardController.getKeysPressed()[`ArrowLeft`]) {
             this.rotationImpuls -= 1;
@@ -28463,17 +28465,17 @@
             this.rotationImpuls += 1;
           }
           if (keyboardController.getKeysPressed()[`ArrowUp`]) {
-            viewBoxWidth += viewBoxWidth / 10;
+            this.viewBoxWidth += viewBoxWidth / 10;
             this.viewBoxLeft = viewBoxWidth / -2;
             this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio;
             this.viewBoxTop = this.viewBoxHeight / -2;
-            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`);
+            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
           } else if (keyboardController.getKeysPressed()[`ArrowDown`]) {
-            viewBoxWidth -= viewBoxWidth / 10;
+            this.viewBoxWidth -= viewBoxWidth / 10;
             this.viewBoxLeft = viewBoxWidth / -2;
             this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio;
             this.viewBoxTop = this.viewBoxHeight / -2;
-            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`);
+            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
           }
           this.rotationAngle += this.rotationImpuls;
           this.rotationAngle = (this.rotationAngle % 360 + 360) % 360;
@@ -28567,10 +28569,17 @@
   });
 
   // src/index.ts
-  init_GameMenu();
-  console.log("SpacePatrol0201 ver.1931");
-  var menu = new GameMenu();
-  menu.loop();
+  var viewBoxWidth, menu;
+  var init_src = __esm({
+    "src/index.ts"() {
+      init_GameMenu();
+      console.log("SpacePatrol0201 ver.2155");
+      viewBoxWidth = 100;
+      menu = new GameMenu();
+      menu.loop();
+    }
+  });
+  init_src();
 })();
 /*! Bundled license information:
 

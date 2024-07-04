@@ -1,21 +1,16 @@
 import { SpacecraftShape } from "./SpacecraftShape.js"
-import { viewBoxWidth } from "./GameMenu.js"
+import { viewBoxWidth } from "./index.js"
 import { color } from "./GameMenu.js"
 import { Device } from "./Device.js"
 import { DeviceFactory } from "./DeviceFactory.js"
 import { SpaceObjectStatus, polarVector, add, length, angle, distanceBetween, Vector2d, inverse } from "./library.js"
 //import { Vector2D } from "./Vector2D.js"
 
-
-export let fontSize = viewBoxWidth/20
+export let fontSize = 12
 console.log("viewBoxWidth: "+viewBoxWidth)
-       
-
 
 export class Spacecraft implements SpaceObjectStatus{
 
-    
-    
     // ersetze die properties durch objectStatus.property
     //
     //_location = {x: 0, y:0} as Vector2d;
@@ -98,7 +93,7 @@ export class Spacecraft implements SpaceObjectStatus{
         this._label = document.createElementNS("http://www.w3.org/2000/svg", "text")
         svgElement.appendChild(this._label)
         this._label.setAttribute("font-size", `${fontSize}px`)
-        this._label.innerHTML = `<tspan x="${this._scale*7}">label text, yet to be written`
+        this._label.innerHTML = `<tspan x="${this._scale*7}">label text is yet to be written`
         
         setTimeout(()=>{//wait for the textelement to be positioned
             if(this._labelBorder && this._label){
