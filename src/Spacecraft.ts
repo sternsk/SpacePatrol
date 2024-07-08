@@ -6,8 +6,9 @@ import { DeviceFactory } from "./DeviceFactory.js"
 import { SpaceObjectStatus, polarVector, add, length, angle, distanceBetween, Vector2d, inverse } from "./library.js"
 //import { Vector2D } from "./Vector2D.js"
 
-export let fontSize = 12
-console.log("viewBoxWidth: "+viewBoxWidth)
+// fontsize should be depending on screenresolution
+export let fontSize = window.innerWidth/40
+console.log("window.innerWidth: "+window.innerWidth)
 
 export class Spacecraft implements SpaceObjectStatus{
 
@@ -52,8 +53,6 @@ export class Spacecraft implements SpaceObjectStatus{
     }
 
     accelerate(thrust: number) {
-        console.log(thrust)
-        console.log(length(this.impuls))
         let vector = polarVector(thrust, this.direction);
         this.objectStatus.impuls = add(this.objectStatus.impuls, vector)
     }
@@ -165,12 +164,13 @@ export class Spacecraft implements SpaceObjectStatus{
         let deltaAngle = this.objectStatus.direction - angle(vector)
         switch (this.objectStatus.type){
         case `rokket`:
-            add(this.objectStatus.impuls, vector)
+            this.objectStatus.impuls = add(this.objectStatus.impuls, vector)
+            console.log("vector: "+vector.x+", "+vector.y)
             this.objectStatus.direction = angle(vector)
             break
         
         case `rainbowRocket`:
-            add(this.objectStatus.impuls, vector)
+            this.objectStatus.impuls = add(this.objectStatus.impuls, vector)
             if((deltaAngle > 0 && 
                 deltaAngle < 180) || 
                 deltaAngle < -180){
@@ -184,7 +184,7 @@ export class Spacecraft implements SpaceObjectStatus{
             break
             
         case `../resources/bromber.svg`:
-            add(this.objectStatus.impuls, vector)
+            this.objectStatus.impuls = add(this.objectStatus.impuls, vector)
 
             if(deltaAngle < -180)
                 deltaAngle +=360
@@ -197,7 +197,7 @@ export class Spacecraft implements SpaceObjectStatus{
             break
             
         case `../resources/blizzer.png`:
-            add(this.objectStatus.impuls, vector)
+            this.objectStatus.impuls = add(this.objectStatus.impuls, vector)
 
             if(!this.easing){
                 this.easing = true
@@ -220,7 +220,7 @@ export class Spacecraft implements SpaceObjectStatus{
             break
 
         default:
-            add(this.objectStatus.impuls, vector)
+            this.objectStatus.impuls = add(this.objectStatus.impuls, vector)
             this.objectStatus.direction = angle(vector)
         }
 

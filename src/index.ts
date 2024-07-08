@@ -1,4 +1,9 @@
-console.log("SpacePatrol0201 ver.2155")
+console.log(" ")
+console.log("index.ts says: SpacePatrol0201 ver.2155, and this should be the first statement")
+console.log("There is apperently the imports and dependencies loaded first and then the code executed.")
+console.log("what seems rather awkward to me")
+console.log(" ")
+console.log("cause viewBoxWidth ist defined right after this statement")
 
 export let viewBoxWidth = 100
 

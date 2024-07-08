@@ -21,7 +21,7 @@ export const keyboardController = new KeyboardController(gameFrame)
 export let color: string        //initial color
 export let device: string
 
-console.log("viewBoxWidth"+viewBoxWidth)
+console.log("viewBoxWidth is imported by index.ts and shoud be defined: "+viewBoxWidth)
 
 export class GameMenu{
     viewBoxWidth: number
@@ -266,9 +266,10 @@ export class GameMenu{
         requestAnimationFrame(() => this.loop())
 
         if(this.joystick.isTouched){
-            this.rotationImpuls = this.joystick.value.x * 100
+            //console.log(this.joystick.value)
+            this.rotationImpuls = this.joystick.value.x *100
             
-            this.viewBoxWidth += this.joystick.value.y * 10
+            this.viewBoxWidth += this.joystick.value.y 
             this.viewBoxLeft = viewBoxWidth / -2
             this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio
             this.viewBoxTop = this.viewBoxHeight / -2

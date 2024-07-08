@@ -1,6 +1,4 @@
-//import { Vector2D } from "./Vector2D.js";
-
-import { Vector2d, length } from "./library.js";
+import { Vector2d, length, angle } from "./library.js";
 
 export class Joystick {
     private _htmlElement: HTMLElement;
@@ -86,7 +84,9 @@ export class Joystick {
     }
 
     get value(): Vector2d{
-        console.log(length(this._value))
+       // console.log("length: "+length(this._value))
+       // console.log("angle: "+angle(this._value))
+        
         return this._value
         
     }
@@ -127,8 +127,14 @@ export class Joystick {
         const centerY = this._htmlElement.offsetHeight / 2;
 
         const distance = Math.sqrt((offsetX - centerX) ** 2 + (offsetY - centerY) ** 2);
+        //console.log("distance: "+distance)
+        
         const relativDistance = distance / centerX
+        //console.log("relativDistance: "+relativDistance)
+
         const angle = Math.atan2(offsetY - centerY, offsetX - centerX);
+        //console.log("angle in deg: "+angle/Math.PI*180)
+
 
         if (distance <= centerX) {
             this._knobElement.style.left = `${offsetX}px`;
@@ -140,7 +146,7 @@ export class Joystick {
             this._knobElement.style.left = `${x}px`;
             this._knobElement.style.top = `${y}px`;
         }
-        this._value = {x: Math.cos(angle * relativDistance/10), y: Math.sin(angle) * relativDistance/10}
+        this._value = {x: Math.cos(angle) * relativDistance / 10, y: Math.sin(angle) * relativDistance / 10}
     }
 
     private onTouchEnd(event: TouchEvent) {

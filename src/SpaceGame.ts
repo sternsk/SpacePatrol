@@ -98,7 +98,6 @@ export class SpaceGame {
     private updateElements() {
         this.spacecraft.update()
         this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus")
-        console.log("fontSize: "+fontSize)
         this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale*7}"> 
                                         ${this.spacecraft.id}</tspan>
                                         <tspan x="${this.spacecraft.scale*7}" dy="${fontSize}">
