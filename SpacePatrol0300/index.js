@@ -27776,7 +27776,6 @@
           switch (this.objectStatus.type) {
             case `rokket`:
               this.objectStatus.impuls = add(this.objectStatus.impuls, vector);
-              console.log("vector: " + vector.x + ", " + vector.y);
               this.objectStatus.direction = angle(vector);
               break;
             case `rainbowRocket`:
@@ -28095,7 +28094,7 @@
             }).catch((error) => {
               console.error("Failed to update spacecrafts:", error);
             });
-          }, 50);
+          }, 500);
         }
         syncReality(reality) {
         }
@@ -28570,7 +28569,7 @@
     "src/index.ts"() {
       init_GameMenu();
       console.log(" ");
-      console.log("index.ts says: SpacePatrol0201 ver.2155, and this should be the first statement");
+      console.log("index.ts says: SpacePatrol0201 ver.0953, and this should be the first statement");
       console.log("There is apperently the imports and dependencies loaded first and then the code executed.");
       console.log("what seems rather awkward to me");
       console.log(" ");

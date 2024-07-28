@@ -165,7 +165,6 @@ export class Spacecraft implements SpaceObjectStatus{
         switch (this.objectStatus.type){
         case `rokket`:
             this.objectStatus.impuls = add(this.objectStatus.impuls, vector)
-            console.log("vector: "+vector.x+", "+vector.y)
             this.objectStatus.direction = angle(vector)
             break
         

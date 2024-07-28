@@ -48,7 +48,7 @@ export interface SpaceObjectStatus {
     location: Vector2d;
     impuls: Vector2d;
     direction: number;
-    id: string;
+    craftId: string;
     type: string;
 }
 

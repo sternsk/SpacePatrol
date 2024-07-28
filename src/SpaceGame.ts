@@ -48,7 +48,7 @@ export class SpaceGame {
             .catch(error => {
                 console.error("Failed to update spacecrafts:", error);
             });
-        }, 50);
+        }, 500);
     }
 
     syncReality(reality: SpaceObjectStatus[]){
