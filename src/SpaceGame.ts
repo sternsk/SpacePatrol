@@ -31,15 +31,14 @@ export class SpaceGame {
         this.spacecraft.addDevice(`${device}`, [this.spacecraft.gElement.getBBox().width/3, 
                                                 this.spacecraft.gElement.getBBox().height/3,
                                                 ])
-
-            this.spacecraft.touchControlType = this.spacecraft.type
+        this.spacecraft.touchControlType = this.spacecraft.type
         this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
         this.gameLoop();
        
         setInterval(() => {
             
             const request = {} as SyncronizeSpaceObject
-            request.rocketStatus = this.spacecraft.objectStatus
+            request.spaceObject = this.spacecraft.objectStatus
             
             evaluate(syncSpaceObject, request)
             .then(response => {
@@ -52,7 +51,7 @@ export class SpaceGame {
     }
 
     syncReality(reality: SpaceObjectStatus[]){
-
+        
     }
 
     async handleTouchEndEvent(){

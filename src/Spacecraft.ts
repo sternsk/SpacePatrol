@@ -10,7 +10,7 @@ import { SpaceObjectStatus, polarVector, add, length, angle, distanceBetween, Ve
 export let fontSize = window.innerWidth/40
 console.log("window.innerWidth: "+window.innerWidth)
 
-export class Spacecraft implements SpaceObjectStatus{
+export class Spacecraft{
 
     // ersetze die properties durch objectStatus.property
     //
@@ -20,13 +20,16 @@ export class Spacecraft implements SpaceObjectStatus{
     //_id: string = "spacecraft";
     //_type: string = "rokket";
 
+    
+
     objectStatus: SpaceObjectStatus = { location: {x:0, y:0} as Vector2d,
                                         impuls: {x:0, y:0} as Vector2d,
                                         direction: 0,
-                                        id: "spacecraft",
-                                        type: "rokket",
+                                        mass: 10,
+                                        craftId: "spaßcraft",
+                                        type: "rocket"
                                         } 
-    
+
     
     private _gElement: SVGGElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
     private _color: string
@@ -48,7 +51,7 @@ export class Spacecraft implements SpaceObjectStatus{
                 
         this.objectStatus.type = "rocket"
         this._color = "flün"
-        this.objectStatus.id = "spacecraft"
+        this.objectStatus.craftId = "spacecraft"
         this._touchControlType = "spacecraft"
     }
 
@@ -253,7 +256,7 @@ export class Spacecraft implements SpaceObjectStatus{
         if (distance < viewBoxWidth/2)
             this._scale = Math.cos(distance/(viewBoxWidth/4) * Math.PI/4)
         if (distance > viewBoxWidth/2){
-            inverse(this.impuls)
+            inverse(this.objectStatus.impuls)
         }
     }
 
@@ -279,9 +282,7 @@ export class Spacecraft implements SpaceObjectStatus{
         return(this._label)
     }
 
-    get impuls(): Vector2d{
-        return this.objectStatus.impuls
-    }
+    
     get lastUpdate(): number{
         return this._lastUpdate
     }
@@ -317,11 +318,11 @@ export class Spacecraft implements SpaceObjectStatus{
     }
 
     get id(): string{
-        return this.objectStatus.id
+        return this.objectStatus.craftId
     }
 
     set id(id: string) {
-        this.objectStatus.id = id
+        this.objectStatus.craftId = id
     }
     
     get gElement(): SVGGElement{

@@ -48,12 +48,13 @@ export interface SpaceObjectStatus {
     location: Vector2d;
     impuls: Vector2d;
     direction: number;
+    mass:number;
     craftId: string;
     type: string;
 }
 
 export interface SyncronizeSpaceObject {
-    rocketStatus: SpaceObjectStatus;
+    spaceObject: SpaceObjectStatus;
 }
 
 export const syncSpaceObject = new RequestDefinition<SyncronizeSpaceObject, SpaceObjectStatus[]>("SynchronizeSpaceObject");

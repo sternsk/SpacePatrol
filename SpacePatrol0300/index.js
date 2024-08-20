@@ -27671,8 +27671,9 @@
             location: { x: 0, y: 0 },
             impuls: { x: 0, y: 0 },
             direction: 0,
-            id: "spacecraft",
-            type: "rokket"
+            mass: 10,
+            craftId: "spa\xDFcraft",
+            type: "rocket"
           };
           this._gElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
           this.easing = false;
@@ -27682,7 +27683,7 @@
           this._scale = 1;
           this.objectStatus.type = "rocket";
           this._color = "fl\xFCn";
-          this.objectStatus.id = "spacecraft";
+          this.objectStatus.craftId = "spacecraft";
           this._touchControlType = "spacecraft";
         }
         accelerate(thrust) {
@@ -27838,7 +27839,7 @@
           if (distance < viewBoxWidth / 2)
             this._scale = Math.cos(distance / (viewBoxWidth / 4) * Math.PI / 4);
           if (distance > viewBoxWidth / 2) {
-            inverse(this.impuls);
+            inverse(this.objectStatus.impuls);
           }
         }
         rotate(angle2) {
@@ -27858,9 +27859,6 @@
         }
         get label() {
           return this._label;
-        }
-        get impuls() {
-          return this.objectStatus.impuls;
         }
         get lastUpdate() {
           return this._lastUpdate;
@@ -27890,10 +27888,10 @@
           this._color = color2;
         }
         get id() {
-          return this.objectStatus.id;
+          return this.objectStatus.craftId;
         }
         set id(id) {
-          this.objectStatus.id = id;
+          this.objectStatus.craftId = id;
         }
         get gElement() {
           return this._gElement;
@@ -28088,7 +28086,7 @@
           this.gameLoop();
           setInterval(() => {
             const request = {};
-            request.rocketStatus = this.spacecraft.objectStatus;
+            request.spaceObject = this.spacecraft.objectStatus;
             evaluate(syncSpaceObject, request).then((response) => {
               this.syncReality(response);
             }).catch((error) => {
@@ -28569,7 +28567,7 @@
     "src/index.ts"() {
       init_GameMenu();
       console.log(" ");
-      console.log("index.ts says: SpacePatrol0201 ver.0953, and this should be the first statement");
+      console.log("index.ts says: SpacePatrol0201 ver.2144, and this should be the first statement");
       console.log("There is apperently the imports and dependencies loaded first and then the code executed.");
       console.log("what seems rather awkward to me");
       console.log(" ");
