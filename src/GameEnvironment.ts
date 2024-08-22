@@ -1,7 +1,7 @@
 import { Spacecraft } from "./Spacecraft.js";
 import { Joystick } from "./Joystick.js";
 import { gameFrame } from "./GameMenu.js";
-import { viewBoxWidth } from "./index.js";
+import { viewBoxWidth } from "./GameMenu.js";
 
 
 export class GameEnvironment{

@@ -26,6 +26,7 @@ export class SpaceGame {
         this.spacecraft.color = color
         if(id) this.spacecraft.id = id
         this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type)
+        this.spacecraft.gElement.setAttribute("id", `${this.spacecraft.id}`)
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
         console.log("device: "+device)
         this.spacecraft.addDevice(`${device}`, [this.spacecraft.gElement.getBBox().width/3, 
@@ -42,7 +43,7 @@ export class SpaceGame {
             
             evaluate(syncSpaceObject, request)
             .then(response => {
-                this.syncReality(response)
+              //  this.syncReality(response)
             })
             .catch(error => {
                 console.error("Failed to update spacecrafts:", error);
@@ -51,7 +52,29 @@ export class SpaceGame {
     }
 
     syncReality(reality: SpaceObjectStatus[]){
-        
+        reality.forEach(response => {
+            // check if element of receivedData is already in spacecrafts-Array
+            const index = this.spacecrafts.findIndex(spacecraft => spacecraft.id === response.craftId)
+                
+            // if so and is not an npc, update the element in Spacecrafts-Array 
+            // update location, impuls, direction and mass
+            if(index !== -1 ){
+                this.spacecrafts[index].objectStatus.location = response.location
+                this.spacecrafts[index].objectStatus.impuls = response.impuls
+                this.spacecrafts[index].objectStatus.direction = response.direction
+                this.spacecrafts[index].objectStatus.mass = response.mass
+                // ommit the update of craftId and type for those are fix
+            } else if (index === -1){
+                const spacecraft = new Spacecraft()
+                spacecraft.objectStatus = response
+                this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type)
+                this.spacecrafts.push(spacecraft)
+                spacecraft.gElement.setAttribute("id", `${spacecraft.id}`)
+                this.gameEnvironment.svgElement.appendChild(spacecraft.gElement)
+                
+            }
+            
+        })
     }
 
     async handleTouchEndEvent(){
@@ -96,6 +119,7 @@ export class SpaceGame {
 
     private updateElements() {
         this.spacecraft.update()
+        console.log("this.spacecraft.objectStatus.location.x: "+this.spacecraft.objectStatus.location.x)
         this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus")
         this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale*7}"> 
                                         ${this.spacecraft.id}</tspan>

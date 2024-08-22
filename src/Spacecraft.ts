@@ -1,5 +1,5 @@
 import { SpacecraftShape } from "./SpacecraftShape.js"
-import { viewBoxWidth } from "./index.js"
+import { viewBoxWidth } from "./GameMenu.js"
 import { color } from "./GameMenu.js"
 import { Device } from "./Device.js"
 import { DeviceFactory } from "./DeviceFactory.js"
@@ -77,6 +77,7 @@ export class Spacecraft{
         
         // füge das gElement des Devices zum gElement des Spacecrafts hinzu.
         if(this._device?._gElem){
+            this._device._gElem.setAttribute("id", "_device._gElem")
             this._gElement.appendChild(this._device._gElem)
         }
     }
@@ -145,7 +146,7 @@ export class Spacecraft{
         }
 
         if (keysPressed['ArrowDown']) {
-            this.brake(this._maneuverability/10);
+            this.brake(this._maneuverability/100);
         }
         if (keysPressed[' ']) {
             this.operate()
@@ -358,10 +359,12 @@ export class Spacecraft{
     }
     
     update() {
-       // if(this._location instanceof Vector2D && this._impuls instanceof Vector2D)
-       this.location = add(this.objectStatus.impuls, this.objectStatus.location);
+        // if(this._location instanceof Vector2D && this._impuls instanceof Vector2D)
+        this.objectStatus.location = add(this.objectStatus.impuls, this.objectStatus.location);
         
-        this.gElement.setAttribute("transform", `translate (${this.objectStatus.location.x} ${this.objectStatus.location.y}) scale (${this._scale}) rotate (${this.direction + 90})`)
+        this._gElement.setAttribute("transform", `translate (${this.objectStatus.location.x} ${this.objectStatus.location.y}) scale (${this._scale}) rotate (${this.objectStatus.direction + 90})`)
+        //console.log(`${this.objectStatus.location.x} ${this.objectStatus.location.y}`) //these values are corrupted by syncReality in SpaceGame!        
+        
         
         if(this._label && this._labelBorder){
             this._label.setAttribute("transform", `translate(${this.objectStatus.location.x} ${this.objectStatus.location.y})`)

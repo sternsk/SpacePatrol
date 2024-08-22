@@ -27652,7 +27652,7 @@
   var init_Spacecraft = __esm({
     "src/Spacecraft.ts"() {
       "use strict";
-      init_src();
+      init_GameMenu();
       init_GameMenu();
       init_DeviceFactory();
       init_library();
@@ -27703,6 +27703,7 @@
           var _a, _b;
           (_a = this._device) == null ? void 0 : _a.activate();
           if ((_b = this._device) == null ? void 0 : _b._gElem) {
+            this._device._gElem.setAttribute("id", "_device._gElem");
             this._gElement.appendChild(this._device._gElem);
           }
         }
@@ -27759,7 +27760,7 @@
             this.accelerate(this._maneuverability / 100);
           }
           if (keysPressed["ArrowDown"]) {
-            this.brake(this._maneuverability / 10);
+            this.brake(this._maneuverability / 100);
           }
           if (keysPressed[" "]) {
             this.operate();
@@ -27920,8 +27921,8 @@
           }
         }
         update() {
-          this.location = add(this.objectStatus.impuls, this.objectStatus.location);
-          this.gElement.setAttribute("transform", `translate (${this.objectStatus.location.x} ${this.objectStatus.location.y}) scale (${this._scale}) rotate (${this.direction + 90})`);
+          this.objectStatus.location = add(this.objectStatus.impuls, this.objectStatus.location);
+          this._gElement.setAttribute("transform", `translate (${this.objectStatus.location.x} ${this.objectStatus.location.y}) scale (${this._scale}) rotate (${this.objectStatus.direction + 90})`);
           if (this._label && this._labelBorder) {
             this._label.setAttribute("transform", `translate(${this.objectStatus.location.x} ${this.objectStatus.location.y})`);
             this._labelBorder.setAttribute("transform", `translate(${this.objectStatus.location.x - 7.5 + this.scale * 7}, ${this.objectStatus.location.y})`);
@@ -27955,7 +27956,7 @@
       "use strict";
       init_Joystick();
       init_GameMenu();
-      init_src();
+      init_GameMenu();
       GameEnvironment = class {
         constructor() {
           this.label = document.createElement("HTMLLabelElement");
@@ -28075,6 +28076,7 @@
           this.spacecraft.color = color2;
           if (id) this.spacecraft.id = id;
           this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type);
+          this.spacecraft.gElement.setAttribute("id", `${this.spacecraft.id}`);
           this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement);
           console.log("device: " + device);
           this.spacecraft.addDevice(`${device}`, [
@@ -28088,13 +28090,28 @@
             const request = {};
             request.spaceObject = this.spacecraft.objectStatus;
             evaluate(syncSpaceObject, request).then((response) => {
-              this.syncReality(response);
             }).catch((error) => {
               console.error("Failed to update spacecrafts:", error);
             });
           }, 500);
         }
         syncReality(reality) {
+          reality.forEach((response) => {
+            const index = this.spacecrafts.findIndex((spacecraft) => spacecraft.id === response.craftId);
+            if (index !== -1) {
+              this.spacecrafts[index].objectStatus.location = response.location;
+              this.spacecrafts[index].objectStatus.impuls = response.impuls;
+              this.spacecrafts[index].objectStatus.direction = response.direction;
+              this.spacecrafts[index].objectStatus.mass = response.mass;
+            } else if (index === -1) {
+              const spacecraft = new Spacecraft();
+              spacecraft.objectStatus = response;
+              this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type);
+              this.spacecrafts.push(spacecraft);
+              spacecraft.gElement.setAttribute("id", `${spacecraft.id}`);
+              this.gameEnvironment.svgElement.appendChild(spacecraft.gElement);
+            }
+          });
         }
         handleTouchEndEvent() {
           return __async(this, null, function* () {
@@ -28133,6 +28150,7 @@
         }
         updateElements() {
           this.spacecraft.update();
+          console.log("this.spacecraft.objectStatus.location.x: " + this.spacecraft.objectStatus.location.x);
           this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus");
           this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale * 7}"> 
                                         ${this.spacecraft.id}</tspan>
@@ -28244,18 +28262,18 @@
   });
 
   // src/GameMenu.ts
-  var import_midi, gameFrame, keyboardController, color, device, GameMenu;
+  var import_midi, gameFrame, keyboardController, color, device, viewBoxWidth, GameMenu;
   var init_GameMenu = __esm({
     "src/GameMenu.ts"() {
       "use strict";
       init_SpacecraftShape();
       init_KeyboardController();
       init_Joystick();
-      init_src();
       init_esm();
       import_midi = __toESM(require_Midi(), 1);
       gameFrame = document.getElementById("spacepatrolContainer");
       keyboardController = new KeyboardController(gameFrame);
+      viewBoxWidth = 100;
       console.log("viewBoxWidth is imported by index.ts and shoud be defined: " + viewBoxWidth);
       GameMenu = class {
         constructor() {
@@ -28272,7 +28290,6 @@
           this.viewBoxHeight = 100;
           this.previewSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
           this.keysPressed = {};
-          this.viewBoxWidth = viewBoxWidth;
           gameFrame.setAttribute("tabIndex", "0");
           gameFrame.style.position = "fixed";
           gameFrame.style.width = `${window.innerWidth}px`;
@@ -28446,11 +28463,11 @@
           requestAnimationFrame(() => this.loop());
           if (this.joystick.isTouched) {
             this.rotationImpuls = this.joystick.value.x * 100;
-            this.viewBoxWidth += this.joystick.value.y;
+            viewBoxWidth += this.joystick.value.y;
             this.viewBoxLeft = viewBoxWidth / -2;
             this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio;
             this.viewBoxTop = this.viewBoxHeight / -2;
-            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`);
           }
           if (keyboardController.getKeysPressed()[`ArrowLeft`]) {
             this.rotationImpuls -= 1;
@@ -28458,17 +28475,17 @@
             this.rotationImpuls += 1;
           }
           if (keyboardController.getKeysPressed()[`ArrowUp`]) {
-            this.viewBoxWidth += viewBoxWidth / 10;
+            viewBoxWidth += viewBoxWidth / 10;
             this.viewBoxLeft = viewBoxWidth / -2;
             this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio;
             this.viewBoxTop = this.viewBoxHeight / -2;
-            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`);
           } else if (keyboardController.getKeysPressed()[`ArrowDown`]) {
-            this.viewBoxWidth -= viewBoxWidth / 10;
+            viewBoxWidth -= viewBoxWidth / 10;
             this.viewBoxLeft = viewBoxWidth / -2;
             this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio;
             this.viewBoxTop = this.viewBoxHeight / -2;
-            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`);
           }
           this.rotationAngle += this.rotationImpuls;
           this.rotationAngle = (this.rotationAngle % 360 + 360) % 360;
@@ -28562,22 +28579,14 @@
   });
 
   // src/index.ts
-  var viewBoxWidth, menu;
-  var init_src = __esm({
-    "src/index.ts"() {
-      init_GameMenu();
-      console.log(" ");
-      console.log("index.ts says: SpacePatrol0201 ver.2144, and this should be the first statement");
-      console.log("There is apperently the imports and dependencies loaded first and then the code executed.");
-      console.log("what seems rather awkward to me");
-      console.log(" ");
-      console.log("cause viewBoxWidth ist defined right after this statement");
-      viewBoxWidth = 100;
-      menu = new GameMenu();
-      menu.loop();
-    }
-  });
-  init_src();
+  init_GameMenu();
+  console.log(" ");
+  console.log("index.ts says: SpacePatrol0300 ver.2210, and this should be the first statement");
+  console.log("There is apperently the imports and dependencies loaded first and their code executed.");
+  console.log("what seems rather awkward to me");
+  console.log(" ");
+  var menu = new GameMenu();
+  menu.loop();
 })();
 /*! Bundled license information:
 

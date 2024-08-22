@@ -1,7 +1,6 @@
 import { SpacecraftShape } from "./SpacecraftShape.js"
 import { KeyboardController } from "./KeyboardController.js"
 import { Joystick } from "./Joystick.js"
-import { viewBoxWidth } from "./index.js"
 import * as Tone from 'tone'
 import { Midi } from '@tonejs/midi';
 
@@ -20,11 +19,12 @@ export const gameFrame = document.getElementById("spacepatrolContainer")! as unk
 export const keyboardController = new KeyboardController(gameFrame)
 export let color: string        //initial color
 export let device: string
+export let viewBoxWidth = 100
 
 console.log("viewBoxWidth is imported by index.ts and shoud be defined: "+viewBoxWidth)
 
 export class GameMenu{
-    viewBoxWidth: number
+    
     joystick = new Joystick()
     typeSelector = document.createElement("select")
     deviceSelector = document.createElement("select")
@@ -50,7 +50,7 @@ export class GameMenu{
     keysPressed: {[key:string]:boolean} = {}
 
     constructor(){
-        this.viewBoxWidth = viewBoxWidth
+       
         gameFrame.setAttribute("tabIndex","0")
 
         // apply fullscreen mode
@@ -223,18 +223,16 @@ export class GameMenu{
         this.previewSvgAspectRatio = viewBoxWidth / this.viewBoxHeight
 
         this.previewSvg.style.position = "relative"
-        //appy apply previewSvg to screen orientation
+        // apply previewSvg to screen orientation
         const aspectRatio = window.innerWidth / window.innerHeight
 
         if (aspectRatio >= 1) { // landscape orientation
             this.previewSvg.style.width = window.innerHeight.toString()
         }
 
-
         gameFrame.appendChild(this.previewSvg)
-
+        
         this.previewSvg.setAttribute("id", "previewSvg")
-
         this.previewSvg.setAttribute("tabindex", "0")
         this.previewSvg.setAttribute("viewBox",`${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`)
         this.previewSvg.style.zIndex = "-1"
@@ -269,11 +267,11 @@ export class GameMenu{
             //console.log(this.joystick.value)
             this.rotationImpuls = this.joystick.value.x *100
             
-            this.viewBoxWidth += this.joystick.value.y 
+            viewBoxWidth += this.joystick.value.y 
             this.viewBoxLeft = viewBoxWidth / -2
             this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio
             this.viewBoxTop = this.viewBoxHeight / -2
-            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`)
+            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`)
         }
         
         if (keyboardController.getKeysPressed()[`ArrowLeft`]){
@@ -283,17 +281,17 @@ export class GameMenu{
         }
         
         if (keyboardController.getKeysPressed()[`ArrowUp`]){
-            this.viewBoxWidth += viewBoxWidth / 10
+            viewBoxWidth += viewBoxWidth / 10
             this.viewBoxLeft = viewBoxWidth / -2
             this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio
             this.viewBoxTop = this.viewBoxHeight / -2
-            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`)
+            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`)
         }else if(keyboardController.getKeysPressed()[`ArrowDown`]){
-            this.viewBoxWidth -= viewBoxWidth / 10
+            viewBoxWidth -= viewBoxWidth / 10
             this.viewBoxLeft = viewBoxWidth / -2
             this.viewBoxHeight = viewBoxWidth * this.previewSvgAspectRatio
             this.viewBoxTop = this.viewBoxHeight / -2
-            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`)
+            this.previewSvg.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${viewBoxWidth}, ${this.viewBoxHeight}`)
         }
     
         this.rotationAngle += this.rotationImpuls
