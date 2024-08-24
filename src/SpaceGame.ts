@@ -43,7 +43,7 @@ export class SpaceGame {
             
             evaluate(syncSpaceObject, request)
             .then(response => {
-              //  this.syncReality(response)
+                this.syncReality(response)
             })
             .catch(error => {
                 console.error("Failed to update spacecrafts:", error);
@@ -67,7 +67,8 @@ export class SpaceGame {
             } else if (index === -1){
                 const spacecraft = new Spacecraft()
                 spacecraft.objectStatus = response
-                this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type)
+                spacecraft.gElement = SpacecraftShape.getCraftGElement(spacecraft.type)
+                console.log(spacecraft.type)
                 this.spacecrafts.push(spacecraft)
                 spacecraft.gElement.setAttribute("id", `${spacecraft.id}`)
                 this.gameEnvironment.svgElement.appendChild(spacecraft.gElement)
@@ -119,7 +120,6 @@ export class SpaceGame {
 
     private updateElements() {
         this.spacecraft.update()
-        console.log("this.spacecraft.objectStatus.location.x: "+this.spacecraft.objectStatus.location.x)
         this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus")
         this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale*7}"> 
                                         ${this.spacecraft.id}</tspan>
@@ -136,8 +136,9 @@ export class SpaceGame {
                 }
                 else{
                     this.gameEnvironment.handleSpacecraft(spacecraft, "pseudoTorus")
+                    
                 }
-                spacecraft.update();
+            spacecraft.update();
                
                 if(spacecraft.label){
                     spacecraft.setLabelText(`<tspan x="${spacecraft.scale*7}"> 

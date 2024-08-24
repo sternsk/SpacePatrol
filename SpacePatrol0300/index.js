@@ -302,6 +302,34 @@
               path1.setAttribute("d", "M510 910 c0 -13 30 -13 50 0 11 7 7 10 -17 10 -18 0 -33 -4 -33 -10z");
               additionalPaths.push(path1);
               break;
+            case "planet":
+              console.log("planet requested");
+              const planetImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
+              planetImage.href.baseVal = "../resources/planet.png";
+              planetImage.onload = () => {
+                let imageWidth = image.getBBox().width;
+                console.log("imageWidth: " + imageWidth);
+              };
+              planetImage.setAttribute("width", `50`);
+              planetImage.setAttribute("height", `50`);
+              planetImage.setAttribute("stroke", `${color}`);
+              planetImage.setAttribute("transform", `translate (-25,-25)`);
+              gElement.appendChild(planetImage);
+              return gElement;
+            case "nugget":
+              console.log("planet requested");
+              const nuggetImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
+              nuggetImage.href.baseVal = "../resources/station01.png";
+              nuggetImage.onload = () => {
+                let imageWidth = image.getBBox().width;
+                console.log("imageWidth: " + imageWidth);
+              };
+              nuggetImage.setAttribute("width", `50`);
+              nuggetImage.setAttribute("height", `50`);
+              nuggetImage.setAttribute("stroke", `${color}`);
+              nuggetImage.setAttribute("transform", `translate (-25,-25)`);
+              gElement.appendChild(nuggetImage);
+              return gElement;
           }
           const imageUrl = `./${type}`;
           const image = document.createElementNS("http://www.w3.org/2000/svg", "image");
@@ -27673,12 +27701,12 @@
             direction: 0,
             mass: 10,
             craftId: "spa\xDFcraft",
-            type: "rocket"
+            type: "rocket",
+            npc: false
           };
           this._gElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
           this.easing = false;
           this._maneuverability = 2;
-          this._npc = false;
           this._lastUpdate = Date.now();
           this._scale = 1;
           this.objectStatus.type = "rocket";
@@ -27868,7 +27896,7 @@
           return this.objectStatus.location;
         }
         get npc() {
-          return this._npc;
+          return this.objectStatus.npc;
         }
         set location(location) {
           this.objectStatus.location = location;
@@ -28090,6 +28118,7 @@
             const request = {};
             request.spaceObject = this.spacecraft.objectStatus;
             evaluate(syncSpaceObject, request).then((response) => {
+              this.syncReality(response);
             }).catch((error) => {
               console.error("Failed to update spacecrafts:", error);
             });
@@ -28106,7 +28135,8 @@
             } else if (index === -1) {
               const spacecraft = new Spacecraft();
               spacecraft.objectStatus = response;
-              this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type);
+              spacecraft.gElement = SpacecraftShape.getCraftGElement(spacecraft.type);
+              console.log(spacecraft.type);
               this.spacecrafts.push(spacecraft);
               spacecraft.gElement.setAttribute("id", `${spacecraft.id}`);
               this.gameEnvironment.svgElement.appendChild(spacecraft.gElement);
@@ -28150,7 +28180,6 @@
         }
         updateElements() {
           this.spacecraft.update();
-          console.log("this.spacecraft.objectStatus.location.x: " + this.spacecraft.objectStatus.location.x);
           this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus");
           this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale * 7}"> 
                                         ${this.spacecraft.id}</tspan>

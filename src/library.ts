@@ -51,6 +51,7 @@ export interface SpaceObjectStatus {
     mass:number;
     craftId: string;
     type: string;
+    npc: boolean;
 }
 
 export interface SyncronizeSpaceObject {

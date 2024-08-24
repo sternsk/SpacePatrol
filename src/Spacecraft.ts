@@ -27,7 +27,8 @@ export class Spacecraft{
                                         direction: 0,
                                         mass: 10,
                                         craftId: "spaßcraft",
-                                        type: "rocket"
+                                        type: "rocket",
+                                        npc: false
                                         } 
 
     
@@ -36,8 +37,7 @@ export class Spacecraft{
     private _touchControlType: string
     private easing = false
     private _maneuverability = 2
-    private _npc = false
-
+    
     private _device?: Device
 
     private _lastUpdate: number = Date.now()
@@ -293,7 +293,7 @@ export class Spacecraft{
     }
 
     get npc(){
-        return this._npc
+        return this.objectStatus.npc
     }
 
     set location(location: Vector2d) {
