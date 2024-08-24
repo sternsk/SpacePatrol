@@ -245,7 +245,7 @@ export abstract class SpacecraftShape{
                     const planetImage = document.createElementNS("http://www.w3.org/2000/svg", "image")
                     planetImage.href.baseVal = "../resources/planet.png"
                     planetImage.onload = () =>{
-                        let imageWidth = image.getBBox().width
+                        let imageWidth = planetImage.getBBox().width
                         console.log("imageWidth: "+imageWidth)
                     }
                     planetImage.setAttribute("width", `50`)
@@ -260,7 +260,7 @@ export abstract class SpacecraftShape{
                     const nuggetImage = document.createElementNS("http://www.w3.org/2000/svg", "image")
                     nuggetImage.href.baseVal = "../resources/station01.png"
                     nuggetImage.onload = () =>{
-                        let imageWidth = image.getBBox().width
+                        let imageWidth = nuggetImage.getBBox().width
                         console.log("imageWidth: "+imageWidth)
                     }
                     nuggetImage.setAttribute("width", `50`)

@@ -307,7 +307,7 @@
               const planetImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
               planetImage.href.baseVal = "../resources/planet.png";
               planetImage.onload = () => {
-                let imageWidth = image.getBBox().width;
+                let imageWidth = planetImage.getBBox().width;
                 console.log("imageWidth: " + imageWidth);
               };
               planetImage.setAttribute("width", `50`);
@@ -321,7 +321,7 @@
               const nuggetImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
               nuggetImage.href.baseVal = "../resources/station01.png";
               nuggetImage.onload = () => {
-                let imageWidth = image.getBBox().width;
+                let imageWidth = nuggetImage.getBBox().width;
                 console.log("imageWidth: " + imageWidth);
               };
               nuggetImage.setAttribute("width", `50`);
@@ -27730,6 +27730,7 @@
         operate() {
           var _a, _b;
           (_a = this._device) == null ? void 0 : _a.activate();
+          console.log("device activates");
           if ((_b = this._device) == null ? void 0 : _b._gElem) {
             this._device._gElem.setAttribute("id", "_device._gElem");
             this._gElement.appendChild(this._device._gElem);
@@ -27949,7 +27950,8 @@
           }
         }
         update() {
-          this.objectStatus.location = add(this.objectStatus.impuls, this.objectStatus.location);
+          if (!this.npc)
+            this.objectStatus.location = add(this.objectStatus.impuls, this.objectStatus.location);
           this._gElement.setAttribute("transform", `translate (${this.objectStatus.location.x} ${this.objectStatus.location.y}) scale (${this._scale}) rotate (${this.objectStatus.direction + 90})`);
           if (this._label && this._labelBorder) {
             this._label.setAttribute("transform", `translate(${this.objectStatus.location.x} ${this.objectStatus.location.y})`);
@@ -28122,7 +28124,7 @@
             }).catch((error) => {
               console.error("Failed to update spacecrafts:", error);
             });
-          }, 500);
+          }, 20);
         }
         syncReality(reality) {
           reality.forEach((response) => {
@@ -28190,9 +28192,7 @@
                                         `);
           if (this.spacecrafts.length > 0) {
             this.spacecrafts.forEach((spacecraft) => {
-              if (spacecraft.npc) {
-                spacecraft.pseudoOrbit({ x: 0, y: 0 });
-              } else {
+              if (!spacecraft.npc) {
                 this.gameEnvironment.handleSpacecraft(spacecraft, "pseudoTorus");
               }
               spacecraft.update();
@@ -28340,7 +28340,7 @@
           const repulsorJet = document.createElement("option");
           const noDevice = document.createElement("option");
           noDevice.innerHTML = "disabled selected";
-          noDevice.value = "";
+          noDevice.value = "tractorBeam";
           noDevice.textContent = "Choose a Device";
           const ovalShield = document.createElement("option");
           ovalShield.value = "ovalShield";

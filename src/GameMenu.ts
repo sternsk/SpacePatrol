@@ -76,7 +76,7 @@ export class GameMenu{
 
         const noDevice = document.createElement("option")
         noDevice.innerHTML = "disabled selected"
-        noDevice.value = ""
+        noDevice.value = "tractorBeam"
         noDevice.textContent = "Choose a Device"
 
         const ovalShield = document.createElement("option")

@@ -48,7 +48,7 @@ export class SpaceGame {
             .catch(error => {
                 console.error("Failed to update spacecrafts:", error);
             });
-        }, 500);
+        }, 20);
     }
 
     syncReality(reality: SpaceObjectStatus[]){
@@ -131,12 +131,8 @@ export class SpaceGame {
         
         if(this.spacecrafts.length > 0){
             this.spacecrafts.forEach((spacecraft) => {
-                if(spacecraft.npc){
-                    spacecraft.pseudoOrbit({x:0, y:0}) 
-                }
-                else{
+                if(!spacecraft.npc){
                     this.gameEnvironment.handleSpacecraft(spacecraft, "pseudoTorus")
-                    
                 }
             spacecraft.update();
                

@@ -53,6 +53,7 @@ export class Spacecraft{
         this._color = "flün"
         this.objectStatus.craftId = "spacecraft"
         this._touchControlType = "spacecraft"
+        
     }
 
     accelerate(thrust: number) {
@@ -74,6 +75,7 @@ export class Spacecraft{
     operate(){
         //aktiviere das Device
         this._device?.activate()
+        console.log("device activates")
         
         // füge das gElement des Devices zum gElement des Spacecrafts hinzu.
         if(this._device?._gElem){
@@ -360,6 +362,7 @@ export class Spacecraft{
     
     update() {
         // if(this._location instanceof Vector2D && this._impuls instanceof Vector2D)
+        if(!this.npc)
         this.objectStatus.location = add(this.objectStatus.impuls, this.objectStatus.location);
         
         this._gElement.setAttribute("transform", `translate (${this.objectStatus.location.x} ${this.objectStatus.location.y}) scale (${this._scale}) rotate (${this.objectStatus.direction + 90})`)
