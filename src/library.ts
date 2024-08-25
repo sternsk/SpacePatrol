@@ -28,6 +28,14 @@ export function angle(v: Vector2d): number{
     return Math.atan2(v.y, v.x) / Math.PI * 180
 }
 
+export function rotate(v: Vector2d, n: number):Vector2d{
+    return polarVector(length(v), angle(v)+n)
+}
+
+export function distanceVector(v1: Vector2d, v2: Vector2d): Vector2d{
+    return {x: v2.x - v1.x, y: v2.y - v1.y}
+}
+
 export function distanceBetween(start: Vector2d, destination: Vector2d): number{
     let distanceVector = {x: destination.x - start.x, y: destination.y - start.y} as Vector2d
     return length(distanceVector)
@@ -48,6 +56,7 @@ export interface SpaceObjectStatus {
     location: Vector2d;
     impuls: Vector2d;
     direction: number;
+    rotation: number;
     mass:number;
     craftId: string;
     type: string;

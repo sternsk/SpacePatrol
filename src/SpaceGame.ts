@@ -4,7 +4,7 @@ import { SpacecraftShape } from "./SpacecraftShape.js";
 import { keyboardController, device, gameFrame } from "./GameMenu.js";
 //import { Vector2D } from "./Vector2D.js";
 import { TractorBeam } from "./TractorBeam.js";
-import { evaluate, RequestDefinition, SpaceObjectStatus, SyncronizeSpaceObject, syncSpaceObject, Vector2d } from "./library.js";
+import { evaluate, RequestDefinition, SpaceObjectStatus, SyncronizeSpaceObject, syncSpaceObject, Vector2d, rotate, distanceBetween, distanceVector } from "./library.js";
 
 export class SpaceGame {
     private spacecraft: Spacecraft
@@ -35,20 +35,10 @@ export class SpaceGame {
         this.spacecraft.touchControlType = this.spacecraft.type
         this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
         this.gameLoop();
-       
+       /*case the syncSpaceObjects intervall should be less than framerate
         setInterval(() => {
-            
-            const request = {} as SyncronizeSpaceObject
-            request.spaceObject = this.spacecraft.objectStatus
-            
-            evaluate(syncSpaceObject, request)
-            .then(response => {
-                this.syncReality(response)
-            })
-            .catch(error => {
-                console.error("Failed to update spacecrafts:", error);
-            });
         }, 20);
+        */
     }
 
     syncReality(reality: SpaceObjectStatus[]){
@@ -87,27 +77,59 @@ export class SpaceGame {
             this.gameLoop();
         });
         
+        const request = {} as SyncronizeSpaceObject
+        request.spaceObject = this.spacecraft.objectStatus
+        
+        evaluate(syncSpaceObject, request)
+        .then(response => {
+            this.syncReality(response)
+        })
+        .catch(error => {
+            console.error("Failed to update spacecrafts:", error);
+        });
+        
+        // check if device TractorBeam might be used - theres some specialcases
+        const tractorBeam = this.spacecraft.getDevice<TractorBeam>(TractorBeam);
+        
         if(this.touchControl){
             if(this.gameEnvironment.joystick.isTouched){
                 this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
             }
-            if(this.gameEnvironment.joystick.fires){
+            if (this.gameEnvironment.joystick.fires){
                 // case the spacecraft has the device tractorBeam 
                 // Access and use the setTarget method of the TractorBeam device
-                const tractorBeam = this.spacecraft.getDevice<TractorBeam>(TractorBeam);
-                
                 if (tractorBeam && this.spacecrafts[0]) {
-                    tractorBeam.setTarget({x: this.spacecrafts[0].location.x - this.spacecraft.location.x, 
+                   /* tractorBeam.setTarget({x: this.spacecrafts[0].location.x - this.spacecraft.location.x, 
                                             y: this.spacecrafts[0].location.y - this.spacecraft.location.y});
+                                            */
+                    const target = rotate({x: this.spacecrafts[0].location.x + this.spacecraft.location.x,
+                        y: this.spacecrafts[0].location.y + this.spacecraft.location.y} as Vector2d, -90)
+                        
+                    tractorBeam.activate(target)
+                                          
+                    const gElem = this.spacecraft.getDevice(TractorBeam)?._gElem
+                    if(gElem){
+                        
+                        this.spacecraft.gElement.appendChild(gElem)
+                    } 
                 }
-                this.spacecraft.operate()
+                else this.spacecraft.operate()
                 
             }else if(this.spacecraft.device?.activated){
                 this.spacecraft.device.deactivate()
             }
             
         }
-        
+        if(tractorBeam && keyboardController.isKeyPressed(" ")){
+            const target = rotate(distanceVector(this.spacecraft.location, this.spacecrafts[0].location), -90- this.spacecraft.direction)
+            
+            this.spacecraft.getDevice(TractorBeam)?.activate(target)
+            const gElem = this.spacecraft.getDevice(TractorBeam)?._gElem
+            if(gElem){
+                
+                this.spacecraft.gElement.appendChild(gElem)
+            }
+        }
         this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
         this.updateElements();
     }
@@ -133,17 +155,18 @@ export class SpaceGame {
             this.spacecrafts.forEach((spacecraft) => {
                 if(!spacecraft.npc){
                     this.gameEnvironment.handleSpacecraft(spacecraft, "pseudoTorus")
-                }
-            spacecraft.update();
+                } else if(spacecraft.npc)
+                    spacecraft.pseudoOrbit({x: this.spacecrafts[1].location.x, y: this.spacecrafts[1].location.y} as Vector2d)
                
                 if(spacecraft.label){
                     spacecraft.setLabelText(`<tspan x="${spacecraft.scale*7}"> 
                                             id: ${spacecraft.id} </tspan>
                                             <tspan x="${spacecraft.scale*7}" dy="${fontSize}">
-                                           lastUpdate: ${spacecraft.lastUpdate}</tspan>
-                                           <tspan x="${spacecraft.scale*7}" dy="${2*fontSize}">
-                                           Date.now(): ${Date.now()}</tspan>`);
+                                            lastUpdate: ${spacecraft.lastUpdate}</tspan>
+                                            <tspan x="${spacecraft.scale*7}" dy="${2*fontSize}">
+                                            Date.now(): ${Date.now()}</tspan>`);
                 }
+            spacecraft.update();
             });
 
         }

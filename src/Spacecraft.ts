@@ -4,27 +4,19 @@ import { color } from "./GameMenu.js"
 import { Device } from "./Device.js"
 import { DeviceFactory } from "./DeviceFactory.js"
 import { SpaceObjectStatus, polarVector, add, length, angle, distanceBetween, Vector2d, inverse } from "./library.js"
+import { TractorBeam } from "./TractorBeam.js"
 //import { Vector2D } from "./Vector2D.js"
 
 // fontsize should be depending on screenresolution
-export let fontSize = window.innerWidth/40
+export let fontSize = window.innerHeight/80
 console.log("window.innerWidth: "+window.innerWidth)
 
 export class Spacecraft{
 
-    // ersetze die properties durch objectStatus.property
-    //
-    //_location = {x: 0, y:0} as Vector2d;
-    //_impuls = {x: 0, y:0} as Vector2d;
-    //_direction = 0;
-    //_id: string = "spacecraft";
-    //_type: string = "rokket";
-
-    
-
     objectStatus: SpaceObjectStatus = { location: {x:0, y:0} as Vector2d,
                                         impuls: {x:0, y:0} as Vector2d,
                                         direction: 0,
+                                        rotation:0,
                                         mass: 10,
                                         craftId: "spaßcraft",
                                         type: "rocket",
@@ -79,7 +71,7 @@ export class Spacecraft{
         
         // füge das gElement des Devices zum gElement des Spacecrafts hinzu.
         if(this._device?._gElem){
-            this._device._gElem.setAttribute("id", "_device._gElem")
+            this._device._gElem.setAttribute("id", "device")
             this._gElement.appendChild(this._device._gElem)
         }
     }
@@ -150,7 +142,7 @@ export class Spacecraft{
         if (keysPressed['ArrowDown']) {
             this.brake(this._maneuverability/100);
         }
-        if (keysPressed[' ']) {
+        if (keysPressed[' '] && !this.getDevice(TractorBeam)) {
             this.operate()
         }
         
@@ -160,7 +152,7 @@ export class Spacecraft{
         switch (key){
             case " ":
                 if(this.device)
-                    this.device.deactivate()
+                    this.device.dispose()
 
         }
 
@@ -240,7 +232,7 @@ export class Spacecraft{
         for(let i = 1; i <= steps; i++){
             easeValue = this.easeInOutBack(i/steps)
             this.objectStatus.direction = oldDirection + easeValue * deltaAngle
-            await new Promise(resolve => setTimeout(resolve, 10)); // 100 ms delay
+            await new Promise(resolve => setTimeout(resolve, 10)); // 10 ms delay
         }
         this.easing = false
         
@@ -249,9 +241,9 @@ export class Spacecraft{
     easeInOutBack(x:number): number {
         const c1 = 1.70158;
         const c2 = c1 * 1.525;
-        return x < 0.5
-           ? (Math.pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2)) / 2
-           : (Math.pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
+        return x < 0.5 ?
+            (Math.pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2)) / 2
+           :(Math.pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
     }
 
     pseudoOrbit(vector: Vector2d){
@@ -274,6 +266,10 @@ export class Spacecraft{
 
     get direction(): number{
         return this.objectStatus.direction
+    }
+
+    set direction(x: number) {
+        this.objectStatus.direction = x
     }
 
     get device(): Device | undefined{
@@ -362,8 +358,10 @@ export class Spacecraft{
     
     update() {
         // if(this._location instanceof Vector2D && this._impuls instanceof Vector2D)
-        if(!this.npc)
+        if(!this.npc){
         this.objectStatus.location = add(this.objectStatus.impuls, this.objectStatus.location);
+        this.direction += this.objectStatus.rotation
+        }
         
         this._gElement.setAttribute("transform", `translate (${this.objectStatus.location.x} ${this.objectStatus.location.y}) scale (${this._scale}) rotate (${this.objectStatus.direction + 90})`)
         //console.log(`${this.objectStatus.location.x} ${this.objectStatus.location.y}`) //these values are corrupted by syncReality in SpaceGame!        

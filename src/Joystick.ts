@@ -104,6 +104,11 @@ export class Joystick {
         this.fireButton.style.backgroundColor = "darkgreen"
         event.preventDefault();
     }
+//try to sync the movement of the tractorBeam with its target
+    async isFiring(): Promise<boolean>{
+        if(this._fires)return(true)
+            else return(false)
+    }
 
     private fireEnd(event: TouchEvent){
         this._fires = false

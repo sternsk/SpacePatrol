@@ -1,4 +1,6 @@
 import { Device } from "./Device";
+import { Vector2d, length } from "./library";
+
 
 export class TractorBeam implements Device{
     name = "tractorBeam";
@@ -8,23 +10,29 @@ export class TractorBeam implements Device{
 
     constructor(){
         this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g")
-        
+        this._gElem.setAttribute("id", "device")
     }
 
-    activate(): void {
+    activate(target: Vector2d): void {
+        this.target = target
+        const beam = document.createElementNS("http://www.w3.org/2000/svg", "line")
         if(!this.activated){
-            const beam = document.createElementNS("http://www.w3.org/2000/svg", "line")
+            beam.setAttribute("id", "beam")
             beam.setAttribute("x1", "0")
             beam.setAttribute("y1", "0")
-            beam.setAttribute("x2", `${this.target.x}`)
-            beam.setAttribute("y2", `${this.target.y}`)
-            beam.setAttribute("stroke", "darkgreen")
-            beam.setAttribute("stroke-width", "5px")
             beam.setAttribute("vector-effect","non-scaling-stroke")
-            
             this._gElem.appendChild(beam)
+            this.activated = true
         }
-        
+        beam.setAttribute("x2", `${this.target.x}`)
+        beam.setAttribute("y2", `${this.target.y}`)
+        //beam.setAttribute("stroke-width", `20`)
+        //beam.setAttribute("stroke", `rgb(${Math.floor(Math.random())*255},${Math.floor(Math.random())*255},${Math.floor(Math.random())*255})`)
+        //beam.setAttribute("stroke", `rgb(${250}, ${0}, ${50})`)
+        beam.setAttribute("stroke", `rgb(${Math.floor(Math.random()*255)}, 
+                                        ${Math.floor(Math.random()*255)}, 
+                                        ${Math.floor(Math.random()*255)})`)
+        beam.setAttribute("stroke-width", `${100 / length(target)}`)
     }
     deactivate(): void {
         this._gElem.innerHTML = ""

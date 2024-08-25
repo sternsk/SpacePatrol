@@ -475,6 +475,13 @@
           this.fireButton.style.backgroundColor = "darkgreen";
           event.preventDefault();
         }
+        //try to sync the movement of the tractorBeam with its target
+        isFiring() {
+          return __async(this, null, function* () {
+            if (this._fires) return true;
+            else return false;
+          });
+        }
         fireEnd(event) {
           this._fires = false;
           this.fireButton.style.backgroundColor = "grey";
@@ -27611,25 +27618,32 @@
   var init_TractorBeam = __esm({
     "src/TractorBeam.ts"() {
       "use strict";
+      init_library();
       TractorBeam = class {
         constructor() {
           this.name = "tractorBeam";
           this.target = { x: 0, y: 0 };
           this.activated = false;
           this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
+          this._gElem.setAttribute("id", "device");
         }
-        activate() {
+        activate(target) {
+          this.target = target;
+          const beam = document.createElementNS("http://www.w3.org/2000/svg", "line");
           if (!this.activated) {
-            const beam = document.createElementNS("http://www.w3.org/2000/svg", "line");
+            beam.setAttribute("id", "beam");
             beam.setAttribute("x1", "0");
             beam.setAttribute("y1", "0");
-            beam.setAttribute("x2", `${this.target.x}`);
-            beam.setAttribute("y2", `${this.target.y}`);
-            beam.setAttribute("stroke", "darkgreen");
-            beam.setAttribute("stroke-width", "5px");
             beam.setAttribute("vector-effect", "non-scaling-stroke");
             this._gElem.appendChild(beam);
+            this.activated = true;
           }
+          beam.setAttribute("x2", `${this.target.x}`);
+          beam.setAttribute("y2", `${this.target.y}`);
+          beam.setAttribute("stroke", `rgb(${Math.floor(Math.random() * 255)}, 
+                                        ${Math.floor(Math.random() * 255)}, 
+                                        ${Math.floor(Math.random() * 255)})`);
+          beam.setAttribute("stroke-width", `${100 / length(target)}`);
         }
         deactivate() {
           this._gElem.innerHTML = "";
@@ -27684,21 +27698,16 @@
       init_GameMenu();
       init_DeviceFactory();
       init_library();
-      fontSize = window.innerWidth / 40;
+      init_TractorBeam();
+      fontSize = window.innerHeight / 80;
       console.log("window.innerWidth: " + window.innerWidth);
       Spacecraft = class {
         constructor() {
-          // ersetze die properties durch objectStatus.property
-          //
-          //_location = {x: 0, y:0} as Vector2d;
-          //_impuls = {x: 0, y:0} as Vector2d;
-          //_direction = 0;
-          //_id: string = "spacecraft";
-          //_type: string = "rokket";
           this.objectStatus = {
             location: { x: 0, y: 0 },
             impuls: { x: 0, y: 0 },
             direction: 0,
+            rotation: 0,
             mass: 10,
             craftId: "spa\xDFcraft",
             type: "rocket",
@@ -27732,7 +27741,7 @@
           (_a = this._device) == null ? void 0 : _a.activate();
           console.log("device activates");
           if ((_b = this._device) == null ? void 0 : _b._gElem) {
-            this._device._gElem.setAttribute("id", "_device._gElem");
+            this._device._gElem.setAttribute("id", "device");
             this._gElement.appendChild(this._device._gElem);
           }
         }
@@ -27791,7 +27800,7 @@
           if (keysPressed["ArrowDown"]) {
             this.brake(this._maneuverability / 100);
           }
-          if (keysPressed[" "]) {
+          if (keysPressed[" "] && !this.getDevice(TractorBeam)) {
             this.operate();
           }
         }
@@ -27799,7 +27808,7 @@
           switch (key) {
             case " ":
               if (this.device)
-                this.device.deactivate();
+                this.device.dispose();
           }
         }
         handleTouchControl(vector) {
@@ -27883,6 +27892,9 @@
         get direction() {
           return this.objectStatus.direction;
         }
+        set direction(x) {
+          this.objectStatus.direction = x;
+        }
         get device() {
           if (this._device) return this._device;
           else return void 0;
@@ -27950,8 +27962,10 @@
           }
         }
         update() {
-          if (!this.npc)
+          if (!this.npc) {
             this.objectStatus.location = add(this.objectStatus.impuls, this.objectStatus.location);
+            this.direction += this.objectStatus.rotation;
+          }
           this._gElement.setAttribute("transform", `translate (${this.objectStatus.location.x} ${this.objectStatus.location.y}) scale (${this._scale}) rotate (${this.objectStatus.direction + 90})`);
           if (this._label && this._labelBorder) {
             this._label.setAttribute("transform", `translate(${this.objectStatus.location.x} ${this.objectStatus.location.y})`);
@@ -28116,15 +28130,6 @@
           this.spacecraft.touchControlType = this.spacecraft.type;
           this.spacecraft.applyLabel(this.gameEnvironment.svgElement);
           this.gameLoop();
-          setInterval(() => {
-            const request = {};
-            request.spaceObject = this.spacecraft.objectStatus;
-            evaluate(syncSpaceObject, request).then((response) => {
-              this.syncReality(response);
-            }).catch((error) => {
-              console.error("Failed to update spacecrafts:", error);
-            });
-          }, 20);
         }
         syncReality(reality) {
           reality.forEach((response) => {
@@ -28151,25 +28156,44 @@
           });
         }
         gameLoop() {
-          var _a;
+          var _a, _b, _c, _d;
           requestAnimationFrame(() => {
             this.gameLoop();
           });
+          const request = {};
+          request.spaceObject = this.spacecraft.objectStatus;
+          evaluate(syncSpaceObject, request).then((response) => {
+            this.syncReality(response);
+          }).catch((error) => {
+            console.error("Failed to update spacecrafts:", error);
+          });
+          const tractorBeam = this.spacecraft.getDevice(TractorBeam);
           if (this.touchControl) {
             if (this.gameEnvironment.joystick.isTouched) {
               this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value);
             }
             if (this.gameEnvironment.joystick.fires) {
-              const tractorBeam = this.spacecraft.getDevice(TractorBeam);
               if (tractorBeam && this.spacecrafts[0]) {
-                tractorBeam.setTarget({
-                  x: this.spacecrafts[0].location.x - this.spacecraft.location.x,
-                  y: this.spacecrafts[0].location.y - this.spacecraft.location.y
-                });
-              }
-              this.spacecraft.operate();
-            } else if ((_a = this.spacecraft.device) == null ? void 0 : _a.activated) {
+                const target = rotate({
+                  x: this.spacecrafts[0].location.x + this.spacecraft.location.x,
+                  y: this.spacecrafts[0].location.y + this.spacecraft.location.y
+                }, -90);
+                tractorBeam.activate(target);
+                const gElem = (_a = this.spacecraft.getDevice(TractorBeam)) == null ? void 0 : _a._gElem;
+                if (gElem) {
+                  this.spacecraft.gElement.appendChild(gElem);
+                }
+              } else this.spacecraft.operate();
+            } else if ((_b = this.spacecraft.device) == null ? void 0 : _b.activated) {
               this.spacecraft.device.deactivate();
+            }
+          }
+          if (tractorBeam && keyboardController.isKeyPressed(" ")) {
+            const target = rotate(distanceVector(this.spacecraft.location, this.spacecrafts[0].location), -90 - this.spacecraft.direction);
+            (_c = this.spacecraft.getDevice(TractorBeam)) == null ? void 0 : _c.activate(target);
+            const gElem = (_d = this.spacecraft.getDevice(TractorBeam)) == null ? void 0 : _d._gElem;
+            if (gElem) {
+              this.spacecraft.gElement.appendChild(gElem);
             }
           }
           this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
@@ -28194,16 +28218,17 @@
             this.spacecrafts.forEach((spacecraft) => {
               if (!spacecraft.npc) {
                 this.gameEnvironment.handleSpacecraft(spacecraft, "pseudoTorus");
-              }
-              spacecraft.update();
+              } else if (spacecraft.npc)
+                spacecraft.pseudoOrbit({ x: this.spacecrafts[1].location.x, y: this.spacecrafts[1].location.y });
               if (spacecraft.label) {
                 spacecraft.setLabelText(`<tspan x="${spacecraft.scale * 7}"> 
                                             id: ${spacecraft.id} </tspan>
                                             <tspan x="${spacecraft.scale * 7}" dy="${fontSize}">
-                                           lastUpdate: ${spacecraft.lastUpdate}</tspan>
-                                           <tspan x="${spacecraft.scale * 7}" dy="${2 * fontSize}">
-                                           Date.now(): ${Date.now()}</tspan>`);
+                                            lastUpdate: ${spacecraft.lastUpdate}</tspan>
+                                            <tspan x="${spacecraft.scale * 7}" dy="${2 * fontSize}">
+                                            Date.now(): ${Date.now()}</tspan>`);
               }
+              spacecraft.update();
             });
           }
         }
@@ -28218,11 +28243,13 @@
     add: () => add,
     angle: () => angle,
     distanceBetween: () => distanceBetween,
+    distanceVector: () => distanceVector,
     evaluate: () => evaluate,
     initGame: () => initGame,
     inverse: () => inverse,
     length: () => length,
     polarVector: () => polarVector,
+    rotate: () => rotate,
     syncSpaceObject: () => syncSpaceObject
   });
   function initGame(gameFrame2, type, color2, id) {
@@ -28243,9 +28270,15 @@
   function angle(v) {
     return Math.atan2(v.y, v.x) / Math.PI * 180;
   }
+  function rotate(v, n) {
+    return polarVector(length(v), angle(v) + n);
+  }
+  function distanceVector(v1, v2) {
+    return { x: v2.x - v1.x, y: v2.y - v1.y };
+  }
   function distanceBetween(start2, destination) {
-    let distanceVector = { x: destination.x - start2.x, y: destination.y - start2.y };
-    return length(distanceVector);
+    let distanceVector2 = { x: destination.x - start2.x, y: destination.y - start2.y };
+    return length(distanceVector2);
   }
   function inverse(v) {
     return { x: -v.x, y: -v.y };
