@@ -244,10 +244,6 @@ export abstract class SpacecraftShape{
                     console.log("planet requested")
                     const planetImage = document.createElementNS("http://www.w3.org/2000/svg", "image")
                     planetImage.href.baseVal = "../resources/planet.png"
-                    planetImage.onload = () =>{
-                        let imageWidth = planetImage.getBBox().width
-                        console.log("imageWidth: "+imageWidth)
-                    }
                     planetImage.setAttribute("width", `50`)
                     planetImage.setAttribute("height", `50`)
                     planetImage.setAttribute("stroke", `${color}`)
@@ -255,20 +251,15 @@ export abstract class SpacecraftShape{
             
                     gElement.appendChild(planetImage)
                     return(gElement)
-                case "nugget":
-                    console.log("planet requested")
-                    const nuggetImage = document.createElementNS("http://www.w3.org/2000/svg", "image")
-                    nuggetImage.href.baseVal = "../resources/station01.png"
-                    nuggetImage.onload = () =>{
-                        let imageWidth = nuggetImage.getBBox().width
-                        console.log("imageWidth: "+imageWidth)
-                    }
-                    nuggetImage.setAttribute("width", `50`)
-                    nuggetImage.setAttribute("height", `50`)
-                    nuggetImage.setAttribute("stroke", `${color}`)
-                    nuggetImage.setAttribute("transform", `translate (-25,-25)`)
+                case "station":
+                    const stationImage = document.createElementNS("http://www.w3.org/2000/svg", "image")
+                    stationImage.href.baseVal = "../resources/station01.png"
+                    stationImage.setAttribute("width", `50`)
+                    stationImage.setAttribute("height", `50`)
+                    stationImage.setAttribute("stroke", `${color}`)
+                    stationImage.setAttribute("transform", `translate (-25,-25)`)
             
-                    gElement.appendChild(nuggetImage)
+                    gElement.appendChild(stationImage)
                     return(gElement)
         }
         

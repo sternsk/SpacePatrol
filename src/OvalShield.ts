@@ -38,7 +38,7 @@ export class OvalShield implements Device{
     }
     
     dispose(): void {
-        throw new Error("Method not implemented.");
+        this.deactivate()
     }
 
 }

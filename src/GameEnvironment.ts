@@ -1,8 +1,6 @@
 import { Spacecraft } from "./Spacecraft.js";
 import { Joystick } from "./Joystick.js";
 import { gameFrame } from "./GameMenu.js";
-import { viewBoxWidth } from "./GameMenu.js";
-
 
 export class GameEnvironment{
     screenAspectRatio: number
@@ -21,13 +19,17 @@ export class GameEnvironment{
         
         if(gameFrame.offsetHeight != 0){
             this.screenAspectRatio = gameFrame.offsetWidth / gameFrame.offsetHeight
+            console.log("gameFrame.offsetWidth: "+gameFrame.offsetWidth)
+            console.log("gameFrame.clientWidth: "+gameFrame.clientWidth)
+            console.log("window.innerWidth: "+window.innerWidth)
+
         }
         else{
             console.log("gameFrame not properly sized")
             this.screenAspectRatio = .8
         }    
         
-        this.viewBoxWidth = viewBoxWidth * 3
+        this.viewBoxWidth = 300 //convenient viewBoxWidth
         this.viewBoxToScreenRatio = this.viewBoxWidth / window.innerWidth
         this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio
         // center zero in viewBox
@@ -35,29 +37,31 @@ export class GameEnvironment{
         this.viewBoxTop = -this.viewBoxHeight / 2
         
         this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        this.insertBackgroundImage()
         this._svgElement.style.position = "absolute"
-        
+        this._svgElement.style.outline = "none"
         this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
         this._svgElement.setAttribute("tabindex", "0")
 
+        /* viewBox is gonna be resized by Chrome at windowresize
         const viewBoxBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
+        viewBoxBorder.setAttribute("id", "viewBoxBorder")
         viewBoxBorder.setAttribute("x", `${this.viewBoxLeft}`)
         viewBoxBorder.setAttribute("y", `${this.viewBoxTop}`)
         viewBoxBorder.setAttribute("width", `${this.viewBoxWidth}`)
         viewBoxBorder.setAttribute("height", `${this.viewBoxHeight}`)
         viewBoxBorder.setAttribute("fill", `none`)
         viewBoxBorder.setAttribute("stroke-width", `2px`)
-        viewBoxBorder.setAttribute("stroke", `green`)
+        viewBoxBorder.setAttribute("stroke", `grey`)
         this._svgElement.appendChild(viewBoxBorder)
-        
-
+        */
         gameFrame.appendChild(this._svgElement)
         gameFrame.style.height = `${window.innerHeight}px`
         gameFrame.appendChild(this._joystick.htmlElement)
         gameFrame.appendChild(this._joystick.fireButton)
         
         this.joystick.htmlElement.style.display = "none"
-        
+        /*
         this.label.style.position = "absolute"
         this.label.style.top = "10px"
         this.label.style.left = "10px"
@@ -66,8 +70,9 @@ export class GameEnvironment{
         this.label.style.opacity = "0.8"
         this.label.innerHTML = `Steuere dein Raumschiff mit dem linken Feld, aktiviere den Strahl durch Druck auf das rechte Feld! <br>Andere online-Spieler erkennst du an ihrem Schild.`
         gameFrame.appendChild(this.label)
-
+        /*
         window.addEventListener(`resize`, this.handleResize.bind(this)) 
+        */
     }
 
     displayTouchControl(){
@@ -83,6 +88,7 @@ export class GameEnvironment{
     }
 
     handleResize(){
+        //always apply fullscreen mode
         this.updateLabel()
         gameFrame.style.width = `${window.innerWidth}px`
         gameFrame.style.height = `${window.innerHeight}px`
@@ -122,5 +128,20 @@ export class GameEnvironment{
 
                 break;
         }
+    }
+
+    insertBackgroundImage(){
+        //load and center an image-file over 0,0 in the viewBox
+        const bgImage = document.createElementNS("http://www.w3.org/2000/svg", "image")
+        this._svgElement.appendChild(bgImage)
+        bgImage.href.baseVal = ("../resources/background03.jpg")
+        bgImage.onload = () =>{
+            const imageWidth = bgImage.getBBox().width
+            const imageHeight = bgImage.getBBox().height
+            bgImage.style.x = `${-imageWidth/2}`
+            bgImage.style.y = `${-imageHeight/2}` 
+            bgImage.style.zIndex = "-1"
+        }
+
     }
 } 

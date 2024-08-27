@@ -306,29 +306,20 @@
               console.log("planet requested");
               const planetImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
               planetImage.href.baseVal = "../resources/planet.png";
-              planetImage.onload = () => {
-                let imageWidth = planetImage.getBBox().width;
-                console.log("imageWidth: " + imageWidth);
-              };
               planetImage.setAttribute("width", `50`);
               planetImage.setAttribute("height", `50`);
               planetImage.setAttribute("stroke", `${color}`);
               planetImage.setAttribute("transform", `translate (-25,-25)`);
               gElement.appendChild(planetImage);
               return gElement;
-            case "nugget":
-              console.log("planet requested");
-              const nuggetImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
-              nuggetImage.href.baseVal = "../resources/station01.png";
-              nuggetImage.onload = () => {
-                let imageWidth = nuggetImage.getBBox().width;
-                console.log("imageWidth: " + imageWidth);
-              };
-              nuggetImage.setAttribute("width", `50`);
-              nuggetImage.setAttribute("height", `50`);
-              nuggetImage.setAttribute("stroke", `${color}`);
-              nuggetImage.setAttribute("transform", `translate (-25,-25)`);
-              gElement.appendChild(nuggetImage);
+            case "station":
+              const stationImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
+              stationImage.href.baseVal = "../resources/station01.png";
+              stationImage.setAttribute("width", `50`);
+              stationImage.setAttribute("height", `50`);
+              stationImage.setAttribute("stroke", `${color}`);
+              stationImage.setAttribute("transform", `translate (-25,-25)`);
+              gElement.appendChild(stationImage);
               return gElement;
           }
           const imageUrl = `./${type}`;
@@ -27607,7 +27598,7 @@
           this.activated = false;
         }
         dispose() {
-          throw new Error("Method not implemented.");
+          this.deactivate();
         }
       };
     }
@@ -27701,12 +27692,14 @@
       init_TractorBeam();
       fontSize = window.innerHeight / 80;
       console.log("window.innerWidth: " + window.innerWidth);
+      console.log("fontSize = window.innerHeight/80: " + window.innerHeight / 80);
+      console.log();
       Spacecraft = class {
         constructor() {
           this.objectStatus = {
-            location: { x: 0, y: 0 },
+            location: { x: 50, y: 50 },
             impuls: { x: 0, y: 0 },
-            direction: 0,
+            direction: -60,
             rotation: 0,
             mass: 10,
             craftId: "spa\xDFcraft",
@@ -27739,7 +27732,6 @@
         operate() {
           var _a, _b;
           (_a = this._device) == null ? void 0 : _a.activate();
-          console.log("device activates");
           if ((_b = this._device) == null ? void 0 : _b._gElem) {
             this._device._gElem.setAttribute("id", "device");
             this._gElement.appendChild(this._device._gElem);
@@ -27758,6 +27750,8 @@
           this._label = document.createElementNS("http://www.w3.org/2000/svg", "text");
           svgElement.appendChild(this._label);
           this._label.setAttribute("font-size", `${fontSize}px`);
+          console.log("fontSize: " + fontSize);
+          console.log("viewBoxWidth: " + viewBoxWidth);
           this._label.innerHTML = `<tspan x="${this._scale * 7}">label text is yet to be written`;
           setTimeout(() => {
             if (this._labelBorder && this._label) {
@@ -27765,6 +27759,9 @@
               this._labelBorder.style.height = (this._label.getBBox().height * 1.1).toString();
             }
           });
+        }
+        setFontsize(newFontSize) {
+          fontSize = newFontSize;
         }
         brake(dampingFactor) {
           const newLength = length(this.objectStatus.impuls) * (1 - dampingFactor);
@@ -28000,49 +27997,35 @@
       "use strict";
       init_Joystick();
       init_GameMenu();
-      init_GameMenu();
       GameEnvironment = class {
         constructor() {
           this.label = document.createElement("HTMLLabelElement");
           this._joystick = new Joystick();
           if (gameFrame.offsetHeight != 0) {
             this.screenAspectRatio = gameFrame.offsetWidth / gameFrame.offsetHeight;
+            console.log("gameFrame.offsetWidth: " + gameFrame.offsetWidth);
+            console.log("gameFrame.clientWidth: " + gameFrame.clientWidth);
+            console.log("window.innerWidth: " + window.innerWidth);
           } else {
             console.log("gameFrame not properly sized");
             this.screenAspectRatio = 0.8;
           }
-          this.viewBoxWidth = viewBoxWidth * 3;
+          this.viewBoxWidth = 300;
           this.viewBoxToScreenRatio = this.viewBoxWidth / window.innerWidth;
           this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio;
           this.viewBoxLeft = -this.viewBoxWidth / 2;
           this.viewBoxTop = -this.viewBoxHeight / 2;
           this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          this.insertBackgroundImage();
           this._svgElement.style.position = "absolute";
+          this._svgElement.style.outline = "none";
           this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
           this._svgElement.setAttribute("tabindex", "0");
-          const viewBoxBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-          viewBoxBorder.setAttribute("x", `${this.viewBoxLeft}`);
-          viewBoxBorder.setAttribute("y", `${this.viewBoxTop}`);
-          viewBoxBorder.setAttribute("width", `${this.viewBoxWidth}`);
-          viewBoxBorder.setAttribute("height", `${this.viewBoxHeight}`);
-          viewBoxBorder.setAttribute("fill", `none`);
-          viewBoxBorder.setAttribute("stroke-width", `2px`);
-          viewBoxBorder.setAttribute("stroke", `green`);
-          this._svgElement.appendChild(viewBoxBorder);
           gameFrame.appendChild(this._svgElement);
           gameFrame.style.height = `${window.innerHeight}px`;
           gameFrame.appendChild(this._joystick.htmlElement);
           gameFrame.appendChild(this._joystick.fireButton);
           this.joystick.htmlElement.style.display = "none";
-          this.label.style.position = "absolute";
-          this.label.style.top = "10px";
-          this.label.style.left = "10px";
-          this.label.style.border = "2px solid darkgreen";
-          this.label.style.backgroundColor = "lightgrey";
-          this.label.style.opacity = "0.8";
-          this.label.innerHTML = `Steuere dein Raumschiff mit dem linken Feld, aktiviere den Strahl durch Druck auf das rechte Feld! <br>Andere online-Spieler erkennst du an ihrem Schild.`;
-          gameFrame.appendChild(this.label);
-          window.addEventListener(`resize`, this.handleResize.bind(this));
         }
         displayTouchControl() {
           this.joystick.htmlElement.style.display = "block";
@@ -28089,6 +28072,18 @@
               break;
           }
         }
+        insertBackgroundImage() {
+          const bgImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
+          this._svgElement.appendChild(bgImage);
+          bgImage.href.baseVal = "../resources/background03.jpg";
+          bgImage.onload = () => {
+            const imageWidth = bgImage.getBBox().width;
+            const imageHeight = bgImage.getBBox().height;
+            bgImage.style.x = `${-imageWidth / 2}`;
+            bgImage.style.y = `${-imageHeight / 2}`;
+            bgImage.style.zIndex = "-1";
+          };
+        }
       };
     }
   });
@@ -28128,7 +28123,6 @@
             this.spacecraft.gElement.getBBox().height / 3
           ]);
           this.spacecraft.touchControlType = this.spacecraft.type;
-          this.spacecraft.applyLabel(this.gameEnvironment.svgElement);
           this.gameLoop();
         }
         syncReality(reality) {
@@ -28173,10 +28167,10 @@
               this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value);
             }
             if (this.gameEnvironment.joystick.fires) {
-              if (tractorBeam && this.spacecrafts[0]) {
+              if (tractorBeam && this.spacecrafts[1]) {
                 const target = rotate({
-                  x: this.spacecrafts[0].location.x + this.spacecraft.location.x,
-                  y: this.spacecrafts[0].location.y + this.spacecraft.location.y
+                  x: this.spacecrafts[1].location.x + this.spacecraft.location.x,
+                  y: this.spacecrafts[1].location.y + this.spacecraft.location.y
                 }, -90);
                 tractorBeam.activate(target);
                 const gElem = (_a = this.spacecraft.getDevice(TractorBeam)) == null ? void 0 : _a._gElem;
@@ -28189,8 +28183,14 @@
             }
           }
           if (tractorBeam && keyboardController.isKeyPressed(" ")) {
-            const target = rotate(distanceVector(this.spacecraft.location, this.spacecrafts[0].location), -90 - this.spacecraft.direction);
-            (_c = this.spacecraft.getDevice(TractorBeam)) == null ? void 0 : _c.activate(target);
+            const targetObject = this.spacecrafts[0];
+            const request2 = {};
+            request2.method = "tractorBeam";
+            request2.spaceObject = this.spacecraft.objectStatus;
+            request2.target = targetObject.id;
+            evaluate(manipulateSpaceObject, request2);
+            const targetVector = rotate(distanceVector(this.spacecraft.location, targetObject.location), -(this.spacecraft.direction + 90));
+            (_c = this.spacecraft.getDevice(TractorBeam)) == null ? void 0 : _c.activate(targetVector);
             const gElem = (_d = this.spacecraft.getDevice(TractorBeam)) == null ? void 0 : _d._gElem;
             if (gElem) {
               this.spacecraft.gElement.appendChild(gElem);
@@ -28216,18 +28216,6 @@
                                         `);
           if (this.spacecrafts.length > 0) {
             this.spacecrafts.forEach((spacecraft) => {
-              if (!spacecraft.npc) {
-                this.gameEnvironment.handleSpacecraft(spacecraft, "pseudoTorus");
-              } else if (spacecraft.npc)
-                spacecraft.pseudoOrbit({ x: this.spacecrafts[1].location.x, y: this.spacecrafts[1].location.y });
-              if (spacecraft.label) {
-                spacecraft.setLabelText(`<tspan x="${spacecraft.scale * 7}"> 
-                                            id: ${spacecraft.id} </tspan>
-                                            <tspan x="${spacecraft.scale * 7}" dy="${fontSize}">
-                                            lastUpdate: ${spacecraft.lastUpdate}</tspan>
-                                            <tspan x="${spacecraft.scale * 7}" dy="${2 * fontSize}">
-                                            Date.now(): ${Date.now()}</tspan>`);
-              }
               spacecraft.update();
             });
           }
@@ -28248,6 +28236,8 @@
     initGame: () => initGame,
     inverse: () => inverse,
     length: () => length,
+    manipulate: () => manipulate2,
+    manipulateSpaceObject: () => manipulateSpaceObject,
     polarVector: () => polarVector,
     rotate: () => rotate,
     syncSpaceObject: () => syncSpaceObject
@@ -28309,7 +28299,33 @@
       xhr.send(JSON.stringify(request));
     });
   }
-  var RequestDefinition2, syncSpaceObject;
+  function manipulate2(def, request) {
+    const payload = JSON.stringify(request);
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `/api/main/${def.path}`, true);
+      xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              resolve(response);
+            } catch (error) {
+              reject(new Error("Failed to parse response: " + xhr.responseText));
+            }
+          } else {
+            reject(new Error("Request failed with status: " + xhr.status));
+          }
+        }
+      };
+      xhr.onerror = () => {
+        reject(new Error("Network error"));
+      };
+      xhr.send(JSON.stringify(request));
+    });
+  }
+  var RequestDefinition2, syncSpaceObject, manipulateSpaceObject;
   var init_library = __esm({
     "src/library.ts"() {
       "use strict";
@@ -28320,6 +28336,7 @@
         }
       };
       syncSpaceObject = new RequestDefinition2("SynchronizeSpaceObject");
+      manipulateSpaceObject = new RequestDefinition2("ManipulateSpaceObject");
     }
   });
 
@@ -28336,7 +28353,6 @@
       gameFrame = document.getElementById("spacepatrolContainer");
       keyboardController = new KeyboardController(gameFrame);
       viewBoxWidth = 100;
-      console.log("viewBoxWidth is imported by index.ts and shoud be defined: " + viewBoxWidth);
       GameMenu = class {
         constructor() {
           this.joystick = new Joystick();
@@ -28354,6 +28370,7 @@
           this.keysPressed = {};
           gameFrame.setAttribute("tabIndex", "0");
           gameFrame.style.position = "fixed";
+          gameFrame.style.outline = "none";
           gameFrame.style.width = `${window.innerWidth}px`;
           gameFrame.style.height = `${window.innerHeight}px`;
           gameFrame.appendChild(this.joystick.htmlElement);
@@ -28405,7 +28422,7 @@
           this.typeSelector.appendChild(option10);
           this.typeSelector.appendChild(option11);
           this.typeSelector.appendChild(option12);
-          option1.setAttribute("value", "rokket");
+          option1.setAttribute("value", "rainbowRocket");
           option1.innerHTML = "disabled selected";
           option2.setAttribute("value", "rokket");
           option3.setAttribute("value", "rainbowRocket");
@@ -28449,8 +28466,8 @@
           option16.setAttribute("value", "darkblue");
           option13.textContent = "brown";
           option14.textContent = "goldenrod";
-          option15.textContent = "beick";
-          option16.textContent = "fl\xFCn";
+          option15.textContent = "black";
+          option16.textContent = "darkblue";
           this.idInputElement.setAttribute("type", "text");
           this.idInputElement.setAttribute("placeholder", "enter your id");
           const startButton = document.createElement("button");
@@ -28643,9 +28660,9 @@
   // src/index.ts
   init_GameMenu();
   console.log(" ");
-  console.log("index.ts says: SpacePatrol0300 ver.2210, and this should be the first statement");
-  console.log("There is apperently the imports and dependencies loaded first and their code executed.");
-  console.log("what seems rather awkward to me");
+  console.log("index.ts says: SpacePatrol0300 ver.1010, and this should be the first statement");
+  console.log("But there is apperently the imports and dependencies loaded first and then the following code executed.");
+  console.log("Thats why there is statements above this textblock");
   console.log(" ");
   var menu = new GameMenu();
   menu.loop();

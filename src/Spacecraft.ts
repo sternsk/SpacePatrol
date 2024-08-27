@@ -5,17 +5,18 @@ import { Device } from "./Device.js"
 import { DeviceFactory } from "./DeviceFactory.js"
 import { SpaceObjectStatus, polarVector, add, length, angle, distanceBetween, Vector2d, inverse } from "./library.js"
 import { TractorBeam } from "./TractorBeam.js"
-//import { Vector2D } from "./Vector2D.js"
 
-// fontsize should be depending on screenresolution
+// fontsize should seems to depend on svg-Size
 export let fontSize = window.innerHeight/80
 console.log("window.innerWidth: "+window.innerWidth)
+console.log("fontSize = window.innerHeight/80: "+window.innerHeight/80)
+console.log()
 
 export class Spacecraft{
 
-    objectStatus: SpaceObjectStatus = { location: {x:0, y:0} as Vector2d,
+    objectStatus: SpaceObjectStatus = { location: {x:50, y:50} as Vector2d,
                                         impuls: {x:0, y:0} as Vector2d,
-                                        direction: 0,
+                                        direction: -60,
                                         rotation:0,
                                         mass: 10,
                                         craftId: "spaßcraft",
@@ -67,8 +68,7 @@ export class Spacecraft{
     operate(){
         //aktiviere das Device
         this._device?.activate()
-        console.log("device activates")
-        
+    
         // füge das gElement des Devices zum gElement des Spacecrafts hinzu.
         if(this._device?._gElem){
             this._device._gElem.setAttribute("id", "device")
@@ -90,6 +90,8 @@ export class Spacecraft{
         this._label = document.createElementNS("http://www.w3.org/2000/svg", "text")
         svgElement.appendChild(this._label)
         this._label.setAttribute("font-size", `${fontSize}px`)
+        console.log("fontSize: "+fontSize)
+        console.log("viewBoxWidth: "+viewBoxWidth)
         this._label.innerHTML = `<tspan x="${this._scale*7}">label text is yet to be written`
         
         setTimeout(()=>{//wait for the textelement to be positioned
@@ -98,6 +100,10 @@ export class Spacecraft{
             this._labelBorder.style.height = (this._label.getBBox().height* 1.1).toString()
             }
         })
+    }
+
+    setFontsize(newFontSize: number){
+        fontSize = newFontSize
     }
 
     brake(dampingFactor: number): void {

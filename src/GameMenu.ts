@@ -21,8 +21,6 @@ export let color: string        //initial color
 export let device: string
 export let viewBoxWidth = 100
 
-console.log("viewBoxWidth is imported by index.ts and shoud be defined: "+viewBoxWidth)
-
 export class GameMenu{
     
     joystick = new Joystick()
@@ -55,6 +53,7 @@ export class GameMenu{
 
         // apply fullscreen mode
         gameFrame.style.position = "fixed"
+        gameFrame.style.outline = "none"
         gameFrame.style.width = `${window.innerWidth}px`
         gameFrame.style.height = `${window.innerHeight}px`
         gameFrame.appendChild(this.joystick.htmlElement)
@@ -115,7 +114,7 @@ export class GameMenu{
         this.typeSelector.appendChild(option11)
         this.typeSelector.appendChild(option12)
 
-        option1.setAttribute("value", "rokket")
+        option1.setAttribute("value", "rainbowRocket")
         option1.innerHTML = "disabled selected"
         option2.setAttribute("value", "rokket")
         option3.setAttribute("value", "rainbowRocket")
@@ -164,8 +163,8 @@ export class GameMenu{
 
         option13.textContent = "brown"
         option14.textContent = "goldenrod"
-        option15.textContent = "beick"
-        option16.textContent = "flün"
+        option15.textContent = "black"
+        option16.textContent = "darkblue"
         
         this.idInputElement.setAttribute("type", "text")
         this.idInputElement.setAttribute("placeholder", "enter your id")
