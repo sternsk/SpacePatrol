@@ -114,7 +114,7 @@ export class GameEnvironment{
     handleSpacecraft(spacecraft: Spacecraft, option: string){
         switch (option){
             case "pseudoOrbit":
-                spacecraft.pseudoOrbit
+                spacecraft.pseudoOrbit({x:0, y:0})
                 break;
             case "pseudoTorus":
                 if(spacecraft.location.x < this.viewBoxLeft)
@@ -127,6 +127,10 @@ export class GameEnvironment{
                     spacecraft.location.y = this.viewBoxTop
 
                 break;
+            case "center":
+                this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth/2
+                this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight/2
+                this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
         }
     }
 

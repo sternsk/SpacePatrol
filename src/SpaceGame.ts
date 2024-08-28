@@ -163,7 +163,7 @@ export class SpaceGame {
 
     private updateElements() {
         this.spacecraft.update()
-        this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus")
+        this.gameEnvironment.handleSpacecraft(this.spacecraft, "center")
        /*this stupid Label thats owned by the spacecraft seems to be depdendendent on the size of the svg that the spacecraft has no access to, what really sucks
         if(this.gameEnvironment.screenAspectRatio < 1){
              this.spacecraft.setFontsize(5000/gameFrame.clientWidth)
