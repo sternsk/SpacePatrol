@@ -28000,6 +28000,7 @@
       GameEnvironment = class {
         constructor() {
           this.label = document.createElement("HTMLLabelElement");
+          //private _viewBoxBorder: SVGRectElement;
           this._joystick = new Joystick();
           if (gameFrame.offsetHeight != 0) {
             this.screenAspectRatio = gameFrame.offsetWidth / gameFrame.offsetHeight;
@@ -28018,7 +28019,7 @@
           this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
           this.insertBackgroundImage();
           this._svgElement.style.position = "absolute";
-          this._svgElement.style.outline = "none";
+          this._svgElement.style.border = "5px solid red";
           this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
           this._svgElement.setAttribute("tabindex", "0");
           gameFrame.appendChild(this._svgElement);
@@ -28078,13 +28079,17 @@
         }
         insertBackgroundImage() {
           const bgImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
+          const bgImagWidth = 1e3;
+          const bgImageHeight = 1e3;
           this._svgElement.appendChild(bgImage);
           bgImage.href.baseVal = "../resources/background03.jpg";
           bgImage.onload = () => {
             const imageWidth = bgImage.getBBox().width;
             const imageHeight = bgImage.getBBox().height;
-            bgImage.style.x = `${-imageWidth / 2}`;
-            bgImage.style.y = `${-imageHeight / 2}`;
+            bgImage.style.width = bgImagWidth.toString();
+            bgImage.style.height = bgImageHeight.toString();
+            bgImage.style.x = `${-bgImagWidth / 2}`;
+            bgImage.style.y = `${-bgImageHeight / 2}`;
             bgImage.style.zIndex = "-1";
           };
         }
@@ -28185,6 +28190,22 @@
             } else if ((_b = this.spacecraft.device) == null ? void 0 : _b.activated) {
               this.spacecraft.device.deactivate();
             }
+          }
+          if (keyboardController.isKeyPressed("w")) {
+            this.gameEnvironment.viewBoxWidth += 10;
+            this.gameEnvironment.viewBoxHeight += 10;
+            this.gameEnvironment.svgElement.setAttribute("viewBox", `${this.gameEnvironment.viewBoxLeft - this.gameEnvironment.viewBoxWidth / 2},
+                                                                    ${this.gameEnvironment.viewBoxTop - this.gameEnvironment.viewBoxHeight / 2},
+                                                                    ${this.gameEnvironment.viewBoxWidth},
+                                                                    ${this.gameEnvironment.viewBoxHeight}`);
+          }
+          if (keyboardController.isKeyPressed("s")) {
+            this.gameEnvironment.viewBoxWidth -= 10;
+            this.gameEnvironment.viewBoxHeight -= 10;
+            this.gameEnvironment.svgElement.setAttribute("viewBox", `${this.gameEnvironment.viewBoxLeft - this.gameEnvironment.viewBoxWidth / 2},
+                                                                    ${this.gameEnvironment.viewBoxTop + this.gameEnvironment.viewBoxHeight / 2},
+                                                                    ${this.gameEnvironment.viewBoxWidth},
+                                                                    ${this.gameEnvironment.viewBoxHeight}`);
           }
           if (tractorBeam && keyboardController.isKeyPressed(" ")) {
             const targetObject = this.spacecrafts[0];

@@ -1,7 +1,7 @@
 import { Spacecraft, fontSize } from "./Spacecraft.js";
 import { GameEnvironment } from "./GameEnvironment.js";
 import { SpacecraftShape } from "./SpacecraftShape.js";
-import { keyboardController, device, gameFrame } from "./GameMenu.js";
+import { keyboardController, device, gameFrame, viewBoxWidth } from "./GameMenu.js";
 //import { Vector2D } from "./Vector2D.js";
 import { TractorBeam } from "./TractorBeam.js";
 import { evaluate, RequestDefinition, SpaceObjectStatus, SyncronizeSpaceObject, syncSpaceObject, Vector2d, rotate, distanceBetween, distanceVector, manipulate, manipulateSpaceObject, ManipulateSpaceObject } from "./library.js";
@@ -134,6 +134,24 @@ export class SpaceGame {
             }
             
         }
+        if (keyboardController.isKeyPressed("w")){
+            this.gameEnvironment.viewBoxWidth += 10
+            this.gameEnvironment.viewBoxHeight +=10
+            this.gameEnvironment.svgElement.setAttribute("viewBox", `${this.gameEnvironment.viewBoxLeft - this.gameEnvironment.viewBoxWidth/2},
+                                                                    ${this.gameEnvironment.viewBoxTop - this.gameEnvironment.viewBoxHeight/2},
+                                                                    ${this.gameEnvironment.viewBoxWidth},
+                                                                    ${this.gameEnvironment.viewBoxHeight}`)
+        }
+
+        if (keyboardController.isKeyPressed("s")){
+            this.gameEnvironment.viewBoxWidth -= 10
+            this.gameEnvironment.viewBoxHeight -=10
+            this.gameEnvironment.svgElement.setAttribute("viewBox", `${this.gameEnvironment.viewBoxLeft - this.gameEnvironment.viewBoxWidth/2},
+                                                                    ${this.gameEnvironment.viewBoxTop + this.gameEnvironment.viewBoxHeight/2},
+                                                                    ${this.gameEnvironment.viewBoxWidth},
+                                                                    ${this.gameEnvironment.viewBoxHeight}`)
+        }
+
         if(tractorBeam && keyboardController.isKeyPressed(" ")){
             const targetObject = this.spacecrafts[0]
             
@@ -164,7 +182,7 @@ export class SpaceGame {
     private updateElements() {
         this.spacecraft.update()
         this.gameEnvironment.handleSpacecraft(this.spacecraft, "center")
-       /*this stupid Label thats owned by the spacecraft seems to be depdendendent on the size of the svg that the spacecraft has no access to, what really sucks
+       /*this stupid Label thats owned by the spacecraft seems to be dependendent on the size of the svg that the spacecraft has no access to, what really sucks
         if(this.gameEnvironment.screenAspectRatio < 1){
              this.spacecraft.setFontsize(5000/gameFrame.clientWidth)
             console.log("fontsize set: "+fontSize)

@@ -12,6 +12,7 @@ export class GameEnvironment{
 
     private label = document.createElement("HTMLLabelElement")
     private _svgElement: SVGSVGElement;
+    //private _viewBoxBorder: SVGRectElement;
     
     private _joystick = new Joystick()
         
@@ -39,21 +40,24 @@ export class GameEnvironment{
         this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         this.insertBackgroundImage()
         this._svgElement.style.position = "absolute"
-        this._svgElement.style.outline = "none"
+       // this._svgElement.style.outline = "none"
+        this._svgElement.style.border = "5px solid red"
+        
         this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
         this._svgElement.setAttribute("tabindex", "0")
 
-        /* viewBox is gonna be resized by Chrome at windowresize
-        const viewBoxBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
-        viewBoxBorder.setAttribute("id", "viewBoxBorder")
-        viewBoxBorder.setAttribute("x", `${this.viewBoxLeft}`)
-        viewBoxBorder.setAttribute("y", `${this.viewBoxTop}`)
-        viewBoxBorder.setAttribute("width", `${this.viewBoxWidth}`)
-        viewBoxBorder.setAttribute("height", `${this.viewBoxHeight}`)
-        viewBoxBorder.setAttribute("fill", `none`)
-        viewBoxBorder.setAttribute("stroke-width", `2px`)
-        viewBoxBorder.setAttribute("stroke", `grey`)
-        this._svgElement.appendChild(viewBoxBorder)
+        /* viewBox seems to be resized by Chrome at windowresize 
+        
+        this._viewBoxBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
+        this._viewBoxBorder.setAttribute("id", "_viewBoxBorder")
+        this._viewBoxBorder.setAttribute("x", `${this.viewBoxLeft}`)
+        this._viewBoxBorder.setAttribute("y", `${this.viewBoxTop}`)
+        this._viewBoxBorder.setAttribute("width", `${this.viewBoxWidth}`)
+        this._viewBoxBorder.setAttribute("height", `${this.viewBoxHeight}`)
+        this._viewBoxBorder.setAttribute("fill", `none`)
+        this._viewBoxBorder.setAttribute("stroke-width", `2px`)
+        this._viewBoxBorder.setAttribute("stroke", `green`)
+        this._svgElement.appendChild(this._viewBoxBorder)
         */
         gameFrame.appendChild(this._svgElement)
         gameFrame.style.height = `${window.innerHeight}px`
@@ -86,7 +90,7 @@ export class GameEnvironment{
     get svgElement(){
         return(this._svgElement);
     }
-
+    
     handleResize(){
         //always apply fullscreen mode
         this.updateLabel()
@@ -137,13 +141,17 @@ export class GameEnvironment{
     insertBackgroundImage(){
         //load and center an image-file over 0,0 in the viewBox
         const bgImage = document.createElementNS("http://www.w3.org/2000/svg", "image")
+        const bgImagWidth = 1000
+        const bgImageHeight = 1000
         this._svgElement.appendChild(bgImage)
         bgImage.href.baseVal = ("../resources/background03.jpg")
         bgImage.onload = () =>{
             const imageWidth = bgImage.getBBox().width
             const imageHeight = bgImage.getBBox().height
-            bgImage.style.x = `${-imageWidth/2}`
-            bgImage.style.y = `${-imageHeight/2}` 
+            bgImage.style.width = bgImagWidth.toString()
+            bgImage.style.height = bgImageHeight.toString()
+            bgImage.style.x = `${-bgImagWidth/2}`
+            bgImage.style.y = `${-bgImageHeight/2}` 
             bgImage.style.zIndex = "-1"
         }
 
