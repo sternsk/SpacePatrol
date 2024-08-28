@@ -40,8 +40,10 @@ export class GameEnvironment{
         this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
         this.insertBackgroundImage()
         this._svgElement.style.position = "absolute"
-       // this._svgElement.style.outline = "none"
-        this._svgElement.style.border = "5px solid red"
+       //prevent a focus border around the svg-Element
+        // this._svgElement.style.outline = "none"
+       //draw a border around the svg-Element 
+       //this._svgElement.style.border = "5px solid red"
         
         this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
         this._svgElement.setAttribute("tabindex", "0")
@@ -144,7 +146,7 @@ export class GameEnvironment{
         const bgImagWidth = 1000
         const bgImageHeight = 1000
         this._svgElement.appendChild(bgImage)
-        bgImage.href.baseVal = ("../resources/background03.jpg")
+        bgImage.href.baseVal = ("../resources/background04.jpg")
         bgImage.onload = () =>{
             const imageWidth = bgImage.getBBox().width
             const imageHeight = bgImage.getBBox().height

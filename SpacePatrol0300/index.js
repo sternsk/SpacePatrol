@@ -28019,7 +28019,6 @@
           this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
           this.insertBackgroundImage();
           this._svgElement.style.position = "absolute";
-          this._svgElement.style.border = "5px solid red";
           this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
           this._svgElement.setAttribute("tabindex", "0");
           gameFrame.appendChild(this._svgElement);
@@ -28082,7 +28081,7 @@
           const bgImagWidth = 1e3;
           const bgImageHeight = 1e3;
           this._svgElement.appendChild(bgImage);
-          bgImage.href.baseVal = "../resources/background03.jpg";
+          bgImage.href.baseVal = "../resources/background04.jpg";
           bgImage.onload = () => {
             const imageWidth = bgImage.getBBox().width;
             const imageHeight = bgImage.getBBox().height;
@@ -28396,6 +28395,7 @@
           gameFrame.setAttribute("tabIndex", "0");
           gameFrame.style.position = "fixed";
           gameFrame.style.outline = "none";
+          gameFrame.style.backgroundColor = "#232023";
           gameFrame.style.width = `${window.innerWidth}px`;
           gameFrame.style.height = `${window.innerHeight}px`;
           gameFrame.appendChild(this.joystick.htmlElement);
@@ -28485,14 +28485,14 @@
           colorSelector.appendChild(option14);
           colorSelector.appendChild(option15);
           colorSelector.appendChild(option16);
-          option13.setAttribute("value", "brown");
+          option13.setAttribute("value", "beige");
           option14.setAttribute("value", "goldenrod");
           option15.setAttribute("value", "black");
-          option16.setAttribute("value", "darkblue");
-          option13.textContent = "brown";
+          option16.setAttribute("value", "brown");
+          option13.textContent = "beige";
           option14.textContent = "goldenrod";
           option15.textContent = "black";
-          option16.textContent = "darkblue";
+          option16.textContent = "brown";
           this.idInputElement.setAttribute("type", "text");
           this.idInputElement.setAttribute("placeholder", "enter your id");
           const startButton = document.createElement("button");
@@ -28524,6 +28524,7 @@
               console.log("unsupported file format");
           });
           const infoContent = document.createElement("div");
+          infoContent.style.color = "darkgrey";
           infoContent.textContent = "Left Right rotate, up down zoom";
           gameFrame.appendChild(this.typeSelector);
           gameFrame.appendChild(this.deviceSelector);

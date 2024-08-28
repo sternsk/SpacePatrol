@@ -51,9 +51,10 @@ export class GameMenu{
        
         gameFrame.setAttribute("tabIndex","0")
 
-        // apply fullscreen mode
         gameFrame.style.position = "fixed"
         gameFrame.style.outline = "none"
+        gameFrame.style.backgroundColor = "#232023"
+        // apply fullscreen mode
         gameFrame.style.width = `${window.innerWidth}px`
         gameFrame.style.height = `${window.innerHeight}px`
         gameFrame.appendChild(this.joystick.htmlElement)
@@ -156,15 +157,15 @@ export class GameMenu{
         colorSelector.appendChild(option15)
         colorSelector.appendChild(option16)
 
-        option13.setAttribute("value", "brown")
+        option13.setAttribute("value", "beige")
         option14.setAttribute("value", "goldenrod")
         option15.setAttribute("value", "black")
-        option16.setAttribute("value", "darkblue")
+        option16.setAttribute("value", "brown")
 
-        option13.textContent = "brown"
+        option13.textContent = "beige"
         option14.textContent = "goldenrod"
         option15.textContent = "black"
-        option16.textContent = "darkblue"
+        option16.textContent = "brown"
         
         this.idInputElement.setAttribute("type", "text")
         this.idInputElement.setAttribute("placeholder", "enter your id")
@@ -206,6 +207,7 @@ export class GameMenu{
         })
 
         const infoContent = document.createElement("div")
+        infoContent.style.color ="darkgrey"
         infoContent.textContent = "Left Right rotate, up down zoom"
 
         gameFrame.appendChild(this.typeSelector)
