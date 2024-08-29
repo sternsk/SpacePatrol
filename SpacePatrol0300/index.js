@@ -744,12 +744,12 @@
         var isSetValueCurveAutomationEvent = function isSetValueCurveAutomationEvent2(automationEvent) {
           return automationEvent.type === "setValueCurve";
         };
-        var getValueOfAutomationEventAtIndexAtTime = function getValueOfAutomationEventAtIndexAtTime2(automationEvents, index, time, defaultValue) {
+        var _getValueOfAutomationEventAtIndexAtTime = function getValueOfAutomationEventAtIndexAtTime(automationEvents, index, time, defaultValue) {
           var automationEvent = automationEvents[index];
-          return automationEvent === void 0 ? defaultValue : isAnyRampToValueAutomationEvent(automationEvent) || isSetValueAutomationEvent(automationEvent) ? automationEvent.value : isSetValueCurveAutomationEvent(automationEvent) ? automationEvent.values[automationEvent.values.length - 1] : getTargetValueAtTime(time, getValueOfAutomationEventAtIndexAtTime2(automationEvents, index - 1, automationEvent.startTime, defaultValue), automationEvent);
+          return automationEvent === void 0 ? defaultValue : isAnyRampToValueAutomationEvent(automationEvent) || isSetValueAutomationEvent(automationEvent) ? automationEvent.value : isSetValueCurveAutomationEvent(automationEvent) ? automationEvent.values[automationEvent.values.length - 1] : getTargetValueAtTime(time, _getValueOfAutomationEventAtIndexAtTime(automationEvents, index - 1, automationEvent.startTime, defaultValue), automationEvent);
         };
         var getEndTimeAndValueOfPreviousAutomationEvent = function getEndTimeAndValueOfPreviousAutomationEvent2(automationEvents, index, currentAutomationEvent, nextAutomationEvent, defaultValue) {
-          return currentAutomationEvent === void 0 ? [nextAutomationEvent.insertTime, defaultValue] : isAnyRampToValueAutomationEvent(currentAutomationEvent) ? [currentAutomationEvent.endTime, currentAutomationEvent.value] : isSetValueAutomationEvent(currentAutomationEvent) ? [currentAutomationEvent.startTime, currentAutomationEvent.value] : isSetValueCurveAutomationEvent(currentAutomationEvent) ? [currentAutomationEvent.startTime + currentAutomationEvent.duration, currentAutomationEvent.values[currentAutomationEvent.values.length - 1]] : [currentAutomationEvent.startTime, getValueOfAutomationEventAtIndexAtTime(automationEvents, index - 1, currentAutomationEvent.startTime, defaultValue)];
+          return currentAutomationEvent === void 0 ? [nextAutomationEvent.insertTime, defaultValue] : isAnyRampToValueAutomationEvent(currentAutomationEvent) ? [currentAutomationEvent.endTime, currentAutomationEvent.value] : isSetValueAutomationEvent(currentAutomationEvent) ? [currentAutomationEvent.startTime, currentAutomationEvent.value] : isSetValueCurveAutomationEvent(currentAutomationEvent) ? [currentAutomationEvent.startTime + currentAutomationEvent.duration, currentAutomationEvent.values[currentAutomationEvent.values.length - 1]] : [currentAutomationEvent.startTime, _getValueOfAutomationEventAtIndexAtTime(automationEvents, index - 1, currentAutomationEvent.startTime, defaultValue)];
         };
         var isCancelAndHoldAutomationEvent = function isCancelAndHoldAutomationEvent2(automationEvent) {
           return automationEvent.type === "cancelAndHold";
@@ -883,7 +883,7 @@
                 var remainingAutomationEvents = this._automationEvents.slice(index - 1);
                 var firstRemainingAutomationEvent = remainingAutomationEvents[0];
                 if (isSetTargetAutomationEvent(firstRemainingAutomationEvent)) {
-                  remainingAutomationEvents.unshift(createSetValueAutomationEvent2(getValueOfAutomationEventAtIndexAtTime(this._automationEvents, index - 2, firstRemainingAutomationEvent.startTime, this._defaultValue), firstRemainingAutomationEvent.startTime));
+                  remainingAutomationEvents.unshift(createSetValueAutomationEvent2(_getValueOfAutomationEventAtIndexAtTime(this._automationEvents, index - 2, firstRemainingAutomationEvent.startTime, this._defaultValue), firstRemainingAutomationEvent.startTime));
                 }
                 this._automationEvents = remainingAutomationEvents;
               }
@@ -901,7 +901,7 @@
               var indexOfCurrentEvent = (indexOfNextEvent === -1 ? this._automationEvents.length : indexOfNextEvent) - 1;
               var currentAutomationEvent = this._automationEvents[indexOfCurrentEvent];
               if (currentAutomationEvent !== void 0 && isSetTargetAutomationEvent(currentAutomationEvent) && (nextAutomationEvent === void 0 || !isAnyRampToValueAutomationEvent(nextAutomationEvent) || nextAutomationEvent.insertTime > time)) {
-                return getTargetValueAtTime(time, getValueOfAutomationEventAtIndexAtTime(this._automationEvents, indexOfCurrentEvent - 1, currentAutomationEvent.startTime, this._defaultValue), currentAutomationEvent);
+                return getTargetValueAtTime(time, _getValueOfAutomationEventAtIndexAtTime(this._automationEvents, indexOfCurrentEvent - 1, currentAutomationEvent.startTime, this._defaultValue), currentAutomationEvent);
               }
               if (currentAutomationEvent !== void 0 && isSetValueAutomationEvent(currentAutomationEvent) && (nextAutomationEvent === void 0 || !isAnyRampToValueAutomationEvent(nextAutomationEvent))) {
                 return currentAutomationEvent.value;
@@ -1885,7 +1885,7 @@
   var init_oscillator_node = __esm({
     "node_modules/standardized-audio-context/build/es2019/guards/oscillator-node.js"() {
       isOscillatorNode = (audioNode) => {
-        return "detune" in audioNode && "frequency" in audioNode;
+        return "detune" in audioNode && "frequency" in audioNode && !("gain" in audioNode);
       };
     }
   });
@@ -25698,6 +25698,7 @@
         var eventTypeByte = null;
         w.writeVarInt(deltaTime);
         switch (type) {
+          // meta events
           case "sequenceNumber":
             w.writeUInt8(255);
             w.writeUInt8(0);
@@ -25812,6 +25813,7 @@
               w.writeBytes(data);
             }
             break;
+          // system-exclusive
           case "sysEx":
             w.writeUInt8(240);
             w.writeVarInt(data.length);
@@ -25822,6 +25824,7 @@
             w.writeVarInt(data.length);
             w.writeBytes(data);
             break;
+          // channel events
           case "noteOff":
             var noteByte = useByte9ForNoteOff !== false && event.byte9 || useByte9ForNoteOff && event.velocity == 0 ? 144 : 128;
             eventTypeByte = noteByte | event.channel;
@@ -28162,13 +28165,6 @@
           requestAnimationFrame(() => {
             this.gameLoop();
           });
-          const request = {};
-          request.spaceObject = this.spacecraft.objectStatus;
-          evaluate(syncSpaceObject, request).then((response) => {
-            this.syncReality(response);
-          }).catch((error) => {
-            console.error("Failed to update spacecrafts:", error);
-          });
           const tractorBeam = this.spacecraft.getDevice(TractorBeam);
           if (this.touchControl) {
             if (this.gameEnvironment.joystick.isTouched) {
@@ -28193,26 +28189,26 @@
           if (keyboardController.isKeyPressed("w")) {
             this.gameEnvironment.viewBoxWidth += 10;
             this.gameEnvironment.viewBoxHeight += 10;
-            this.gameEnvironment.svgElement.setAttribute("viewBox", `${this.gameEnvironment.viewBoxLeft - this.gameEnvironment.viewBoxWidth / 2},
-                                                                    ${this.gameEnvironment.viewBoxTop - this.gameEnvironment.viewBoxHeight / 2},
+            this.gameEnvironment.svgElement.setAttribute("viewBox", `${-this.gameEnvironment.viewBoxWidth / 2},
+                                                                    ${-this.gameEnvironment.viewBoxHeight / 2},
                                                                     ${this.gameEnvironment.viewBoxWidth},
                                                                     ${this.gameEnvironment.viewBoxHeight}`);
           }
           if (keyboardController.isKeyPressed("s")) {
             this.gameEnvironment.viewBoxWidth -= 10;
             this.gameEnvironment.viewBoxHeight -= 10;
-            this.gameEnvironment.svgElement.setAttribute("viewBox", `${this.gameEnvironment.viewBoxLeft - this.gameEnvironment.viewBoxWidth / 2},
-                                                                    ${this.gameEnvironment.viewBoxTop + this.gameEnvironment.viewBoxHeight / 2},
+            this.gameEnvironment.svgElement.setAttribute("viewBox", `${-this.gameEnvironment.viewBoxWidth / 2},
+                                                                    ${-this.gameEnvironment.viewBoxHeight / 2},
                                                                     ${this.gameEnvironment.viewBoxWidth},
                                                                     ${this.gameEnvironment.viewBoxHeight}`);
           }
           if (tractorBeam && keyboardController.isKeyPressed(" ")) {
             const targetObject = this.spacecrafts[0];
-            const request2 = {};
-            request2.method = "tractorBeam";
-            request2.spaceObject = this.spacecraft.objectStatus;
-            request2.target = targetObject.id;
-            evaluate(manipulateSpaceObject, request2);
+            const request = {};
+            request.method = "tractorBeam";
+            request.spaceObject = this.spacecraft.objectStatus;
+            request.target = targetObject.id;
+            evaluate(manipulateSpaceObject, request);
             const targetVector = rotate(distanceVector(this.spacecraft.location, targetObject.location), -(this.spacecraft.direction + 90));
             (_c = this.spacecraft.getDevice(TractorBeam)) == null ? void 0 : _c.activate(targetVector);
             const gElem = (_d = this.spacecraft.getDevice(TractorBeam)) == null ? void 0 : _d._gElem;
@@ -28264,7 +28260,7 @@
     manipulateSpaceObject: () => manipulateSpaceObject,
     polarVector: () => polarVector,
     rotate: () => rotate,
-    syncSpaceObject: () => syncSpaceObject
+    syncSpaceObject: () => syncSpaceObject2
   });
   function initGame(gameFrame2, type, color2, id) {
     console.log("spaceGame loads");
@@ -28349,7 +28345,7 @@
       xhr.send(JSON.stringify(request));
     });
   }
-  var RequestDefinition2, syncSpaceObject, manipulateSpaceObject;
+  var RequestDefinition2, syncSpaceObject2, manipulateSpaceObject;
   var init_library = __esm({
     "src/library.ts"() {
       "use strict";
@@ -28359,7 +28355,7 @@
           this.path = path;
         }
       };
-      syncSpaceObject = new RequestDefinition2("SynchronizeSpaceObject");
+      syncSpaceObject2 = new RequestDefinition2("SynchronizeSpaceObject");
       manipulateSpaceObject = new RequestDefinition2("ManipulateSpaceObject");
     }
   });
@@ -28686,7 +28682,7 @@
   // src/index.ts
   init_GameMenu();
   console.log(" ");
-  console.log("index.ts says: SpacePatrol0300 ver.1010, and this should be the first statement");
+  console.log("index.ts says: SpacePatrol0300 ver.1135, and this should be the first statement");
   console.log("But there is apperently the imports and dependencies loaded first and then the following code executed.");
   console.log("Thats why there is statements above this textblock");
   console.log(" ");

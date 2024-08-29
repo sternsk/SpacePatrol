@@ -90,7 +90,7 @@ export class SpaceGame {
         requestAnimationFrame(() => {
             this.gameLoop();
         });
-        
+        /*
         const request = {} as SyncronizeSpaceObject
         request.spaceObject = this.spacecraft.objectStatus
         
@@ -101,7 +101,7 @@ export class SpaceGame {
         .catch(error => {
             console.error("Failed to update spacecrafts:", error);
         });
-        
+        */
         // check if device TractorBeam might be used - theres some specialcases
         const tractorBeam = this.spacecraft.getDevice<TractorBeam>(TractorBeam);
         
@@ -137,8 +137,8 @@ export class SpaceGame {
         if (keyboardController.isKeyPressed("w")){
             this.gameEnvironment.viewBoxWidth += 10
             this.gameEnvironment.viewBoxHeight +=10
-            this.gameEnvironment.svgElement.setAttribute("viewBox", `${this.gameEnvironment.viewBoxLeft - this.gameEnvironment.viewBoxWidth/2},
-                                                                    ${this.gameEnvironment.viewBoxTop - this.gameEnvironment.viewBoxHeight/2},
+            this.gameEnvironment.svgElement.setAttribute("viewBox", `${ - this.gameEnvironment.viewBoxWidth/2},
+                                                                    ${- this.gameEnvironment.viewBoxHeight/2},
                                                                     ${this.gameEnvironment.viewBoxWidth},
                                                                     ${this.gameEnvironment.viewBoxHeight}`)
         }
@@ -146,8 +146,8 @@ export class SpaceGame {
         if (keyboardController.isKeyPressed("s")){
             this.gameEnvironment.viewBoxWidth -= 10
             this.gameEnvironment.viewBoxHeight -=10
-            this.gameEnvironment.svgElement.setAttribute("viewBox", `${this.gameEnvironment.viewBoxLeft - this.gameEnvironment.viewBoxWidth/2},
-                                                                    ${this.gameEnvironment.viewBoxTop + this.gameEnvironment.viewBoxHeight/2},
+            this.gameEnvironment.svgElement.setAttribute("viewBox", `${ - this.gameEnvironment.viewBoxWidth/2},
+                                                                    ${ - this.gameEnvironment.viewBoxHeight/2},
                                                                     ${this.gameEnvironment.viewBoxWidth},
                                                                     ${this.gameEnvironment.viewBoxHeight}`)
         }
