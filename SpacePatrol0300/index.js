@@ -321,6 +321,15 @@
               stationImage.setAttribute("transform", `translate (-25,-25)`);
               gElement.appendChild(stationImage);
               return gElement;
+            case "nugget":
+              const nuggetImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
+              nuggetImage.href.baseVal = "../resources/nugget01.png";
+              nuggetImage.setAttribute("width", `30`);
+              nuggetImage.setAttribute("height", `20`);
+              nuggetImage.setAttribute("stroke", `${color}`);
+              nuggetImage.setAttribute("transform", `scale (${Math.random() * 2 - 1}) translate (-15,-10)`);
+              gElement.appendChild(nuggetImage);
+              return gElement;
           }
           const imageUrl = `./${type}`;
           const image = document.createElementNS("http://www.w3.org/2000/svg", "image");
@@ -744,12 +753,12 @@
         var isSetValueCurveAutomationEvent = function isSetValueCurveAutomationEvent2(automationEvent) {
           return automationEvent.type === "setValueCurve";
         };
-        var _getValueOfAutomationEventAtIndexAtTime = function getValueOfAutomationEventAtIndexAtTime(automationEvents, index, time, defaultValue) {
+        var getValueOfAutomationEventAtIndexAtTime = function getValueOfAutomationEventAtIndexAtTime2(automationEvents, index, time, defaultValue) {
           var automationEvent = automationEvents[index];
-          return automationEvent === void 0 ? defaultValue : isAnyRampToValueAutomationEvent(automationEvent) || isSetValueAutomationEvent(automationEvent) ? automationEvent.value : isSetValueCurveAutomationEvent(automationEvent) ? automationEvent.values[automationEvent.values.length - 1] : getTargetValueAtTime(time, _getValueOfAutomationEventAtIndexAtTime(automationEvents, index - 1, automationEvent.startTime, defaultValue), automationEvent);
+          return automationEvent === void 0 ? defaultValue : isAnyRampToValueAutomationEvent(automationEvent) || isSetValueAutomationEvent(automationEvent) ? automationEvent.value : isSetValueCurveAutomationEvent(automationEvent) ? automationEvent.values[automationEvent.values.length - 1] : getTargetValueAtTime(time, getValueOfAutomationEventAtIndexAtTime2(automationEvents, index - 1, automationEvent.startTime, defaultValue), automationEvent);
         };
         var getEndTimeAndValueOfPreviousAutomationEvent = function getEndTimeAndValueOfPreviousAutomationEvent2(automationEvents, index, currentAutomationEvent, nextAutomationEvent, defaultValue) {
-          return currentAutomationEvent === void 0 ? [nextAutomationEvent.insertTime, defaultValue] : isAnyRampToValueAutomationEvent(currentAutomationEvent) ? [currentAutomationEvent.endTime, currentAutomationEvent.value] : isSetValueAutomationEvent(currentAutomationEvent) ? [currentAutomationEvent.startTime, currentAutomationEvent.value] : isSetValueCurveAutomationEvent(currentAutomationEvent) ? [currentAutomationEvent.startTime + currentAutomationEvent.duration, currentAutomationEvent.values[currentAutomationEvent.values.length - 1]] : [currentAutomationEvent.startTime, _getValueOfAutomationEventAtIndexAtTime(automationEvents, index - 1, currentAutomationEvent.startTime, defaultValue)];
+          return currentAutomationEvent === void 0 ? [nextAutomationEvent.insertTime, defaultValue] : isAnyRampToValueAutomationEvent(currentAutomationEvent) ? [currentAutomationEvent.endTime, currentAutomationEvent.value] : isSetValueAutomationEvent(currentAutomationEvent) ? [currentAutomationEvent.startTime, currentAutomationEvent.value] : isSetValueCurveAutomationEvent(currentAutomationEvent) ? [currentAutomationEvent.startTime + currentAutomationEvent.duration, currentAutomationEvent.values[currentAutomationEvent.values.length - 1]] : [currentAutomationEvent.startTime, getValueOfAutomationEventAtIndexAtTime(automationEvents, index - 1, currentAutomationEvent.startTime, defaultValue)];
         };
         var isCancelAndHoldAutomationEvent = function isCancelAndHoldAutomationEvent2(automationEvent) {
           return automationEvent.type === "cancelAndHold";
@@ -883,7 +892,7 @@
                 var remainingAutomationEvents = this._automationEvents.slice(index - 1);
                 var firstRemainingAutomationEvent = remainingAutomationEvents[0];
                 if (isSetTargetAutomationEvent(firstRemainingAutomationEvent)) {
-                  remainingAutomationEvents.unshift(createSetValueAutomationEvent2(_getValueOfAutomationEventAtIndexAtTime(this._automationEvents, index - 2, firstRemainingAutomationEvent.startTime, this._defaultValue), firstRemainingAutomationEvent.startTime));
+                  remainingAutomationEvents.unshift(createSetValueAutomationEvent2(getValueOfAutomationEventAtIndexAtTime(this._automationEvents, index - 2, firstRemainingAutomationEvent.startTime, this._defaultValue), firstRemainingAutomationEvent.startTime));
                 }
                 this._automationEvents = remainingAutomationEvents;
               }
@@ -901,7 +910,7 @@
               var indexOfCurrentEvent = (indexOfNextEvent === -1 ? this._automationEvents.length : indexOfNextEvent) - 1;
               var currentAutomationEvent = this._automationEvents[indexOfCurrentEvent];
               if (currentAutomationEvent !== void 0 && isSetTargetAutomationEvent(currentAutomationEvent) && (nextAutomationEvent === void 0 || !isAnyRampToValueAutomationEvent(nextAutomationEvent) || nextAutomationEvent.insertTime > time)) {
-                return getTargetValueAtTime(time, _getValueOfAutomationEventAtIndexAtTime(this._automationEvents, indexOfCurrentEvent - 1, currentAutomationEvent.startTime, this._defaultValue), currentAutomationEvent);
+                return getTargetValueAtTime(time, getValueOfAutomationEventAtIndexAtTime(this._automationEvents, indexOfCurrentEvent - 1, currentAutomationEvent.startTime, this._defaultValue), currentAutomationEvent);
               }
               if (currentAutomationEvent !== void 0 && isSetValueAutomationEvent(currentAutomationEvent) && (nextAutomationEvent === void 0 || !isAnyRampToValueAutomationEvent(nextAutomationEvent))) {
                 return currentAutomationEvent.value;
@@ -1885,7 +1894,7 @@
   var init_oscillator_node = __esm({
     "node_modules/standardized-audio-context/build/es2019/guards/oscillator-node.js"() {
       isOscillatorNode = (audioNode) => {
-        return "detune" in audioNode && "frequency" in audioNode && !("gain" in audioNode);
+        return "detune" in audioNode && "frequency" in audioNode;
       };
     }
   });
@@ -25698,7 +25707,6 @@
         var eventTypeByte = null;
         w.writeVarInt(deltaTime);
         switch (type) {
-          // meta events
           case "sequenceNumber":
             w.writeUInt8(255);
             w.writeUInt8(0);
@@ -25813,7 +25821,6 @@
               w.writeBytes(data);
             }
             break;
-          // system-exclusive
           case "sysEx":
             w.writeUInt8(240);
             w.writeVarInt(data.length);
@@ -25824,7 +25831,6 @@
             w.writeVarInt(data.length);
             w.writeBytes(data);
             break;
-          // channel events
           case "noteOff":
             var noteByte = useByte9ForNoteOff !== false && event.byte9 || useByte9ForNoteOff && event.velocity == 0 ? 144 : 128;
             eventTypeByte = noteByte | event.channel;
@@ -27711,7 +27717,7 @@
           };
           this._gElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
           this.easing = false;
-          this._maneuverability = 2;
+          this._maneuverability = 7;
           this._lastUpdate = Date.now();
           this._scale = 1;
           this.objectStatus.type = "rocket";
@@ -27726,7 +27732,7 @@
         addDevice(type, args) {
           this._device = DeviceFactory.createDevice(type, ...args);
         }
-        getDevice(deviceType) {
+        getDeviceType(deviceType) {
           if (this.device instanceof deviceType) {
             return this.device;
           }
@@ -27795,12 +27801,12 @@
             this.rotate(this._maneuverability);
           }
           if (keysPressed["ArrowUp"]) {
-            this.accelerate(this._maneuverability / 100);
+            this.accelerate(this._maneuverability / 50);
           }
           if (keysPressed["ArrowDown"]) {
-            this.brake(this._maneuverability / 100);
+            this.brake(this._maneuverability / 50);
           }
-          if (keysPressed[" "] && !this.getDevice(TractorBeam)) {
+          if (keysPressed[" "] && !this.getDeviceType(TractorBeam)) {
             this.operate();
           }
         }
@@ -27973,6 +27979,7 @@
           }
         }
         vanish() {
+          console.log("vanish called");
           const animate = () => {
             var _a, _b, _c, _d;
             if (this._scale > 0.1) {
@@ -28000,6 +28007,7 @@
       "use strict";
       init_Joystick();
       init_GameMenu();
+      init_library();
       GameEnvironment = class {
         constructor() {
           this.label = document.createElement("HTMLLabelElement");
@@ -28010,6 +28018,7 @@
             console.log("gameFrame.offsetWidth: " + gameFrame.offsetWidth);
             console.log("gameFrame.clientWidth: " + gameFrame.clientWidth);
             console.log("window.innerWidth: " + window.innerWidth);
+            console.log("this.screenAspectRatio: " + this.screenAspectRatio);
           } else {
             console.log("gameFrame not properly sized");
             this.screenAspectRatio = 0.8;
@@ -28077,6 +28086,10 @@
               this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth / 2;
               this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2;
               this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+              break;
+          }
+          if (Math.abs(spacecraft.location.x) > 500 || Math.abs(spacecraft.location.y) > 500) {
+            spacecraft.objectStatus.impuls = polarVector(length(spacecraft.objectStatus.impuls) * 0.5, angle(spacecraft.objectStatus.impuls));
           }
         }
         insertBackgroundImage() {
@@ -28110,6 +28123,7 @@
       init_GameMenu();
       init_TractorBeam();
       init_library();
+      init_OvalShield();
       SpaceGame = class {
         constructor() {
           this.spacecrafts = [];
@@ -28148,11 +28162,18 @@
               const spacecraft = new Spacecraft();
               spacecraft.objectStatus = response;
               spacecraft.gElement = SpacecraftShape.getCraftGElement(spacecraft.type);
-              console.log(spacecraft.type);
               this.spacecrafts.push(spacecraft);
               spacecraft.gElement.setAttribute("id", `${spacecraft.id}`);
               this.gameEnvironment.svgElement.appendChild(spacecraft.gElement);
             }
+          });
+          this.spacecrafts = this.spacecrafts.filter((element) => {
+            const index = reality.findIndex((response) => response.craftId === element.id);
+            if (index === -1) {
+              element.vanish();
+              return false;
+            }
+            return true;
           });
         }
         handleTouchEndEvent() {
@@ -28165,7 +28186,15 @@
           requestAnimationFrame(() => {
             this.gameLoop();
           });
-          const tractorBeam = this.spacecraft.getDevice(TractorBeam);
+          const request = {};
+          request.spaceObject = this.spacecraft.objectStatus;
+          evaluate(syncSpaceObject, request).then((response) => {
+            this.syncReality(response);
+          }).catch((error) => {
+            console.error("Failed to update spacecrafts:", error);
+          });
+          const tractorBeam = this.spacecraft.getDeviceType(TractorBeam);
+          const ovalShield = this.spacecraft.getDeviceType(OvalShield);
           if (this.touchControl) {
             if (this.gameEnvironment.joystick.isTouched) {
               this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value);
@@ -28177,7 +28206,7 @@
                   y: this.spacecrafts[1].location.y + this.spacecraft.location.y
                 }, -90);
                 tractorBeam.activate(target);
-                const gElem = (_a = this.spacecraft.getDevice(TractorBeam)) == null ? void 0 : _a._gElem;
+                const gElem = (_a = this.spacecraft.getDeviceType(TractorBeam)) == null ? void 0 : _a._gElem;
                 if (gElem) {
                   this.spacecraft.gElement.appendChild(gElem);
                 }
@@ -28187,34 +28216,35 @@
             }
           }
           if (keyboardController.isKeyPressed("w")) {
-            this.gameEnvironment.viewBoxWidth += 10;
-            this.gameEnvironment.viewBoxHeight += 10;
-            this.gameEnvironment.svgElement.setAttribute("viewBox", `${-this.gameEnvironment.viewBoxWidth / 2},
-                                                                    ${-this.gameEnvironment.viewBoxHeight / 2},
-                                                                    ${this.gameEnvironment.viewBoxWidth},
-                                                                    ${this.gameEnvironment.viewBoxHeight}`);
+            this.gameEnvironment.viewBoxWidth += this.gameEnvironment.viewBoxWidth / 100;
+            this.gameEnvironment.viewBoxHeight += this.gameEnvironment.viewBoxHeight / 100;
           }
           if (keyboardController.isKeyPressed("s")) {
-            this.gameEnvironment.viewBoxWidth -= 10;
-            this.gameEnvironment.viewBoxHeight -= 10;
-            this.gameEnvironment.svgElement.setAttribute("viewBox", `${-this.gameEnvironment.viewBoxWidth / 2},
-                                                                    ${-this.gameEnvironment.viewBoxHeight / 2},
-                                                                    ${this.gameEnvironment.viewBoxWidth},
-                                                                    ${this.gameEnvironment.viewBoxHeight}`);
+            this.gameEnvironment.viewBoxWidth -= this.gameEnvironment.viewBoxWidth / 100;
+            this.gameEnvironment.viewBoxHeight -= this.gameEnvironment.viewBoxHeight / 100;
           }
           if (tractorBeam && keyboardController.isKeyPressed(" ")) {
-            const targetObject = this.spacecrafts[0];
-            const request = {};
-            request.method = "tractorBeam";
-            request.spaceObject = this.spacecraft.objectStatus;
-            request.target = targetObject.id;
-            evaluate(manipulateSpaceObject, request);
-            const targetVector = rotate(distanceVector(this.spacecraft.location, targetObject.location), -(this.spacecraft.direction + 90));
-            (_c = this.spacecraft.getDevice(TractorBeam)) == null ? void 0 : _c.activate(targetVector);
-            const gElem = (_d = this.spacecraft.getDevice(TractorBeam)) == null ? void 0 : _d._gElem;
+            const targetObject = this.spacecrafts.find((element) => element.id === "planet");
+            const request2 = {};
+            request2.method = "tractorBeam";
+            request2.spaceObject = this.spacecraft.objectStatus;
+            if (targetObject)
+              request2.target = targetObject.id;
+            evaluate(manipulateSpaceObject, request2);
+            if (targetObject) {
+              const targetVector = rotate(distanceVector(this.spacecraft.location, targetObject.location), -(this.spacecraft.direction + 90));
+              (_c = this.spacecraft.getDeviceType(TractorBeam)) == null ? void 0 : _c.activate(targetVector);
+            }
+            const gElem = (_d = this.spacecraft.getDeviceType(TractorBeam)) == null ? void 0 : _d._gElem;
             if (gElem) {
               this.spacecraft.gElement.appendChild(gElem);
             }
+          }
+          if (ovalShield && keyboardController.isKeyPressed(" ")) {
+            const request2 = {};
+            request2.method = "ovalShield";
+            request2.spaceObject = this.spacecraft.objectStatus;
+            evaluate(manipulateSpaceObject, request2);
           }
           this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
           this.updateElements();
@@ -28260,7 +28290,7 @@
     manipulateSpaceObject: () => manipulateSpaceObject,
     polarVector: () => polarVector,
     rotate: () => rotate,
-    syncSpaceObject: () => syncSpaceObject2
+    syncSpaceObject: () => syncSpaceObject
   });
   function initGame(gameFrame2, type, color2, id) {
     console.log("spaceGame loads");
@@ -28345,7 +28375,7 @@
       xhr.send(JSON.stringify(request));
     });
   }
-  var RequestDefinition2, syncSpaceObject2, manipulateSpaceObject;
+  var RequestDefinition2, syncSpaceObject, manipulateSpaceObject;
   var init_library = __esm({
     "src/library.ts"() {
       "use strict";
@@ -28355,7 +28385,7 @@
           this.path = path;
         }
       };
-      syncSpaceObject2 = new RequestDefinition2("SynchronizeSpaceObject");
+      syncSpaceObject = new RequestDefinition2("SynchronizeSpaceObject");
       manipulateSpaceObject = new RequestDefinition2("ManipulateSpaceObject");
     }
   });
@@ -28682,7 +28712,7 @@
   // src/index.ts
   init_GameMenu();
   console.log(" ");
-  console.log("index.ts says: SpacePatrol0300 ver.1135, and this should be the first statement");
+  console.log("index.ts says: SpacePatrol0300 ver.2343, and this should be the first statement");
   console.log("But there is apperently the imports and dependencies loaded first and then the following code executed.");
   console.log("Thats why there is statements above this textblock");
   console.log(" ");

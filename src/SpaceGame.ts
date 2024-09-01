@@ -5,6 +5,7 @@ import { keyboardController, device, gameFrame, viewBoxWidth } from "./GameMenu.
 //import { Vector2D } from "./Vector2D.js";
 import { TractorBeam } from "./TractorBeam.js";
 import { evaluate, RequestDefinition, SpaceObjectStatus, SyncronizeSpaceObject, syncSpaceObject, Vector2d, rotate, distanceBetween, distanceVector, manipulate, manipulateSpaceObject, ManipulateSpaceObject } from "./library.js";
+import { OvalShield } from "./OvalShield.js";
 
 export class SpaceGame {
     private spacecraft: Spacecraft
@@ -72,14 +73,24 @@ export class SpaceGame {
                 const spacecraft = new Spacecraft()
                 spacecraft.objectStatus = response
                 spacecraft.gElement = SpacecraftShape.getCraftGElement(spacecraft.type)
-                console.log(spacecraft.type)
                 this.spacecrafts.push(spacecraft)
                 spacecraft.gElement.setAttribute("id", `${spacecraft.id}`)
                 this.gameEnvironment.svgElement.appendChild(spacecraft.gElement)
-                
             }
             
         })
+        this.spacecrafts = this.spacecrafts.filter(element => {
+            // Check if the element is in the reality-array
+            const index = reality.findIndex(response => response.craftId === element.id);
+        
+            // If the element is not in the reality-server-response, exclude it from the array
+            // call the vanish method first
+            if (index === -1){
+                element.vanish()
+                return false
+            }
+            return true
+        });
     }
 
     async handleTouchEndEvent(){
@@ -90,7 +101,7 @@ export class SpaceGame {
         requestAnimationFrame(() => {
             this.gameLoop();
         });
-        /*
+        
         const request = {} as SyncronizeSpaceObject
         request.spaceObject = this.spacecraft.objectStatus
         
@@ -101,9 +112,10 @@ export class SpaceGame {
         .catch(error => {
             console.error("Failed to update spacecrafts:", error);
         });
-        */
+        
         // check if device TractorBeam might be used - theres some specialcases
-        const tractorBeam = this.spacecraft.getDevice<TractorBeam>(TractorBeam);
+        const tractorBeam = this.spacecraft.getDeviceType<TractorBeam>(TractorBeam);
+        const ovalShield = this.spacecraft.getDeviceType<OvalShield>(OvalShield);
         
         if(this.touchControl){
             if(this.gameEnvironment.joystick.isTouched){
@@ -121,7 +133,7 @@ export class SpaceGame {
                         
                     tractorBeam.activate(target)
                                           
-                    const gElem = this.spacecraft.getDevice(TractorBeam)?._gElem
+                    const gElem = this.spacecraft.getDeviceType(TractorBeam)?._gElem
                     if(gElem){
                         
                         this.spacecraft.gElement.appendChild(gElem)
@@ -135,40 +147,43 @@ export class SpaceGame {
             
         }
         if (keyboardController.isKeyPressed("w")){
-            this.gameEnvironment.viewBoxWidth += 10
-            this.gameEnvironment.viewBoxHeight +=10
-            this.gameEnvironment.svgElement.setAttribute("viewBox", `${ - this.gameEnvironment.viewBoxWidth/2},
-                                                                    ${- this.gameEnvironment.viewBoxHeight/2},
-                                                                    ${this.gameEnvironment.viewBoxWidth},
-                                                                    ${this.gameEnvironment.viewBoxHeight}`)
+            this.gameEnvironment.viewBoxWidth += this.gameEnvironment.viewBoxWidth / 100
+            this.gameEnvironment.viewBoxHeight += this.gameEnvironment.viewBoxHeight / 100
         }
 
         if (keyboardController.isKeyPressed("s")){
-            this.gameEnvironment.viewBoxWidth -= 10
-            this.gameEnvironment.viewBoxHeight -=10
-            this.gameEnvironment.svgElement.setAttribute("viewBox", `${ - this.gameEnvironment.viewBoxWidth/2},
-                                                                    ${ - this.gameEnvironment.viewBoxHeight/2},
-                                                                    ${this.gameEnvironment.viewBoxWidth},
-                                                                    ${this.gameEnvironment.viewBoxHeight}`)
+            this.gameEnvironment.viewBoxWidth -= this.gameEnvironment.viewBoxWidth/100
+            this.gameEnvironment.viewBoxHeight -= this.gameEnvironment.viewBoxHeight/100
+            
         }
 
         if(tractorBeam && keyboardController.isKeyPressed(" ")){
-            const targetObject = this.spacecrafts[0]
+            const targetObject = this.spacecrafts.find(element => element.id === "planet")
             
             const request = {} as ManipulateSpaceObject
             request.method = "tractorBeam"
             request.spaceObject = this.spacecraft.objectStatus
-            request.target = targetObject.id
+            if(targetObject)
+                request.target = targetObject.id
             evaluate(manipulateSpaceObject, request)
 
-            const targetVector = rotate(distanceVector(this.spacecraft.location, targetObject.location), -(this.spacecraft.direction + 90))
-            this.spacecraft.getDevice(TractorBeam)?.activate(targetVector)
-            const gElem = this.spacecraft.getDevice(TractorBeam)?._gElem
+            if(targetObject){
+                const targetVector = rotate(distanceVector(this.spacecraft.location, targetObject.location), -(this.spacecraft.direction + 90))
+                this.spacecraft.getDeviceType(TractorBeam)?.activate(targetVector)
+            }
+            const gElem = this.spacecraft.getDeviceType(TractorBeam)?._gElem
             if(gElem){
                 
                 this.spacecraft.gElement.appendChild(gElem)
             }
         }
+        if(ovalShield && keyboardController.isKeyPressed(" ")){
+            const request = {} as ManipulateSpaceObject
+            request.method = "ovalShield"
+            request.spaceObject = this.spacecraft.objectStatus
+            evaluate(manipulateSpaceObject, request)
+        }
+
         this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
         this.updateElements();
     }

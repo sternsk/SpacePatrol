@@ -29,7 +29,7 @@ export class Spacecraft{
     private _color: string
     private _touchControlType: string
     private easing = false
-    private _maneuverability = 2
+    private _maneuverability = 7
     
     private _device?: Device
 
@@ -58,7 +58,7 @@ export class Spacecraft{
         this._device = DeviceFactory.createDevice(type, ...args)
     }
 
-    getDevice<T extends Device>(deviceType: new (...args: any[]) => T): T | null {
+    getDeviceType<T extends Device>(deviceType: new (...args: any[]) => T): T | null {
         if (this.device instanceof deviceType) {
             return this.device as T;
         }
@@ -142,13 +142,13 @@ export class Spacecraft{
         }
         
         if (keysPressed['ArrowUp']) {
-            this.accelerate(this._maneuverability/100);
+            this.accelerate(this._maneuverability/50);
         }
 
         if (keysPressed['ArrowDown']) {
-            this.brake(this._maneuverability/100);
+            this.brake(this._maneuverability/50);
         }
-        if (keysPressed[' '] && !this.getDevice(TractorBeam)) {
+        if (keysPressed[' '] && !this.getDeviceType(TractorBeam)) {
             this.operate()
         }
         
@@ -381,6 +381,7 @@ export class Spacecraft{
     }
 
     vanish(){
+        console.log("vanish called")
         const animate = ()=>{
             if (this._scale > .1){
                 this._scale -= this._scale/100

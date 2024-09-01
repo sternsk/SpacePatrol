@@ -261,6 +261,16 @@ export abstract class SpacecraftShape{
             
                     gElement.appendChild(stationImage)
                     return(gElement)
+                case "nugget":
+                    const nuggetImage = document.createElementNS("http://www.w3.org/2000/svg", "image")
+                    nuggetImage.href.baseVal = "../resources/nugget01.png"
+                    nuggetImage.setAttribute("width", `30`)
+                    nuggetImage.setAttribute("height", `20`)
+                    nuggetImage.setAttribute("stroke", `${color}`)
+                    nuggetImage.setAttribute("transform", `scale (${Math.random()*2-1}) translate (-15,-10)`)
+            
+                    gElement.appendChild(nuggetImage)
+                    return(gElement)    
         }
         
         const imageUrl = `./${type}`    

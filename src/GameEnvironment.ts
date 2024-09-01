@@ -1,6 +1,7 @@
 import { Spacecraft } from "./Spacecraft.js";
 import { Joystick } from "./Joystick.js";
 import { gameFrame } from "./GameMenu.js";
+import { polarVector, length, angle } from "./library.js";
 
 export class GameEnvironment{
     screenAspectRatio: number
@@ -23,6 +24,7 @@ export class GameEnvironment{
             console.log("gameFrame.offsetWidth: "+gameFrame.offsetWidth)
             console.log("gameFrame.clientWidth: "+gameFrame.clientWidth)
             console.log("window.innerWidth: "+window.innerWidth)
+            console.log("this.screenAspectRatio: "+this.screenAspectRatio)
 
         }
         else{
@@ -135,8 +137,12 @@ export class GameEnvironment{
                 break;
             case "center":
                 this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth/2
-                this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight/2
+                this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2
                 this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
+                break;
+        }
+        if(Math.abs(spacecraft.location.x) > 500 || Math.abs(spacecraft.location.y) > 500){
+            spacecraft.objectStatus.impuls = polarVector(length(spacecraft.objectStatus.impuls)*.5, angle(spacecraft.objectStatus.impuls))
         }
     }
 
