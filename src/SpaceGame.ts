@@ -30,6 +30,8 @@ export class SpaceGame {
         this.spacecraft.color = color
         if(id) this.spacecraft.id = id
         this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type)
+        if(this.spacecraft.type == "../resources/rocket.svg")
+            this.spacecraft.directionCorrection = 45
         this.spacecraft.gElement.setAttribute("id", `${this.spacecraft.id}`)
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
         

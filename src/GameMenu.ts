@@ -4,6 +4,7 @@ import { Joystick } from "./Joystick.js"
 import * as Tone from 'tone'
 import { Midi } from '@tonejs/midi';
 
+
 /*export const availableTypes = ["rainbowRocket", 
                                 "rokket", 
                                 "bromber.svg", 
@@ -73,6 +74,7 @@ export class GameMenu{
         const option12 = document.createElement("option")
         const homper = document.createElement("option")
         const repulsorJet = document.createElement("option")
+        const station = document.createElement("option")
 
         const noDevice = document.createElement("option")
         noDevice.innerHTML = "disabled selected"
@@ -104,7 +106,6 @@ export class GameMenu{
         this.typeSelector.appendChild(option3)
         this.typeSelector.appendChild(option4)
         this.typeSelector.appendChild(repulsorJet)
-        
         this.typeSelector.appendChild(homper)
         this.typeSelector.appendChild(option5)
         this.typeSelector.appendChild(option6)
@@ -114,6 +115,7 @@ export class GameMenu{
         this.typeSelector.appendChild(option10)
         this.typeSelector.appendChild(option11)
         this.typeSelector.appendChild(option12)
+        this.typeSelector.appendChild(station)
 
         option1.setAttribute("value", "rainbowRocket")
         option1.innerHTML = "disabled selected"
@@ -130,6 +132,7 @@ export class GameMenu{
         option10.setAttribute("value", "../resources/rock.svg")
         option11.setAttribute("value", "../resources/rocket.svg")
         option12.setAttribute("value", "../resources/eye.svg")
+        station.setAttribute("value", "station")
 
         option1.textContent = "Chose your vessel"
         option2.textContent = "rokket"
@@ -145,6 +148,7 @@ export class GameMenu{
         option10.textContent = "rock"
         option11.textContent = "rocket"
         option12.textContent = "eye"
+        station.textContent = "station"
 
         const colorSelector = document.createElement("select")
         const option13 = document.createElement("option")

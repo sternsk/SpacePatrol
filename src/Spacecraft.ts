@@ -30,6 +30,7 @@ export class Spacecraft{
     private _touchControlType: string
     private easing = false
     private _maneuverability = 7
+    private _directionCorrection = 90 
     
     private _device?: Device
 
@@ -338,6 +339,9 @@ export class Spacecraft{
         this._gElement = g
     }
 
+    set directionCorrection(n: number){
+        this._directionCorrection = n
+    }
     set scale(scale: number){
         this._scale = scale
     }
@@ -363,13 +367,13 @@ export class Spacecraft{
     }
     
     update() {
-        // if(this._location instanceof Vector2D && this._impuls instanceof Vector2D)
+        // npcs get updates on the server
         if(!this.npc){
         this.objectStatus.location = add(this.objectStatus.impuls, this.objectStatus.location);
         this.direction += this.objectStatus.rotation
         }
-        
-        this._gElement.setAttribute("transform", `translate (${this.objectStatus.location.x} ${this.objectStatus.location.y}) scale (${this._scale}) rotate (${this.objectStatus.direction + 90})`)
+
+        this._gElement.setAttribute("transform", `translate (${this.objectStatus.location.x} ${this.objectStatus.location.y}) scale (${this._scale}) rotate (${this.objectStatus.direction + this._directionCorrection})`)
         //console.log(`${this.objectStatus.location.x} ${this.objectStatus.location.y}`) //these values are corrupted by syncReality in SpaceGame!        
         
         

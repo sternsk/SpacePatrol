@@ -1,4 +1,6 @@
 import { color } from "./GameMenu.js";
+var getImageOutline = require('image-outline');
+type Point = { x: number; y: number };
 
 export abstract class SpacecraftShape{
         
@@ -10,7 +12,6 @@ export abstract class SpacecraftShape{
         switch(type){
             
             case "rokket":
-                
                 const outline = document.createElementNS("http://www.w3.org/2000/svg", "path")
                 const inline = document.createElementNS("http://www.w3.org/2000/svg", "path")
                 outline.setAttribute("d", `M 0 -8, 
@@ -239,6 +240,10 @@ export abstract class SpacecraftShape{
                     path1.setAttribute("d", "M510 910 c0 -13 30 -13 50 0 11 7 7 10 -17 10 -18 0 -33 -4 -33 -10z")
                     additionalPaths.push(path1)
                     break;
+                
+                case "../resources/rocket.svg":
+                    gElement.setAttribute("transform", "rotate(-45)")
+                    break;
 
                 case "planet":
                     console.log("planet requested")
@@ -253,14 +258,38 @@ export abstract class SpacecraftShape{
                     return(gElement)
                 case "station":
                     const stationImage = document.createElementNS("http://www.w3.org/2000/svg", "image")
+                    
                     stationImage.href.baseVal = "../resources/station01.png"
                     stationImage.setAttribute("width", `50`)
                     stationImage.setAttribute("height", `50`)
                     stationImage.setAttribute("stroke", `${color}`)
                     stationImage.setAttribute("transform", `translate (-25,-25)`)
-            
+                    
+                    // need to load the image as an html Image to apply getOutline
+                    const hmtlStationImage = new Image()
+                    hmtlStationImage.src = "../resources/station01.png"
+                    //get the outline of that image 
+                    let svgPolygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon")
+                    hmtlStationImage.onload = () =>{
+                        const hmtlStationImageWidth = hmtlStationImage.width
+                        const scalingFactor = 50/hmtlStationImageWidth
+                        console.log("hmtlStationImageWidth: "+hmtlStationImageWidth)
+                        let polygon = getImageOutline(hmtlStationImage);
+                        // polygon is now an array of {x,y} objects.
+                        
+                        // Convert the array of points to a string format required by the SVG polygon element
+                        const pointsString = polygon.map((point: {x: number; y: number}) => `${point.x},${point.y}`).join(" ");
+
+                        svgPolygon.setAttribute("points", pointsString)
+                        svgPolygon.setAttribute("stroke", "brown")
+                        svgPolygon.setAttribute("stroke-width", "5px")
+                        svgPolygon.setAttribute("vector-effect", "non-scaling-stroke")
+                        svgPolygon.setAttribute("transform", `translate(-25, -6) scale(${scalingFactor})`)
+                    }
+                    gElement.appendChild(svgPolygon)
                     gElement.appendChild(stationImage)
                     return(gElement)
+                
                 case "nugget":
                     const nuggetImage = document.createElementNS("http://www.w3.org/2000/svg", "image")
                     nuggetImage.href.baseVal = "../resources/nugget01.png"
