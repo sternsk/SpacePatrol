@@ -2,10 +2,11 @@ import { Spacecraft, fontSize } from "./Spacecraft.js";
 import { GameEnvironment } from "./GameEnvironment.js";
 import { SpacecraftShape } from "./SpacecraftShape.js";
 import { keyboardController, device, gameFrame, viewBoxWidth } from "./GameMenu.js";
-//import { Vector2D } from "./Vector2D.js";
 import { TractorBeam } from "./TractorBeam.js";
 import { evaluate, RequestDefinition, SpaceObjectStatus, SyncronizeSpaceObject, syncSpaceObject, Vector2d, rotate, distanceBetween, distanceVector, manipulate, manipulateSpaceObject, ManipulateSpaceObject } from "./library.js";
 import { OvalShield } from "./OvalShield.js";
+
+
 
 export class SpaceGame {
     private spacecraft: Spacecraft

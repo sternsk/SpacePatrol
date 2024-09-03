@@ -1,16 +1,14 @@
 import { color } from "./GameMenu.js";
 var getImageOutline = require('image-outline');
-type Point = { x: number; y: number };
 
 export abstract class SpacecraftShape{
         
-    static getCraftGElement(type: string): SVGGElement{
+    public static getCraftGElement(type: string): SVGGElement{
         const gElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
         const additionalPaths: SVGElement[] = []
         const path0 = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement; 
         const path1 = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement;       
         switch(type){
-            
             case "rokket":
                 const outline = document.createElementNS("http://www.w3.org/2000/svg", "path")
                 const inline = document.createElementNS("http://www.w3.org/2000/svg", "path")
@@ -55,7 +53,6 @@ export abstract class SpacecraftShape{
                 summitball.setAttribute("cy", "-9");
                 summitball.setAttribute("r", ".2");
                 
-
                 const fire = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement;
                 fire.setAttribute("d", `M -2 2 Q -3 5, -2 8 Q -1 7, -1 6 Q -1 7.5, 0 9 Q 1 7.5, 1 6 Q 1 7, 2 8 Q 3 5, 2 2 Q 0 1.5, -2 2`)
 

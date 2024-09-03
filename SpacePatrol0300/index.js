@@ -15668,6 +15668,9 @@
       globalContext = context2;
     }
   }
+  function start() {
+    return globalContext.resume();
+  }
   var dummyContext, globalContext;
   var init_Global = __esm({
     "node_modules/tone/build/esm/core/Global.js"() {
@@ -28915,23 +28918,29 @@
           const option18 = document.createElement("option");
           const option19 = document.createElement("option");
           const option20 = document.createElement("option");
+          const greatgiginthesky = document.createElement("option");
           this.audioSelector.appendChild(option17);
           this.audioSelector.appendChild(option18);
           this.audioSelector.appendChild(option19);
           this.audioSelector.appendChild(option20);
+          this.audioSelector.appendChild(greatgiginthesky);
           option17.setAttribute("value", "../resources/letusprogresstothecastleoffunk.mp3");
           option18.setAttribute("value", "../resources/letusprogresstothecastleoffunk.mp3");
-          option19.setAttribute("value", "../resources/comfortably_numb.mid");
-          option20.setAttribute("value", "../resources/letusprogress.mp3");
+          option19.setAttribute("value", "../resources/comfortablynumb.mp3");
+          option20.setAttribute("value", "../resources/GreatGigInTheSky.mid");
+          greatgiginthesky.setAttribute("value", "../resources/greatgiginthesky.mp3");
           option17.textContent = "Chose music";
           option18.textContent = "Let us progress to the castle of funk";
-          option19.textContent = "comfortably_numb";
-          option20.textContent = "hear me";
+          option19.textContent = "Comfortably Numb";
+          option20.textContent = "Great Gig In The Sky.mid";
+          greatgiginthesky.textContent = "Great Gig In The Sky 8bit.mp3";
           const audioButton = document.createElement("button");
           audioButton.textContent = "Play Audio";
           audioButton.addEventListener("click", () => {
             if (this.audioSelector.value.endsWith(`.mp3`))
               this.playAudio();
+            else if (this.audioSelector.value.endsWith(`.mid`))
+              this.playMidi();
             else
               console.log("unsupported file format");
           });
@@ -29067,7 +29076,7 @@
                   );
                 });
               });
-              Transport.start();
+              start();
             } catch (error) {
               console.error("Error loading or playing MIDI file:", error);
             }
