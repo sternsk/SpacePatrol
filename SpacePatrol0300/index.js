@@ -28116,12 +28116,6 @@
         addDevice(type, args) {
           this._device = DeviceFactory.createDevice(type, ...args);
         }
-        getDeviceType(deviceType) {
-          if (this.device instanceof deviceType) {
-            return this.device;
-          }
-          return null;
-        }
         operate() {
           var _a, _b;
           (_a = this._device) == null ? void 0 : _a.activate();
@@ -28190,7 +28184,7 @@
           if (keysPressed["ArrowDown"]) {
             this.brake(this._maneuverability / 50);
           }
-          if (keysPressed[" "] && !this.getDeviceType(TractorBeam)) {
+          if (keysPressed[" "] && !(this.device instanceof TractorBeam)) {
             this.operate();
           }
         }
@@ -28571,7 +28565,7 @@
           });
         }
         gameLoop() {
-          var _a, _b, _c, _d;
+          var _a;
           requestAnimationFrame(() => {
             this.gameLoop();
           });
@@ -28582,25 +28576,24 @@
           }).catch((error) => {
             console.error("Failed to update spacecrafts:", error);
           });
-          const tractorBeam = this.spacecraft.getDeviceType(TractorBeam);
-          const ovalShield = this.spacecraft.getDeviceType(OvalShield);
+          const device2 = this.spacecraft.device;
           if (this.touchControl) {
             if (this.gameEnvironment.joystick.isTouched) {
               this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value);
             }
             if (this.gameEnvironment.joystick.fires) {
-              if (tractorBeam && this.spacecrafts[1]) {
+              if (device2 instanceof TractorBeam && this.spacecrafts[1]) {
                 const target = rotate({
                   x: this.spacecrafts[1].location.x + this.spacecraft.location.x,
                   y: this.spacecrafts[1].location.y + this.spacecraft.location.y
                 }, -90);
-                tractorBeam.activate(target);
-                const gElem = (_a = this.spacecraft.getDeviceType(TractorBeam)) == null ? void 0 : _a._gElem;
+                device2.activate(target);
+                const gElem = device2._gElem;
                 if (gElem) {
                   this.spacecraft.gElement.appendChild(gElem);
                 }
               } else this.spacecraft.operate();
-            } else if ((_b = this.spacecraft.device) == null ? void 0 : _b.activated) {
+            } else if ((_a = this.spacecraft.device) == null ? void 0 : _a.activated) {
               this.spacecraft.device.deactivate();
             }
           }
@@ -28612,7 +28605,7 @@
             this.gameEnvironment.viewBoxWidth -= this.gameEnvironment.viewBoxWidth / 100;
             this.gameEnvironment.viewBoxHeight -= this.gameEnvironment.viewBoxHeight / 100;
           }
-          if (tractorBeam && keyboardController.isKeyPressed(" ")) {
+          if (device2 instanceof TractorBeam && keyboardController.isKeyPressed(" ")) {
             const targetObject = this.spacecrafts.find((element) => element.id === "planet");
             const request2 = {};
             request2.method = "tractorBeam";
@@ -28622,14 +28615,14 @@
             evaluate(manipulateSpaceObject, request2);
             if (targetObject) {
               const targetVector = rotate(distanceVector(this.spacecraft.location, targetObject.location), -(this.spacecraft.direction + 90));
-              (_c = this.spacecraft.getDeviceType(TractorBeam)) == null ? void 0 : _c.activate(targetVector);
+              device2.activate(targetVector);
             }
-            const gElem = (_d = this.spacecraft.getDeviceType(TractorBeam)) == null ? void 0 : _d._gElem;
+            const gElem = device2._gElem;
             if (gElem) {
               this.spacecraft.gElement.appendChild(gElem);
             }
           }
-          if (ovalShield && keyboardController.isKeyPressed(" ")) {
+          if (device2 instanceof OvalShield && keyboardController.isKeyPressed(" ")) {
             const request2 = {};
             request2.method = "ovalShield";
             request2.spaceObject = this.spacecraft.objectStatus;

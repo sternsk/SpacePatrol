@@ -116,9 +116,8 @@ export class SpaceGame {
         });
         
         // check if device TractorBeam might be used - theres some specialcases
-        const tractorBeam = this.spacecraft.getDeviceType<TractorBeam>(TractorBeam);
-        const ovalShield = this.spacecraft.getDeviceType<OvalShield>(OvalShield);
-        
+        const device = this.spacecraft.device
+                
         if(this.touchControl){
             if(this.gameEnvironment.joystick.isTouched){
                 this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
@@ -126,18 +125,17 @@ export class SpaceGame {
             if (this.gameEnvironment.joystick.fires){
                 // case the spacecraft has the device tractorBeam 
                 // Access and use the setTarget method of the TractorBeam device
-                if (tractorBeam && this.spacecrafts[1]) {
+                if (device instanceof TractorBeam && this.spacecrafts[1]) {
                    /* tractorBeam.setTarget({x: this.spacecrafts[0].location.x - this.spacecraft.location.x, 
                                             y: this.spacecrafts[0].location.y - this.spacecraft.location.y});
                                             */
                     const target = rotate({x: this.spacecrafts[1].location.x + this.spacecraft.location.x,
                         y: this.spacecrafts[1].location.y + this.spacecraft.location.y} as Vector2d, -90)
                         
-                    tractorBeam.activate(target)
+                    device.activate(target)
                                           
-                    const gElem = this.spacecraft.getDeviceType(TractorBeam)?._gElem
+                    const gElem = device._gElem
                     if(gElem){
-                        
                         this.spacecraft.gElement.appendChild(gElem)
                     } 
                 }
@@ -156,10 +154,9 @@ export class SpaceGame {
         if (keyboardController.isKeyPressed("s")){
             this.gameEnvironment.viewBoxWidth -= this.gameEnvironment.viewBoxWidth/100
             this.gameEnvironment.viewBoxHeight -= this.gameEnvironment.viewBoxHeight/100
-            
         }
 
-        if(tractorBeam && keyboardController.isKeyPressed(" ")){
+        if(device instanceof TractorBeam && keyboardController.isKeyPressed(" ")){
             const targetObject = this.spacecrafts.find(element => element.id === "planet")
             
             const request = {} as ManipulateSpaceObject
@@ -171,15 +168,15 @@ export class SpaceGame {
 
             if(targetObject){
                 const targetVector = rotate(distanceVector(this.spacecraft.location, targetObject.location), -(this.spacecraft.direction + 90))
-                this.spacecraft.getDeviceType(TractorBeam)?.activate(targetVector)
+                device.activate(targetVector)
             }
-            const gElem = this.spacecraft.getDeviceType(TractorBeam)?._gElem
+            const gElem = device._gElem
             if(gElem){
                 
                 this.spacecraft.gElement.appendChild(gElem)
             }
         }
-        if(ovalShield && keyboardController.isKeyPressed(" ")){
+        if(device instanceof OvalShield && keyboardController.isKeyPressed(" ")){
             const request = {} as ManipulateSpaceObject
             request.method = "ovalShield"
             request.spaceObject = this.spacecraft.objectStatus

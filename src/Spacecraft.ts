@@ -59,13 +59,6 @@ export class Spacecraft{
         this._device = DeviceFactory.createDevice(type, ...args)
     }
 
-    getDeviceType<T extends Device>(deviceType: new (...args: any[]) => T): T | null {
-        if (this.device instanceof deviceType) {
-            return this.device as T;
-        }
-        return null;
-    }
-
     operate(){
         //aktiviere das Device
         this._device?.activate()
@@ -149,7 +142,7 @@ export class Spacecraft{
         if (keysPressed['ArrowDown']) {
             this.brake(this._maneuverability/50);
         }
-        if (keysPressed[' '] && !this.getDeviceType(TractorBeam)) {
+        if (keysPressed[' '] && !(this.device instanceof TractorBeam)) {
             this.operate()
         }
         
