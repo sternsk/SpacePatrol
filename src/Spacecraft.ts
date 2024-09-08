@@ -268,6 +268,10 @@ export class Spacecraft{
         return this.objectStatus.direction
     }
 
+    get directionCorrection(): number{
+        return this._directionCorrection
+    }
+
     set direction(x: number) {
         this.objectStatus.direction = x
     }
@@ -281,6 +285,9 @@ export class Spacecraft{
         return(this._label)
     }
 
+    get labelBorder(){
+        return(this._labelBorder)
+    }
     
     get lastUpdate(): number{
         return this._lastUpdate
@@ -362,19 +369,11 @@ export class Spacecraft{
     update() {
         // npcs get updates on the server
         if(!this.npc){
-        this.objectStatus.location = add(this.objectStatus.impuls, this.objectStatus.location);
-        this.direction += this.objectStatus.rotation
+            this.objectStatus.location = add(this.objectStatus.impuls, this.objectStatus.location);
+            this.direction += this.objectStatus.rotation
         }
 
-        this._gElement.setAttribute("transform", `translate (${this.objectStatus.location.x} ${this.objectStatus.location.y}) scale (${this._scale}) rotate (${this.objectStatus.direction + this._directionCorrection})`)
-        //console.log(`${this.objectStatus.location.x} ${this.objectStatus.location.y}`) //these values are corrupted by syncReality in SpaceGame!        
-        
-        
-        if(this._label && this._labelBorder){
-            this._label.setAttribute("transform", `translate(${this.objectStatus.location.x} ${this.objectStatus.location.y})`)
-            this._labelBorder.setAttribute("transform", `translate(${(this.objectStatus.location.x-7.5)+this.scale*7}, ${this.objectStatus.location.y})`)
-        }
-        
+       
     }
 
     vanish(){

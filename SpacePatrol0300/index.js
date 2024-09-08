@@ -28292,6 +28292,9 @@
         get direction() {
           return this.objectStatus.direction;
         }
+        get directionCorrection() {
+          return this._directionCorrection;
+        }
         set direction(x) {
           this.objectStatus.direction = x;
         }
@@ -28301,6 +28304,9 @@
         }
         get label() {
           return this._label;
+        }
+        get labelBorder() {
+          return this._labelBorder;
         }
         get lastUpdate() {
           return this._lastUpdate;
@@ -28368,11 +28374,6 @@
           if (!this.npc) {
             this.objectStatus.location = add(this.objectStatus.impuls, this.objectStatus.location);
             this.direction += this.objectStatus.rotation;
-          }
-          this._gElement.setAttribute("transform", `translate (${this.objectStatus.location.x} ${this.objectStatus.location.y}) scale (${this._scale}) rotate (${this.objectStatus.direction + this._directionCorrection})`);
-          if (this._label && this._labelBorder) {
-            this._label.setAttribute("transform", `translate(${this.objectStatus.location.x} ${this.objectStatus.location.y})`);
-            this._labelBorder.setAttribute("transform", `translate(${this.objectStatus.location.x - 7.5 + this.scale * 7}, ${this.objectStatus.location.y})`);
           }
         }
         vanish() {
@@ -28532,6 +28533,19 @@
   });
 
   // src/SpaceGame.ts
+  function render(spacecraft, xCorrection, yCorrection, viewBoxWidth3, viewBoxHeight) {
+    spacecraft.gElement.setAttribute("transform", `translate (${spacecraft.location.x + xCorrection * viewBoxWidth3} 
+                                                                ${spacecraft.objectStatus.location.y + yCorrection * viewBoxHeight}) 
+                                                    scale (${spacecraft.scale}) 
+                                                    rotate (${spacecraft.direction + spacecraft.directionCorrection})`);
+    if (spacecraft.label && spacecraft.labelBorder) {
+      console.log("xCorrection and YCorrection not set yet!");
+      spacecraft.label.setAttribute("transform", `translate(${spacecraft.objectStatus.location.x} 
+                                                            ${spacecraft.objectStatus.location.y})`);
+      spacecraft.labelBorder.setAttribute("transform", `translate(${spacecraft.objectStatus.location.x - 7.5 + spacecraft.scale * 7}, 
+                                        ${spacecraft.objectStatus.location.y})`);
+    }
+  }
   var SpaceGame;
   var init_SpaceGame = __esm({
     "src/SpaceGame.ts"() {
@@ -28679,6 +28693,8 @@
         updateElements() {
           this.spacecraft.update();
           this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus");
+          if (this.spacecraft)
+            render(this.spacecraft, 0, 0, this.gameEnvironment.viewBoxWidth, this.gameEnvironment.viewBoxHeight);
           this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale * 7}"> 
                                         ${this.spacecraft.id}</tspan>
                                         <tspan x="${this.spacecraft.scale * 7}" dy="${fontSize}">
@@ -28688,17 +28704,23 @@
                                         `);
           if (this.spacecrafts.length > 0) {
             this.spacecrafts.forEach((spacecraft) => {
-              spacecraft.update();
+              let xCorrection;
+              let yCorrection;
               if (spacecraft.location.x < this.spacecraft.location.x - this.gameEnvironment.viewBoxWidth / 2) {
-                spacecraft.location.x += this.gameEnvironment.viewBoxWidth;
+                xCorrection = 1;
               } else if (spacecraft.location.x > this.spacecraft.location.x + this.gameEnvironment.viewBoxWidth / 2) {
-                spacecraft.location.x -= this.gameEnvironment.viewBoxWidth;
+                xCorrection = -1;
+              } else {
+                xCorrection = 0;
               }
               if (spacecraft.location.y < this.spacecraft.location.y - this.gameEnvironment.viewBoxHeight / 2) {
-                spacecraft.location.y += this.gameEnvironment.viewBoxHeight;
+                yCorrection = 1;
               } else if (spacecraft.location.y > this.spacecraft.location.x + this.gameEnvironment.viewBoxWidth / 2) {
-                spacecraft.location.x -= this.gameEnvironment.viewBoxHeight;
+                yCorrection = -1;
+              } else {
+                yCorrection = 0;
               }
+              render(spacecraft, xCorrection, yCorrection, this.gameEnvironment.viewBoxWidth, this.gameEnvironment.viewBoxHeight);
             });
           }
         }

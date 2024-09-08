@@ -194,9 +194,13 @@ export class SpaceGame {
         });
     }
 
+
     private updateElements() {
         this.spacecraft.update()
+
         this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus")
+        if(this.spacecraft)
+        render(this.spacecraft, 0, 0, this.gameEnvironment.viewBoxWidth, this.gameEnvironment.viewBoxHeight)
 
        /*this stupid Label thats owned by the spacecraft seems to be dependendent on the size of the svg that the spacecraft has no access to, what really sucks
         if(this.gameEnvironment.screenAspectRatio < 1){
@@ -229,24 +233,53 @@ export class SpaceGame {
                                             Date.now(): ${Date.now()}</tspan>`);
                 }
     */
-            spacecraft.update();
+            
+            let xCorrection: number
+            let yCorrection: number
             
             if(spacecraft.location.x < this.spacecraft.location.x - this.gameEnvironment.viewBoxWidth / 2){
-                spacecraft.location.x += this.gameEnvironment.viewBoxWidth
+                xCorrection = 1
             }
             else if(spacecraft.location.x > this.spacecraft.location.x + this.gameEnvironment.viewBoxWidth / 2){
-                spacecraft.location.x -= this.gameEnvironment.viewBoxWidth
+                xCorrection = -1
             }
+            else{
+                xCorrection = 0
+            }
+
             if(spacecraft.location.y < this.spacecraft.location.y - this.gameEnvironment.viewBoxHeight / 2){
-                spacecraft.location.y += this.gameEnvironment.viewBoxHeight
+                yCorrection = 1
             }
             else if(spacecraft.location.y > this.spacecraft.location.x + this.gameEnvironment.viewBoxWidth / 2){
-                spacecraft.location.x -= this.gameEnvironment.viewBoxHeight
+                yCorrection = -1
             }
+            else{
+                yCorrection  = 0
+            }
+            
+            render(spacecraft, xCorrection, yCorrection, this.gameEnvironment.viewBoxWidth, this.gameEnvironment.viewBoxHeight)
+            
+
             });
 
         }
   
     }
     
+}
+
+
+function render(spacecraft: Spacecraft, xCorrection: number, yCorrection: number, viewBoxWidth: number, viewBoxHeight: number){
+    spacecraft.gElement.setAttribute("transform", `translate (${spacecraft.location.x + xCorrection * viewBoxWidth} 
+                                                                ${spacecraft.objectStatus.location.y + yCorrection * viewBoxHeight}) 
+                                                    scale (${spacecraft.scale}) 
+                                                    rotate (${spacecraft.direction + spacecraft.directionCorrection})`);
+
+    if(spacecraft.label && spacecraft.labelBorder){
+    console.log("xCorrection and YCorrection not set yet!")
+    spacecraft.label.setAttribute("transform", `translate(${spacecraft.objectStatus.location.x} 
+                                                            ${spacecraft.objectStatus.location.y})`)
+    spacecraft.labelBorder.setAttribute("transform", `translate(${(spacecraft.objectStatus.location.x-7.5)+spacecraft.scale*7}, 
+                                        ${spacecraft.objectStatus.location.y})`)
+    }
 }
