@@ -3,7 +3,7 @@
 
 import * as SAT from "sat";
 
-export default class SVGPathCollider {
+export class SVGPathCollider {
   constructor(
     public path: SVGPathElement,
     public separationNum = 16,

@@ -3,6 +3,7 @@ import { KeyboardController } from "./KeyboardController.js"
 import { Joystick } from "./Joystick.js"
 import * as Tone from 'tone'
 import { Midi } from '@tonejs/midi';
+import { Spacecraft } from "./Spacecraft.js";
 
 
 /*export const availableTypes = ["rainbowRocket", 

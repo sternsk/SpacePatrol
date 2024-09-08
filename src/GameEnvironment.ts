@@ -124,21 +124,39 @@ export class GameEnvironment{
             case "pseudoOrbit":
                 spacecraft.pseudoOrbit({x:0, y:0})
                 break;
-            case "pseudoTorus":
+            case "staticTorus":
                 if(spacecraft.location.x < this.viewBoxLeft)
                     spacecraft.location.x = this.viewBoxLeft + this.viewBoxWidth
-                if(spacecraft.location.x > this.viewBoxLeft + this.viewBoxWidth)
+                else if(spacecraft.location.x > this.viewBoxLeft + this.viewBoxWidth)
                     spacecraft.location.x = this.viewBoxLeft
                 if (spacecraft.location.y < this.viewBoxTop)
                     spacecraft.location.y = this.viewBoxTop + this.viewBoxHeight
-                if(spacecraft.location.y > this.viewBoxTop + this.viewBoxHeight)
+                else if(spacecraft.location.y > this.viewBoxTop + this.viewBoxHeight)
                     spacecraft.location.y = this.viewBoxTop
 
                 break;
-            case "center":
+            case "scroll":
                 this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth/2
                 this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2
                 this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
+                break;
+            
+            case "pseudoTorus":
+                this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth/2
+                this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2
+                this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
+                if (spacecraft.location.x > 500){
+                    spacecraft.location.x = -500
+                }
+                else if ( spacecraft.location.x < -500){
+                    spacecraft.location.x =  500
+                }
+                if (spacecraft.location.y > 500){
+                    spacecraft.location.y = -500
+                }
+                else if(spacecraft.location.y < -500){
+                    spacecraft.location.y = 500
+                }
                 break;
         }
         if(Math.abs(spacecraft.location.x) > 500 || Math.abs(spacecraft.location.y) > 500){
@@ -149,10 +167,10 @@ export class GameEnvironment{
     insertBackgroundImage(){
         //load and center an image-file over 0,0 in the viewBox
         const bgImage = document.createElementNS("http://www.w3.org/2000/svg", "image")
-        const bgImagWidth = 1000
-        const bgImageHeight = 1000
+        const bgImagWidth = 2000
+        const bgImageHeight = 2000
         this._svgElement.appendChild(bgImage)
-        bgImage.href.baseVal = ("../resources/background04.jpg")
+        bgImage.href.baseVal = ("../resources/background05.jpg")
         bgImage.onload = () =>{
             const imageWidth = bgImage.getBBox().width
             const imageHeight = bgImage.getBBox().height

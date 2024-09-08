@@ -6,7 +6,7 @@ import { TractorBeam } from "./TractorBeam.js";
 import { evaluate, RequestDefinition, SpaceObjectStatus, SyncronizeSpaceObject, syncSpaceObject, Vector2d, rotate, distanceBetween, distanceVector, manipulate, manipulateSpaceObject, ManipulateSpaceObject } from "./library.js";
 import { OvalShield } from "./OvalShield.js";
 
-
+import * as collider from "./SVGPathCollider.js"
 
 export class SpaceGame {
     private spacecraft: Spacecraft
@@ -30,7 +30,7 @@ export class SpaceGame {
         this.spacecraft.type = type
         this.spacecraft.color = color
         if(id) this.spacecraft.id = id
-        this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type)
+        this.spacecraft.gElement = SpacecraftShape.getCraftGElement(type)
         if(this.spacecraft.type == "../resources/rocket.svg")
             this.spacecraft.directionCorrection = 45
         this.spacecraft.gElement.setAttribute("id", `${this.spacecraft.id}`)
@@ -196,7 +196,8 @@ export class SpaceGame {
 
     private updateElements() {
         this.spacecraft.update()
-        this.gameEnvironment.handleSpacecraft(this.spacecraft, "center")
+        this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus")
+
        /*this stupid Label thats owned by the spacecraft seems to be dependendent on the size of the svg that the spacecraft has no access to, what really sucks
         if(this.gameEnvironment.screenAspectRatio < 1){
              this.spacecraft.setFontsize(5000/gameFrame.clientWidth)
@@ -229,6 +230,19 @@ export class SpaceGame {
                 }
     */
             spacecraft.update();
+            
+            if(spacecraft.location.x < this.spacecraft.location.x - this.gameEnvironment.viewBoxWidth / 2){
+                spacecraft.location.x += this.gameEnvironment.viewBoxWidth
+            }
+            else if(spacecraft.location.x > this.spacecraft.location.x + this.gameEnvironment.viewBoxWidth / 2){
+                spacecraft.location.x -= this.gameEnvironment.viewBoxWidth
+            }
+            if(spacecraft.location.y < this.spacecraft.location.y - this.gameEnvironment.viewBoxHeight / 2){
+                spacecraft.location.y += this.gameEnvironment.viewBoxHeight
+            }
+            else if(spacecraft.location.y > this.spacecraft.location.x + this.gameEnvironment.viewBoxWidth / 2){
+                spacecraft.location.x -= this.gameEnvironment.viewBoxHeight
+            }
             });
 
         }

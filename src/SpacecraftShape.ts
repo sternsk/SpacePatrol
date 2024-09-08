@@ -2,8 +2,9 @@ import { color } from "./GameMenu.js";
 var getImageOutline = require('image-outline');
 
 export abstract class SpacecraftShape{
-        
+
     public static getCraftGElement(type: string): SVGGElement{
+        
         const gElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
         const additionalPaths: SVGElement[] = []
         const path0 = document.createElementNS("http://www.w3.org/2000/svg", "path") as SVGPathElement; 

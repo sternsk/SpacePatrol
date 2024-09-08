@@ -62,6 +62,7 @@
     isNodeMode || !mod || !mod.__esModule ? __defProp(target, "default", { value: mod, enumerable: true }) : target,
     mod
   ));
+  var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
   var __async = (__this, __arguments, generator) => {
     return new Promise((resolve, reject) => {
       var fulfilled = (value) => {
@@ -746,7 +747,8 @@
       init_GameMenu();
       KeyboardController = class {
         constructor(svgElement) {
-          this.keysPressed = {};
+          __publicField(this, "keysPressed", {});
+          __publicField(this, "keyUpCallback");
           gameFrame.addEventListener("keydown", this.handleKeyDown.bind(this));
           gameFrame.addEventListener("keyup", this.handleKeyUp.bind(this));
         }
@@ -780,10 +782,13 @@
       Joystick = class {
         // Array von Funktionen, die beim touchend-Ereignis aufgerufen werden
         constructor() {
-          this._value = { x: 0, y: 0 };
-          this._isTouched = false;
-          this._fires = false;
-          this.touchEndObservers = [];
+          __publicField(this, "_htmlElement");
+          __publicField(this, "_knobElement");
+          __publicField(this, "_fireButton");
+          __publicField(this, "_value", { x: 0, y: 0 });
+          __publicField(this, "_isTouched", false);
+          __publicField(this, "_fires", false);
+          __publicField(this, "touchEndObservers", []);
           this._htmlElement = document.createElement("div");
           this._htmlElement.setAttribute("style", `width: 200px; 
                                                         height: 200px; 
@@ -27914,10 +27919,10 @@
       "use strict";
       TriangularBeam = class {
         constructor() {
-          this.name = "TriangularBeam";
-          this.count = 12;
-          this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
-          this.activated = false;
+          __publicField(this, "name", "TriangularBeam");
+          __publicField(this, "count", 12);
+          __publicField(this, "_gElem", document.createElementNS("http://www.w3.org/2000/svg", "g"));
+          __publicField(this, "activated", false);
         }
         activate() {
           return __async(this, null, function* () {
@@ -27966,9 +27971,11 @@
       "use strict";
       OvalShield = class {
         constructor(shieldWidth, shieldHeight) {
-          this.name = "ovalShield";
-          this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
-          this.activated = false;
+          __publicField(this, "name", "ovalShield");
+          __publicField(this, "width");
+          __publicField(this, "height");
+          __publicField(this, "_gElem", document.createElementNS("http://www.w3.org/2000/svg", "g"));
+          __publicField(this, "activated", false);
           this._gElem.setAttribute("class", "ovalShield");
           this.width = shieldWidth;
           this.height = shieldHeight;
@@ -28007,9 +28014,10 @@
       init_library();
       TractorBeam = class {
         constructor() {
-          this.name = "tractorBeam";
-          this.target = { x: 0, y: 0 };
-          this.activated = false;
+          __publicField(this, "name", "tractorBeam");
+          __publicField(this, "target", { x: 0, y: 0 });
+          __publicField(this, "activated", false);
+          __publicField(this, "_gElem");
           this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
           this._gElem.setAttribute("id", "device");
         }
@@ -28067,11 +28075,11 @@
           }
         }
       };
-      DeviceFactory.deviceMap = {
+      __publicField(DeviceFactory, "deviceMap", {
         "repulsorBeam": () => new TriangularBeam(),
         "ovalShield": (...args) => new OvalShield(args[0], args[1]),
         "tractorBeam": (...args) => new TractorBeam()
-      };
+      });
     }
   });
 
@@ -28091,7 +28099,7 @@
       console.log();
       Spacecraft = class {
         constructor() {
-          this.objectStatus = {
+          __publicField(this, "objectStatus", {
             location: { x: 50, y: 50 },
             impuls: { x: 0, y: 0 },
             direction: -60,
@@ -28100,13 +28108,18 @@
             craftId: "spa\xDFcraft",
             type: "rocket",
             npc: false
-          };
-          this._gElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
-          this.easing = false;
-          this._maneuverability = 7;
-          this._directionCorrection = 90;
-          this._lastUpdate = Date.now();
-          this._scale = 1;
+          });
+          __publicField(this, "_gElement", document.createElementNS("http://www.w3.org/2000/svg", "g"));
+          __publicField(this, "_color");
+          __publicField(this, "_touchControlType");
+          __publicField(this, "easing", false);
+          __publicField(this, "_maneuverability", 7);
+          __publicField(this, "_directionCorrection", 90);
+          __publicField(this, "_device");
+          __publicField(this, "_lastUpdate", Date.now());
+          __publicField(this, "_scale", 1);
+          __publicField(this, "_label");
+          __publicField(this, "_labelBorder");
           this.objectStatus.type = "rocket";
           this._color = "fl\xFCn";
           this.objectStatus.craftId = "spacecraft";
@@ -28394,9 +28407,16 @@
       init_library();
       GameEnvironment = class {
         constructor() {
-          this.label = document.createElement("HTMLLabelElement");
+          __publicField(this, "screenAspectRatio");
+          __publicField(this, "viewBoxToScreenRatio");
+          __publicField(this, "viewBoxWidth");
+          __publicField(this, "viewBoxHeight");
+          __publicField(this, "viewBoxLeft");
+          __publicField(this, "viewBoxTop");
+          __publicField(this, "label", document.createElement("HTMLLabelElement"));
+          __publicField(this, "_svgElement");
           //private _viewBoxBorder: SVGRectElement;
-          this._joystick = new Joystick();
+          __publicField(this, "_joystick", new Joystick());
           if (gameFrame.offsetHeight != 0) {
             this.screenAspectRatio = gameFrame.offsetWidth / gameFrame.offsetHeight;
             console.log("gameFrame.offsetWidth: " + gameFrame.offsetWidth);
@@ -28456,20 +28476,35 @@
             case "pseudoOrbit":
               spacecraft.pseudoOrbit({ x: 0, y: 0 });
               break;
-            case "pseudoTorus":
+            case "staticTorus":
               if (spacecraft.location.x < this.viewBoxLeft)
                 spacecraft.location.x = this.viewBoxLeft + this.viewBoxWidth;
-              if (spacecraft.location.x > this.viewBoxLeft + this.viewBoxWidth)
+              else if (spacecraft.location.x > this.viewBoxLeft + this.viewBoxWidth)
                 spacecraft.location.x = this.viewBoxLeft;
               if (spacecraft.location.y < this.viewBoxTop)
                 spacecraft.location.y = this.viewBoxTop + this.viewBoxHeight;
-              if (spacecraft.location.y > this.viewBoxTop + this.viewBoxHeight)
+              else if (spacecraft.location.y > this.viewBoxTop + this.viewBoxHeight)
                 spacecraft.location.y = this.viewBoxTop;
               break;
-            case "center":
+            case "scroll":
               this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth / 2;
               this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2;
               this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+              break;
+            case "pseudoTorus":
+              this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth / 2;
+              this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2;
+              this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+              if (spacecraft.location.x > 500) {
+                spacecraft.location.x = -500;
+              } else if (spacecraft.location.x < -500) {
+                spacecraft.location.x = 500;
+              }
+              if (spacecraft.location.y > 500) {
+                spacecraft.location.y = -500;
+              } else if (spacecraft.location.y < -500) {
+                spacecraft.location.y = 500;
+              }
               break;
           }
           if (Math.abs(spacecraft.location.x) > 500 || Math.abs(spacecraft.location.y) > 500) {
@@ -28478,10 +28513,10 @@
         }
         insertBackgroundImage() {
           const bgImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
-          const bgImagWidth = 1e3;
-          const bgImageHeight = 1e3;
+          const bgImagWidth = 2e3;
+          const bgImageHeight = 2e3;
           this._svgElement.appendChild(bgImage);
-          bgImage.href.baseVal = "../resources/background04.jpg";
+          bgImage.href.baseVal = "../resources/background05.jpg";
           bgImage.onload = () => {
             const imageWidth = bgImage.getBBox().width;
             const imageHeight = bgImage.getBBox().height;
@@ -28510,8 +28545,10 @@
       init_OvalShield();
       SpaceGame = class {
         constructor() {
-          this.spacecrafts = [];
-          this.touchControl = true;
+          __publicField(this, "spacecraft");
+          __publicField(this, "spacecrafts", []);
+          __publicField(this, "gameEnvironment");
+          __publicField(this, "touchControl", true);
           this.spacecraft = new Spacecraft();
           this.gameEnvironment = new GameEnvironment();
           this.gameEnvironment.displayTouchControl();
@@ -28523,7 +28560,7 @@
           this.spacecraft.type = type;
           this.spacecraft.color = color2;
           if (id) this.spacecraft.id = id;
-          this.spacecraft.gElement = SpacecraftShape.getCraftGElement(this.spacecraft.type);
+          this.spacecraft.gElement = SpacecraftShape.getCraftGElement(type);
           if (this.spacecraft.type == "../resources/rocket.svg")
             this.spacecraft.directionCorrection = 45;
           this.spacecraft.gElement.setAttribute("id", `${this.spacecraft.id}`);
@@ -28641,7 +28678,7 @@
         }
         updateElements() {
           this.spacecraft.update();
-          this.gameEnvironment.handleSpacecraft(this.spacecraft, "center");
+          this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus");
           this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale * 7}"> 
                                         ${this.spacecraft.id}</tspan>
                                         <tspan x="${this.spacecraft.scale * 7}" dy="${fontSize}">
@@ -28652,6 +28689,16 @@
           if (this.spacecrafts.length > 0) {
             this.spacecrafts.forEach((spacecraft) => {
               spacecraft.update();
+              if (spacecraft.location.x < this.spacecraft.location.x - this.gameEnvironment.viewBoxWidth / 2) {
+                spacecraft.location.x += this.gameEnvironment.viewBoxWidth;
+              } else if (spacecraft.location.x > this.spacecraft.location.x + this.gameEnvironment.viewBoxWidth / 2) {
+                spacecraft.location.x -= this.gameEnvironment.viewBoxWidth;
+              }
+              if (spacecraft.location.y < this.spacecraft.location.y - this.gameEnvironment.viewBoxHeight / 2) {
+                spacecraft.location.y += this.gameEnvironment.viewBoxHeight;
+              } else if (spacecraft.location.y > this.spacecraft.location.x + this.gameEnvironment.viewBoxWidth / 2) {
+                spacecraft.location.x -= this.gameEnvironment.viewBoxHeight;
+              }
             });
           }
         }
@@ -28767,6 +28814,7 @@
       init_SpaceGame();
       RequestDefinition2 = class {
         constructor(path) {
+          __publicField(this, "path");
           this.path = path;
         }
       };
@@ -28790,19 +28838,22 @@
       viewBoxWidth = 100;
       GameMenu = class {
         constructor() {
-          this.joystick = new Joystick();
-          this.typeSelector = document.createElement("select");
-          this.deviceSelector = document.createElement("select");
-          this.idInputElement = document.createElement("input");
-          this.audioSelector = document.createElement("select");
-          this.loopRunning = true;
-          this.rotationImpuls = 0;
-          this.rotationAngle = 0;
-          this.viewBoxTop = -50;
-          this.viewBoxLeft = -50;
-          this.viewBoxHeight = 100;
-          this.previewSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-          this.keysPressed = {};
+          __publicField(this, "joystick", new Joystick());
+          __publicField(this, "typeSelector", document.createElement("select"));
+          __publicField(this, "deviceSelector", document.createElement("select"));
+          __publicField(this, "idInputElement", document.createElement("input"));
+          __publicField(this, "audioSelector", document.createElement("select"));
+          __publicField(this, "audioContext");
+          __publicField(this, "audioBuffer");
+          __publicField(this, "loopRunning", true);
+          __publicField(this, "rotationImpuls", 0);
+          __publicField(this, "rotationAngle", 0);
+          __publicField(this, "viewBoxTop", -50);
+          __publicField(this, "viewBoxLeft", -50);
+          __publicField(this, "viewBoxHeight", 100);
+          __publicField(this, "previewSvgAspectRatio");
+          __publicField(this, "previewSvg", document.createElementNS("http://www.w3.org/2000/svg", "svg"));
+          __publicField(this, "keysPressed", {});
           gameFrame.setAttribute("tabIndex", "0");
           gameFrame.style.position = "fixed";
           gameFrame.style.outline = "none";
@@ -29107,7 +29158,7 @@
   // src/index.ts
   init_GameMenu();
   console.log(" ");
-  console.log("index.ts says: SpacePatrol0300 ver.2343, and this should be the first statement");
+  console.log("index.ts says: SpacePatrol0300 ver.0807, and this should be the first statement");
   console.log("But there is apperently the imports and dependencies loaded first and then the following code executed.");
   console.log("Thats why there is statements above this textblock");
   console.log(" ");
