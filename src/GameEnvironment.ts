@@ -49,6 +49,21 @@ export class GameEnvironment{
         
         this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
         this._svgElement.setAttribute("tabindex", "0")
+        
+       
+        const playfieldBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
+        playfieldBorder.setAttribute("x", "-500")
+        playfieldBorder.setAttribute("y", "-500")
+        playfieldBorder.setAttribute("width", "1000")
+        playfieldBorder.setAttribute("height", "1000")
+        playfieldBorder.setAttribute("fill", "none")
+        
+        playfieldBorder.setAttribute("stroke", "red")
+        playfieldBorder.setAttribute("stroke-width", "1px")
+        playfieldBorder.setAttribute("vector-effect", "non-scaling-stroke")
+        
+        playfieldBorder.setAttribute("id", "playfieldBorder")
+        this._svgElement.appendChild(playfieldBorder)
 
         /* viewBox seems to be resized by Chrome at windowresize 
         
@@ -69,6 +84,7 @@ export class GameEnvironment{
         gameFrame.appendChild(this._joystick.fireButton)
         
         this.joystick.htmlElement.style.display = "none"
+        this.joystick.fireButton.style.display = "none"
         /*
         this.label.style.position = "absolute"
         this.label.style.top = "10px"
@@ -85,6 +101,7 @@ export class GameEnvironment{
 
     displayTouchControl(){
         this.joystick.htmlElement.style.display = "block"
+        this.joystick.fireButton.style.display = "block"
     }
 
     get joystick(){
@@ -124,6 +141,7 @@ export class GameEnvironment{
             case "pseudoOrbit":
                 spacecraft.pseudoOrbit({x:0, y:0})
                 break;
+ 
             case "staticTorus":
                 if(spacecraft.location.x < this.viewBoxLeft)
                     spacecraft.location.x = this.viewBoxLeft + this.viewBoxWidth
@@ -133,8 +151,8 @@ export class GameEnvironment{
                     spacecraft.location.y = this.viewBoxTop + this.viewBoxHeight
                 else if(spacecraft.location.y > this.viewBoxTop + this.viewBoxHeight)
                     spacecraft.location.y = this.viewBoxTop
-
                 break;
+
             case "scroll":
                 this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth/2
                 this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2
@@ -170,7 +188,7 @@ export class GameEnvironment{
         const bgImagWidth = 2000
         const bgImageHeight = 2000
         this._svgElement.appendChild(bgImage)
-        bgImage.href.baseVal = ("../resources/background05.jpg")
+        bgImage.href.baseVal = ("../resources/background10.jpg")
         bgImage.onload = () =>{
             const imageWidth = bgImage.getBBox().width
             const imageHeight = bgImage.getBBox().height

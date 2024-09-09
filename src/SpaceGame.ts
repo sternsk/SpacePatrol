@@ -10,16 +10,28 @@ import * as collider from "./SVGPathCollider.js"
 
 export class SpaceGame {
     private spacecraft: Spacecraft
-    private spacecrafts: Spacecraft[] = [];
+    private spaceObjects: Spacecraft[] = [];
     private gameEnvironment: GameEnvironment;
-    private touchControl = true
+    private touchControl = false
+
+    private textArea = document.createElement("textArea")
     
     constructor() {
         this.spacecraft = new Spacecraft();
         this.gameEnvironment = new GameEnvironment();
+
+        //spacecraft gets a convenient Label
+        this.textArea.style.position = "absolute"
+        this.textArea.style.color = "darkgrey"
+        this.textArea.style.backgroundColor = "black"
+        this.textArea.innerHTML = "this labels text is to be written yet"
+        this.textArea.setAttribute("rows", "10")
+        gameFrame.appendChild(this.textArea)
         
-        this.gameEnvironment.displayTouchControl()
-        this.gameEnvironment.joystick.addObserver(() => this.handleTouchEndEvent());
+        if(this.touchControl){
+            this.gameEnvironment.displayTouchControl()
+            this.gameEnvironment.joystick.addObserver(() => this.handleTouchEndEvent());
+        }
         this.setupKeyUpListener();      
         gameFrame.focus(); //gameFrame erhält den Keyboard focus   
            
@@ -53,7 +65,7 @@ export class SpaceGame {
                 this.syncReality(response)
             })
             .catch(error => {
-                console.error("Failed to update spacecrafts:", error);
+                console.error("Failed to update spaceObjects:", error);
             });
         }, 20);
         */
@@ -61,28 +73,28 @@ export class SpaceGame {
 
     syncReality(reality: SpaceObjectStatus[]){
         reality.forEach(response => {
-            // check if element of receivedData is already in spacecrafts-Array
-            const index = this.spacecrafts.findIndex(spacecraft => spacecraft.id === response.craftId)
+            // check if element of receivedData is already in spaceObjects-Array
+            const index = this.spaceObjects.findIndex(spacecraft => spacecraft.id === response.craftId)
                 
-            // if so and is not an npc, update the element in Spacecrafts-Array 
+            // if so and is not an npc, update the element in spaceObjects-Array 
             // update location, impuls, direction and mass
             if(index !== -1 ){
-                this.spacecrafts[index].objectStatus.location = response.location
-                this.spacecrafts[index].objectStatus.impuls = response.impuls
-                this.spacecrafts[index].objectStatus.direction = response.direction
-                this.spacecrafts[index].objectStatus.mass = response.mass
+                this.spaceObjects[index].objectStatus.location = response.location
+                this.spaceObjects[index].objectStatus.impuls = response.impuls
+                this.spaceObjects[index].objectStatus.direction = response.direction
+                this.spaceObjects[index].objectStatus.mass = response.mass
                 // ommit the update of craftId and type for those are fix
             } else if (index === -1){
                 const spacecraft = new Spacecraft()
                 spacecraft.objectStatus = response
                 spacecraft.gElement = SpacecraftShape.getCraftGElement(spacecraft.type)
-                this.spacecrafts.push(spacecraft)
+                this.spaceObjects.push(spacecraft)
                 spacecraft.gElement.setAttribute("id", `${spacecraft.id}`)
                 this.gameEnvironment.svgElement.appendChild(spacecraft.gElement)
             }
             
         })
-        this.spacecrafts = this.spacecrafts.filter(element => {
+        this.spaceObjects = this.spaceObjects.filter(element => {
             // Check if the element is in the reality-array
             const index = reality.findIndex(response => response.craftId === element.id);
         
@@ -113,11 +125,12 @@ export class SpaceGame {
             this.syncReality(response)
         })
         .catch(error => {
-            console.error("Failed to update spacecrafts:", error);
+            console.error("Failed to update spaceObjects:", error);
         });
         
         // check if device TractorBeam might be used - theres some specialcases
         const device = this.spacecraft.device
+        device?.deactivate()
                 
         if(this.touchControl){
             if(this.gameEnvironment.joystick.isTouched){
@@ -126,12 +139,12 @@ export class SpaceGame {
             if (this.gameEnvironment.joystick.fires){
                 // case the spacecraft has the device tractorBeam 
                 // Access and use the setTarget method of the TractorBeam device
-                if (device instanceof TractorBeam && this.spacecrafts[1]) {
-                   /* tractorBeam.setTarget({x: this.spacecrafts[0].location.x - this.spacecraft.location.x, 
-                                            y: this.spacecrafts[0].location.y - this.spacecraft.location.y});
+                if (device instanceof TractorBeam && this.spaceObjects[1]) {
+                   /* tractorBeam.setTarget({x: this.spaceObjects[0].location.x - this.spacecraft.location.x, 
+                                            y: this.spaceObjects[0].location.y - this.spacecraft.location.y});
                                             */
-                    const target = rotate({x: this.spacecrafts[1].location.x + this.spacecraft.location.x,
-                        y: this.spacecrafts[1].location.y + this.spacecraft.location.y} as Vector2d, -90)
+                    const target = rotate({x: this.spaceObjects[1].location.x + this.spacecraft.location.x,
+                        y: this.spaceObjects[1].location.y + this.spacecraft.location.y} as Vector2d, -90)
                         
                     device.activate(target)
                                           
@@ -158,7 +171,7 @@ export class SpaceGame {
         }
 
         if(device instanceof TractorBeam && keyboardController.isKeyPressed(" ")){
-            const targetObject = this.spacecrafts.find(element => element.id === "planet")
+            const targetObject = this.spaceObjects.find(element => element.id === "planet")
             
             const request = {} as ManipulateSpaceObject
             request.method = "tractorBeam"
@@ -186,6 +199,22 @@ export class SpaceGame {
 
         this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
         this.updateElements();
+        // Find the planet object within the spaceObjects array
+        const planet: Spacecraft | undefined = this.spaceObjects.find(obj => obj.id === "planet");
+        
+        if(planet){
+            this.textArea.innerHTML = `spacecraft location: ${this.spacecraft.location.x.toFixed(1)}, ${this.spacecraft.location.y.toFixed(1)}
+                                        planet location: ${planet.location.x.toFixed(1)}, ${planet.location.y.toFixed(1)}
+                                        distance to planet: ${distanceBetween(this.spacecraft.location, planet.location).toFixed(1)}`
+                                    
+        }
+        /*else{}{
+            console.log("nop planet found")
+            this.textArea.innerHTML = `spacecraft location: ${this.spacecraft.location.x.toFixed(1)}, 
+            ${this.spacecraft.location.y.toFixed(1)}`
+        }
+        */
+
     }
 
     private setupKeyUpListener() {
@@ -200,7 +229,7 @@ export class SpaceGame {
 
         this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus")
         if(this.spacecraft)
-        render(this.spacecraft, 0, 0, this.gameEnvironment.viewBoxWidth, this.gameEnvironment.viewBoxHeight)
+        render(this.spacecraft, 0, 0)
 
        /*this stupid Label thats owned by the spacecraft seems to be dependendent on the size of the svg that the spacecraft has no access to, what really sucks
         if(this.gameEnvironment.screenAspectRatio < 1){
@@ -209,7 +238,7 @@ export class SpaceGame {
         }
         else 
             this.spacecraft.setFontsize(5000/gameFrame.clientHeight)
-*/
+*//*
         this.spacecraft.setLabelText(`<tspan x="${this.spacecraft.scale*7}"> 
                                         ${this.spacecraft.id}</tspan>
                                         <tspan x="${this.spacecraft.scale*7}" dy="${fontSize}">
@@ -217,12 +246,13 @@ export class SpaceGame {
                                         <tspan x="${this.spacecraft.scale*7}" dy="${fontSize}">
                                         direction: ${this.spacecraft.direction}</tspan>
                                         `)
-        if(this.spacecrafts.length > 0){
-            this.spacecrafts.forEach((spacecraft) => {
+    */
+        if(this.spaceObjects.length > 0){
+            this.spaceObjects.forEach((spaceObject) => {
                 /*if(!spacecraft.npc){
                     this.gameEnvironment.handleSpacecraft(spacecraft, "pseudoTorus")
                 } /*else if(spacecraft.npc)
-                    spacecraft.pseudoOrbit({x: this.spacecrafts[1].location.x, y: this.spacecrafts[1].location.y} as Vector2d)
+                    spacecraft.pseudoOrbit({x: this.spaceObjects[1].location.x, y: this.spaceObjects[1].location.y} as Vector2d)
                
                 if(spacecraft.label){
                     spacecraft.setLabelText(`<tspan x="${spacecraft.scale*7}"> 
@@ -234,32 +264,30 @@ export class SpaceGame {
                 }
     */
             
-            let xCorrection: number
-            let yCorrection: number
+            let xCorrection: number = 0
+            let yCorrection: number = 0
             
-            if(spacecraft.location.x < this.spacecraft.location.x - this.gameEnvironment.viewBoxWidth / 2){
+            if(spaceObject.location.x < this.spacecraft.location.x - 1000 / 2){
                 xCorrection = 1
             }
-            else if(spacecraft.location.x > this.spacecraft.location.x + this.gameEnvironment.viewBoxWidth / 2){
+            else if(spaceObject.location.x > this.spacecraft.location.x + 1000 / 2){
                 xCorrection = -1
             }
             else{
                 xCorrection = 0
             }
 
-            if(spacecraft.location.y < this.spacecraft.location.y - this.gameEnvironment.viewBoxHeight / 2){
+            if(spaceObject.location.y < this.spacecraft.location.y - 1000 / 2){
                 yCorrection = 1
             }
-            else if(spacecraft.location.y > this.spacecraft.location.x + this.gameEnvironment.viewBoxWidth / 2){
+            else if(spaceObject.location.y > this.spacecraft.location.x + 1000 / 2){
                 yCorrection = -1
             }
             else{
                 yCorrection  = 0
             }
-            
-            render(spacecraft, xCorrection, yCorrection, this.gameEnvironment.viewBoxWidth, this.gameEnvironment.viewBoxHeight)
-            
-
+           
+            render(spaceObject, xCorrection, yCorrection)
             });
 
         }
@@ -269,9 +297,9 @@ export class SpaceGame {
 }
 
 
-function render(spacecraft: Spacecraft, xCorrection: number, yCorrection: number, viewBoxWidth: number, viewBoxHeight: number){
-    spacecraft.gElement.setAttribute("transform", `translate (${spacecraft.location.x + xCorrection * viewBoxWidth} 
-                                                                ${spacecraft.objectStatus.location.y + yCorrection * viewBoxHeight}) 
+function render(spacecraft: Spacecraft, xCorrection: number, yCorrection: number){
+    spacecraft.gElement.setAttribute("transform", `translate (${spacecraft.location.x + xCorrection * 1000} 
+                                                                ${spacecraft.objectStatus.location.y + yCorrection * 1000}) 
                                                     scale (${spacecraft.scale}) 
                                                     rotate (${spacecraft.direction + spacecraft.directionCorrection})`);
 
