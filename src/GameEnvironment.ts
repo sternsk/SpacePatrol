@@ -3,6 +3,9 @@ import { Joystick } from "./Joystick.js";
 import { gameFrame } from "./GameMenu.js";
 import { polarVector, length, angle } from "./library.js";
 
+export const torusWidth = 1000;
+export const torusHeight = 1000;
+
 export class GameEnvironment{
     screenAspectRatio: number
     viewBoxToScreenRatio: number 
@@ -10,6 +13,7 @@ export class GameEnvironment{
     viewBoxHeight: number 
     viewBoxLeft: number 
     viewBoxTop: number 
+
 
     private label = document.createElement("HTMLLabelElement")
     private _svgElement: SVGSVGElement;
@@ -50,12 +54,12 @@ export class GameEnvironment{
         this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
         this._svgElement.setAttribute("tabindex", "0")
         
-       
+     /*
         const playfieldBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
-        playfieldBorder.setAttribute("x", "-500")
-        playfieldBorder.setAttribute("y", "-500")
-        playfieldBorder.setAttribute("width", "1000")
-        playfieldBorder.setAttribute("height", "1000")
+        playfieldBorder.setAttribute("x", `${-torusWidth / 2}`)
+        playfieldBorder.setAttribute("y", `${-torusHeight / 2}`)
+        playfieldBorder.setAttribute("width", `${torusWidth}`)
+        playfieldBorder.setAttribute("height", `${torusHeight}`)
         playfieldBorder.setAttribute("fill", "none")
         
         playfieldBorder.setAttribute("stroke", "red")
@@ -64,7 +68,7 @@ export class GameEnvironment{
         
         playfieldBorder.setAttribute("id", "playfieldBorder")
         this._svgElement.appendChild(playfieldBorder)
-
+*/  
         /* viewBox seems to be resized by Chrome at windowresize 
         
         this._viewBoxBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
@@ -163,21 +167,22 @@ export class GameEnvironment{
                 this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth/2
                 this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2
                 this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
-                if (spacecraft.location.x > 500){
-                    spacecraft.location.x = -500
+                if (spacecraft.location.x > torusWidth / 2){
+                    spacecraft.location.x = -torusWidth / 2
                 }
-                else if ( spacecraft.location.x < -500){
-                    spacecraft.location.x =  500
+                else if ( spacecraft.location.x < -torusWidth / 2){
+                    spacecraft.location.x =  torusWidth / 2
                 }
-                if (spacecraft.location.y > 500){
-                    spacecraft.location.y = -500
+                if (spacecraft.location.y > torusHeight / 2){
+                    spacecraft.location.y = -torusHeight / 2
                 }
-                else if(spacecraft.location.y < -500){
-                    spacecraft.location.y = 500
+                else if(spacecraft.location.y < -torusHeight / 2){
+                    spacecraft.location.y = torusHeight / 2
                 }
                 break;
         }
-        if(Math.abs(spacecraft.location.x) > 500 || Math.abs(spacecraft.location.y) > 500){
+        // drive the spacecraft into a pudding if it leaves the playfield
+        if(Math.abs(spacecraft.location.x) > torusWidth / 2 || Math.abs(spacecraft.location.y) > torusHeight / 2){
             spacecraft.objectStatus.impuls = polarVector(length(spacecraft.objectStatus.impuls)*.5, angle(spacecraft.objectStatus.impuls))
         }
     }
@@ -185,15 +190,15 @@ export class GameEnvironment{
     insertBackgroundImage(){
         //load and center an image-file over 0,0 in the viewBox
         const bgImage = document.createElementNS("http://www.w3.org/2000/svg", "image")
-        const bgImagWidth = 2000
-        const bgImageHeight = 2000
+        const bgImagWidth = torusWidth * 2
+        const bgImageHeight = torusHeight * 2
         this._svgElement.appendChild(bgImage)
         bgImage.href.baseVal = ("../resources/background10.jpg")
         bgImage.onload = () =>{
             const imageWidth = bgImage.getBBox().width
             const imageHeight = bgImage.getBBox().height
             bgImage.style.width = bgImagWidth.toString()
-            bgImage.style.height = bgImageHeight.toString()
+            //bgImage.style.height = bgImageHeight.toString()
             bgImage.style.x = `${-bgImagWidth/2}`
             bgImage.style.y = `${-bgImageHeight/2}` 
             bgImage.style.zIndex = "-1"

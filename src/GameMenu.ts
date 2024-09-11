@@ -22,7 +22,8 @@ export const keyboardController = new KeyboardController(gameFrame)
 export let color: string        //initial color
 export let device: string
 export let viewBoxWidth = 100
-
+export let audioContext: AudioContext | undefined = undefined
+    
 export class GameMenu{
     
     joystick = new Joystick()
@@ -32,7 +33,6 @@ export class GameMenu{
     idInputElement = document.createElement("input")
     
     audioSelector = document.createElement("select")
-    audioContext?: AudioContext
     audioBuffer?: AudioBuffer
 
     loopRunning = true;
@@ -79,7 +79,7 @@ export class GameMenu{
 
         const noDevice = document.createElement("option")
         noDevice.innerHTML = "disabled selected"
-        noDevice.value = "tractorBeam"
+        noDevice.value = "ovalShield"
         noDevice.textContent = "Choose a Device"
 
         const ovalShield = document.createElement("option")
@@ -191,6 +191,10 @@ export class GameMenu{
         this.audioSelector.appendChild(option19)
         this.audioSelector.appendChild(option20)
         this.audioSelector.appendChild(greatgiginthesky)
+        this.audioSelector.addEventListener("change", ()=>{
+            if (!audioContext)
+                this.initAudioContext();
+        })
 
         option17.setAttribute("value", "../resources/letusprogresstothecastleoffunk.mp3")
         option18.setAttribute("value", "../resources/letusprogresstothecastleoffunk.mp3")
@@ -205,8 +209,9 @@ export class GameMenu{
         greatgiginthesky.textContent = "Great Gig In The Sky 8bit.mp3"
 
         const audioButton = document.createElement("button")
-        audioButton.textContent = "Play Audio"
+        audioButton.textContent = "Activate Audio"
         audioButton.addEventListener("click", () =>{
+            audioButton.textContent = "Play Music"
             if(this.audioSelector.value.endsWith(`.mp3`))
                 this.playAudio()
             else if(this.audioSelector.value.endsWith(`.mid`))
@@ -316,15 +321,15 @@ export class GameMenu{
     }
     
     initAudioContext(){
-        this.audioContext = new (window.AudioContext)
+        audioContext = new (window.AudioContext)
     }
 
     loadAudio(){
         fetch(this.audioSelector.value)
             .then(response => response.arrayBuffer())
             .then(buffer => {
-                if (this.audioContext) {
-                    return this.audioContext.decodeAudioData(buffer)
+                if (audioContext) {
+                    return audioContext.decodeAudioData(buffer)
                 }
             })
             .then(decodedBuffer => {
@@ -339,15 +344,16 @@ export class GameMenu{
 
     playAudio(){
         
-        if(!this.audioContext)
+        if(!audioContext)
             this.initAudioContext()
         
         this.loadAudio()
-
-        const source = this.audioContext!.createBufferSource();
+        const source = audioContext!.createBufferSource();
+        
         if(this.audioBuffer)
-        source.buffer = this.audioBuffer;
-        source.connect(this.audioContext!.destination);
+            source.buffer = this.audioBuffer;
+        
+        source.connect(audioContext!.destination);
         source.start(0);
     }
 

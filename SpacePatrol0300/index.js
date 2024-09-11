@@ -27970,30 +27970,31 @@
     "src/OvalShield.ts"() {
       "use strict";
       OvalShield = class {
+        //cycleCount = 0
         constructor(shieldWidth, shieldHeight) {
           __publicField(this, "name", "ovalShield");
-          __publicField(this, "width");
-          __publicField(this, "height");
+          __publicField(this, "_width");
+          __publicField(this, "_height");
           __publicField(this, "_gElem", document.createElementNS("http://www.w3.org/2000/svg", "g"));
           __publicField(this, "activated", false);
           this._gElem.setAttribute("class", "ovalShield");
-          this.width = shieldWidth;
-          this.height = shieldHeight;
+          this._width = shieldWidth;
+          this._height = shieldHeight;
         }
         activate() {
+          const boundingOval = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
           if (!this.activated) {
-            const boundingOval = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
             boundingOval.setAttribute("cx", "0");
             boundingOval.setAttribute("cy", "0");
-            boundingOval.setAttribute("rx", `${this.width * 2}`);
-            boundingOval.setAttribute("ry", `${this.height * 2}`);
-            boundingOval.setAttribute("stroke", "green");
+            boundingOval.setAttribute("rx", `${this._width}`);
+            boundingOval.setAttribute("ry", `${this._height}`);
             boundingOval.setAttribute("vector-effect", "none-scaling-stroke");
             boundingOval.setAttribute("stroke-width", "2px");
             boundingOval.setAttribute("fill", "none");
             this._gElem.appendChild(boundingOval);
             this.activated = true;
           }
+          boundingOval.setAttribute("stroke", "white");
         }
         deactivate() {
           this._gElem.innerHTML = "";
@@ -28001,6 +28002,12 @@
         }
         dispose() {
           this.deactivate();
+        }
+        set width(width) {
+          this._width = width;
+        }
+        set height(height) {
+          this._height = height;
         }
       };
     }
@@ -28138,6 +28145,7 @@
           if ((_b = this._device) == null ? void 0 : _b._gElem) {
             this._device._gElem.setAttribute("id", "device");
             this._gElement.appendChild(this._device._gElem);
+            console.log("gElement added");
           }
         }
         applyLabel(svgElement) {
@@ -28399,13 +28407,15 @@
   });
 
   // src/GameEnvironment.ts
-  var GameEnvironment;
+  var torusWidth, torusHeight, GameEnvironment;
   var init_GameEnvironment = __esm({
     "src/GameEnvironment.ts"() {
       "use strict";
       init_Joystick();
       init_GameMenu();
       init_library();
+      torusWidth = 1e3;
+      torusHeight = 1e3;
       GameEnvironment = class {
         constructor() {
           __publicField(this, "screenAspectRatio");
@@ -28438,17 +28448,6 @@
           this._svgElement.style.position = "absolute";
           this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
           this._svgElement.setAttribute("tabindex", "0");
-          const playfieldBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-          playfieldBorder.setAttribute("x", "-500");
-          playfieldBorder.setAttribute("y", "-500");
-          playfieldBorder.setAttribute("width", "1000");
-          playfieldBorder.setAttribute("height", "1000");
-          playfieldBorder.setAttribute("fill", "none");
-          playfieldBorder.setAttribute("stroke", "red");
-          playfieldBorder.setAttribute("stroke-width", "1px");
-          playfieldBorder.setAttribute("vector-effect", "non-scaling-stroke");
-          playfieldBorder.setAttribute("id", "playfieldBorder");
-          this._svgElement.appendChild(playfieldBorder);
           gameFrame.appendChild(this._svgElement);
           gameFrame.style.height = `${window.innerHeight}px`;
           gameFrame.appendChild(this._joystick.htmlElement);
@@ -28509,33 +28508,32 @@
               this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth / 2;
               this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2;
               this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
-              if (spacecraft.location.x > 500) {
-                spacecraft.location.x = -500;
-              } else if (spacecraft.location.x < -500) {
-                spacecraft.location.x = 500;
+              if (spacecraft.location.x > torusWidth / 2) {
+                spacecraft.location.x = -torusWidth / 2;
+              } else if (spacecraft.location.x < -torusWidth / 2) {
+                spacecraft.location.x = torusWidth / 2;
               }
-              if (spacecraft.location.y > 500) {
-                spacecraft.location.y = -500;
-              } else if (spacecraft.location.y < -500) {
-                spacecraft.location.y = 500;
+              if (spacecraft.location.y > torusHeight / 2) {
+                spacecraft.location.y = -torusHeight / 2;
+              } else if (spacecraft.location.y < -torusHeight / 2) {
+                spacecraft.location.y = torusHeight / 2;
               }
               break;
           }
-          if (Math.abs(spacecraft.location.x) > 500 || Math.abs(spacecraft.location.y) > 500) {
+          if (Math.abs(spacecraft.location.x) > torusWidth / 2 || Math.abs(spacecraft.location.y) > torusHeight / 2) {
             spacecraft.objectStatus.impuls = polarVector(length(spacecraft.objectStatus.impuls) * 0.5, angle(spacecraft.objectStatus.impuls));
           }
         }
         insertBackgroundImage() {
           const bgImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
-          const bgImagWidth = 2e3;
-          const bgImageHeight = 2e3;
+          const bgImagWidth = torusWidth * 2;
+          const bgImageHeight = torusHeight * 2;
           this._svgElement.appendChild(bgImage);
           bgImage.href.baseVal = "../resources/background10.jpg";
           bgImage.onload = () => {
             const imageWidth = bgImage.getBBox().width;
             const imageHeight = bgImage.getBBox().height;
             bgImage.style.width = bgImagWidth.toString();
-            bgImage.style.height = bgImageHeight.toString();
             bgImage.style.x = `${-bgImagWidth / 2}`;
             bgImage.style.y = `${-bgImageHeight / 2}`;
             bgImage.style.zIndex = "-1";
@@ -28545,20 +28543,74 @@
     }
   });
 
-  // src/SpaceGame.ts
-  function render(spacecraft, xCorrection, yCorrection) {
-    spacecraft.gElement.setAttribute("transform", `translate (${spacecraft.location.x + xCorrection * 1e3} 
-                                                                ${spacecraft.objectStatus.location.y + yCorrection * 1e3}) 
-                                                    scale (${spacecraft.scale}) 
-                                                    rotate (${spacecraft.direction + spacecraft.directionCorrection})`);
-    if (spacecraft.label && spacecraft.labelBorder) {
-      console.log("xCorrection and YCorrection not set yet!");
-      spacecraft.label.setAttribute("transform", `translate(${spacecraft.objectStatus.location.x} 
-                                                            ${spacecraft.objectStatus.location.y})`);
-      spacecraft.labelBorder.setAttribute("transform", `translate(${spacecraft.objectStatus.location.x - 7.5 + spacecraft.scale * 7}, 
-                                        ${spacecraft.objectStatus.location.y})`);
+  // src/Vector2D.ts
+  var Vector2D;
+  var init_Vector2D = __esm({
+    "src/Vector2D.ts"() {
+      "use strict";
+      Vector2D = class _Vector2D {
+        constructor(x = 0, y = 0) {
+          __publicField(this, "_x");
+          __publicField(this, "_y");
+          this._x = x;
+          this._y = y;
+        }
+        static fromLengthAndAngle(length2, angle2) {
+          if (angle2 >= 360 || angle2 < 0) {
+            angle2 = (angle2 % 360 + 360) % 360;
+          }
+          angle2 = angle2 / 180 * Math.PI;
+          const x = Math.cos(angle2) * length2;
+          const y = Math.sin(angle2) * length2;
+          return new _Vector2D(x, y);
+        }
+        add(vector) {
+          this._x += vector.x;
+          this._y += vector.y;
+        }
+        distanceTo(destination) {
+          let distanceVector2 = new _Vector2D(destination.x - this._x, destination.y - this._y);
+          return distanceVector2.length;
+        }
+        inverse() {
+          this._x = -this._x;
+          this._y = -this._y;
+        }
+        get length() {
+          return Math.sqrt(Math.pow(this._x, 2) + Math.pow(this._y, 2));
+        }
+        get angle() {
+          const angle2 = Math.atan2(this._y, this._x) / Math.PI * 180;
+          return angle2 % 360;
+        }
+        get x() {
+          return this._x;
+        }
+        get y() {
+          return this._y;
+        }
+        set x(x) {
+          this._x = x;
+        }
+        set y(y) {
+          this._y = y;
+        }
+        // Create a Vector2D object from a JSON representation
+        static fromJSON(json) {
+          return new _Vector2D(json.x, json.y);
+        }
+        // Convert Vector2D object to JSON representation
+        toJSON() {
+          return {
+            x: this._x,
+            y: this._y
+          };
+        }
+      };
     }
-  }
+  });
+
+  // src/SpaceGame.ts
   var SpaceGame;
   var init_SpaceGame = __esm({
     "src/SpaceGame.ts"() {
@@ -28570,8 +28622,11 @@
       init_TractorBeam();
       init_library();
       init_OvalShield();
+      init_Vector2D();
       SpaceGame = class {
         constructor() {
+          __publicField(this, "audioBuffer");
+          __publicField(this, "playingSound", false);
           __publicField(this, "spacecraft");
           __publicField(this, "spaceObjects", []);
           __publicField(this, "gameEnvironment");
@@ -28582,8 +28637,8 @@
           this.textArea.style.position = "absolute";
           this.textArea.style.color = "darkgrey";
           this.textArea.style.backgroundColor = "black";
-          this.textArea.innerHTML = "this labels text is to be written yet";
-          this.textArea.setAttribute("rows", "10");
+          this.textArea.innerHTML = "this label\xB4s text is yet to be written";
+          this.textArea.setAttribute("rows", "14");
           gameFrame.appendChild(this.textArea);
           if (this.touchControl) {
             this.gameEnvironment.displayTouchControl();
@@ -28611,9 +28666,14 @@
         }
         syncReality(reality) {
           reality.forEach((response) => {
+            const renderDeterminant = this.defineRenderDeterminants(response.location);
+            const renderLocation = new Vector2D(
+              response.location.x + renderDeterminant.x * torusWidth,
+              response.location.y + renderDeterminant.y * torusHeight
+            );
             const index = this.spaceObjects.findIndex((spacecraft) => spacecraft.id === response.craftId);
             if (index !== -1) {
-              this.spaceObjects[index].objectStatus.location = response.location;
+              this.spaceObjects[index].objectStatus.location = renderLocation;
               this.spaceObjects[index].objectStatus.impuls = response.impuls;
               this.spaceObjects[index].objectStatus.direction = response.direction;
               this.spaceObjects[index].objectStatus.mass = response.mass;
@@ -28660,7 +28720,7 @@
             }
             if (this.gameEnvironment.joystick.fires) {
               if (device2 instanceof TractorBeam && this.spaceObjects[1]) {
-                const target = rotate({
+                const target = rotatedVector({
                   x: this.spaceObjects[1].location.x + this.spacecraft.location.x,
                   y: this.spaceObjects[1].location.y + this.spacecraft.location.y
                 }, -90);
@@ -28687,19 +28747,34 @@
             const request2 = {};
             request2.method = "tractorBeam";
             request2.spaceObject = this.spacecraft.objectStatus;
-            if (targetObject)
-              request2.target = targetObject.id;
-            evaluate(manipulateSpaceObject, request2);
             if (targetObject) {
-              const targetVector = rotate(distanceVector(this.spacecraft.location, targetObject.location), -(this.spacecraft.direction + 90));
+              request2.target = targetObject.id;
+              const targetVector = rotatedVector(
+                distanceVector(this.spacecraft.location, targetObject.location),
+                -(this.spacecraft.direction + 90)
+              );
               device2.activate(targetVector);
             }
             const gElem = device2._gElem;
             if (gElem) {
               this.spacecraft.gElement.appendChild(gElem);
             }
+            evaluate(manipulateSpaceObject, request2);
           }
           if (device2 instanceof OvalShield && keyboardController.isKeyPressed(" ")) {
+            if (audioContext)
+              this.playSound();
+            const device3 = this.spacecraft.device;
+            const nuggetList = this.spaceObjects.filter((element) => element.type === "nugget");
+            let shortestDistance = torusHeight + torusWidth;
+            nuggetList.forEach((element) => {
+              const distance = distanceBetween(element.location, this.spacecraft.location);
+              if (distance < shortestDistance) {
+                shortestDistance = distance;
+              }
+            });
+            device3.width = shortestDistance;
+            device3.height = shortestDistance;
             const request2 = {};
             request2.method = "ovalShield";
             request2.spaceObject = this.spacecraft.objectStatus;
@@ -28708,43 +28783,90 @@
           this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
           this.updateElements();
           const planet = this.spaceObjects.find((obj) => obj.id === "planet");
-          if (planet) {
+          const station = this.spaceObjects.find((obj) => obj.id === "station");
+          if (planet && station) {
             this.textArea.innerHTML = `spacecraft location: ${this.spacecraft.location.x.toFixed(1)}, ${this.spacecraft.location.y.toFixed(1)}
                                         planet location: ${planet.location.x.toFixed(1)}, ${planet.location.y.toFixed(1)}
-                                        distance to planet: ${distanceBetween(this.spacecraft.location, planet.location).toFixed(1)}`;
+                                        station location: ${station.location.x.toFixed(1)}, ${station.location.y.toFixed(1)}
+                                        distance to planet: ${distanceBetween(this.spacecraft.location, planet.location).toFixed(1)}
+                                        number of spaceObjects: ${this.spaceObjects.length}`;
           }
         }
         setupKeyUpListener() {
           keyboardController.onKeyUp((key) => {
             this.spacecraft.onKeyUp(key);
+            this.stopSound();
           });
         }
         updateElements() {
           this.spacecraft.update();
           this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus");
           if (this.spacecraft)
-            render(this.spacecraft, 0, 0);
+            this.render(this.spacecraft);
           if (this.spaceObjects.length > 0) {
             this.spaceObjects.forEach((spaceObject) => {
-              let xCorrection = 0;
-              let yCorrection = 0;
-              if (spaceObject.location.x < this.spacecraft.location.x - 1e3 / 2) {
-                xCorrection = 1;
-              } else if (spaceObject.location.x > this.spacecraft.location.x + 1e3 / 2) {
-                xCorrection = -1;
-              } else {
-                xCorrection = 0;
-              }
-              if (spaceObject.location.y < this.spacecraft.location.y - 1e3 / 2) {
-                yCorrection = 1;
-              } else if (spaceObject.location.y > this.spacecraft.location.x + 1e3 / 2) {
-                yCorrection = -1;
-              } else {
-                yCorrection = 0;
-              }
-              render(spaceObject, xCorrection, yCorrection);
+              this.render(spaceObject);
             });
           }
+        }
+        defineRenderDeterminants(location) {
+          let xDeterminant = 0;
+          let yDeterminant = 0;
+          if (location.x - this.spacecraft.location.x < -torusWidth / 2) {
+            xDeterminant = 1;
+          } else if (location.x - this.spacecraft.location.x > torusWidth / 2) {
+            xDeterminant = -1;
+          } else {
+            xDeterminant = 0;
+          }
+          if (location.y - this.spacecraft.location.y < -torusHeight / 2) {
+            yDeterminant = 1;
+          } else if (location.y - this.spacecraft.location.y > torusHeight / 2) {
+            yDeterminant = -1;
+          } else {
+            yDeterminant = 0;
+          }
+          return { x: xDeterminant, y: yDeterminant };
+        }
+        render(spacecraft) {
+          spacecraft.gElement.setAttribute("transform", `translate (${spacecraft.location.x} 
+                                                                    ${spacecraft.location.y}) 
+                                                        scale (${spacecraft.scale}) 
+                                                        rotate (${spacecraft.direction + spacecraft.directionCorrection})`);
+          if (spacecraft.label && spacecraft.labelBorder) {
+            console.log("xCorrection and YCorrection not set yet!");
+            spacecraft.label.setAttribute("transform", `translate(${spacecraft.objectStatus.location.x} 
+                                                                ${spacecraft.objectStatus.location.y})`);
+            spacecraft.labelBorder.setAttribute("transform", `translate(${spacecraft.objectStatus.location.x - 7.5 + spacecraft.scale * 7}, 
+                                            ${spacecraft.objectStatus.location.y})`);
+          }
+        }
+        playSound() {
+          if (!this.playingSound) {
+            console.log("beginning sound");
+            this.playingSound = true;
+            fetch("../resources/Taro03.mp3").then((response) => response.arrayBuffer()).then((buffer) => {
+              if (audioContext) {
+                return audioContext.decodeAudioData(buffer);
+              }
+            }).then((decodedBuffer) => {
+              if (decodedBuffer) {
+                this.audioBuffer = decodedBuffer;
+              }
+            }).catch((error) => {
+              console.error("Error loading audio file:", error);
+            });
+            const source = audioContext.createBufferSource();
+            if (this.audioBuffer)
+              source.buffer = this.audioBuffer;
+            source.connect(audioContext.destination);
+            source.start(0);
+          }
+        }
+        stopSound() {
+          console.log("stopping sound");
+          this.audioBuffer = void 0;
+          this.playingSound = false;
         }
       };
     }
@@ -28765,7 +28887,7 @@
     manipulate: () => manipulate2,
     manipulateSpaceObject: () => manipulateSpaceObject,
     polarVector: () => polarVector,
-    rotate: () => rotate,
+    rotatedVector: () => rotatedVector,
     syncSpaceObject: () => syncSpaceObject
   });
   function initGame(gameFrame2, type, color2, id) {
@@ -28786,7 +28908,7 @@
   function angle(v) {
     return Math.atan2(v.y, v.x) / Math.PI * 180;
   }
-  function rotate(v, n) {
+  function rotatedVector(v, n) {
     return polarVector(length(v), angle(v) + n);
   }
   function distanceVector(v1, v2) {
@@ -28868,7 +28990,7 @@
   });
 
   // src/GameMenu.ts
-  var import_midi, gameFrame, keyboardController, color, device, viewBoxWidth, GameMenu;
+  var import_midi, gameFrame, keyboardController, color, device, viewBoxWidth, audioContext, GameMenu;
   var init_GameMenu = __esm({
     "src/GameMenu.ts"() {
       "use strict";
@@ -28880,6 +29002,7 @@
       gameFrame = document.getElementById("spacepatrolContainer");
       keyboardController = new KeyboardController(gameFrame);
       viewBoxWidth = 100;
+      audioContext = void 0;
       GameMenu = class {
         constructor() {
           __publicField(this, "joystick", new Joystick());
@@ -28887,7 +29010,6 @@
           __publicField(this, "deviceSelector", document.createElement("select"));
           __publicField(this, "idInputElement", document.createElement("input"));
           __publicField(this, "audioSelector", document.createElement("select"));
-          __publicField(this, "audioContext");
           __publicField(this, "audioBuffer");
           __publicField(this, "loopRunning", true);
           __publicField(this, "rotationImpuls", 0);
@@ -28922,7 +29044,7 @@
           const station = document.createElement("option");
           const noDevice = document.createElement("option");
           noDevice.innerHTML = "disabled selected";
-          noDevice.value = "tractorBeam";
+          noDevice.value = "ovalShield";
           noDevice.textContent = "Choose a Device";
           const ovalShield = document.createElement("option");
           ovalShield.value = "ovalShield";
@@ -29019,6 +29141,10 @@
           this.audioSelector.appendChild(option19);
           this.audioSelector.appendChild(option20);
           this.audioSelector.appendChild(greatgiginthesky);
+          this.audioSelector.addEventListener("change", () => {
+            if (!audioContext)
+              this.initAudioContext();
+          });
           option17.setAttribute("value", "../resources/letusprogresstothecastleoffunk.mp3");
           option18.setAttribute("value", "../resources/letusprogresstothecastleoffunk.mp3");
           option19.setAttribute("value", "../resources/comfortablynumb.mp3");
@@ -29030,8 +29156,9 @@
           option20.textContent = "Great Gig In The Sky.mid";
           greatgiginthesky.textContent = "Great Gig In The Sky 8bit.mp3";
           const audioButton = document.createElement("button");
-          audioButton.textContent = "Play Audio";
+          audioButton.textContent = "Activate Audio";
           audioButton.addEventListener("click", () => {
+            audioButton.textContent = "Play Music";
             if (this.audioSelector.value.endsWith(`.mp3`))
               this.playAudio();
             else if (this.audioSelector.value.endsWith(`.mid`))
@@ -29118,12 +29245,12 @@
             this.rotationImpuls = 0;
         }
         initAudioContext() {
-          this.audioContext = new window.AudioContext();
+          audioContext = new window.AudioContext();
         }
         loadAudio() {
           fetch(this.audioSelector.value).then((response) => response.arrayBuffer()).then((buffer) => {
-            if (this.audioContext) {
-              return this.audioContext.decodeAudioData(buffer);
+            if (audioContext) {
+              return audioContext.decodeAudioData(buffer);
             }
           }).then((decodedBuffer) => {
             if (decodedBuffer) {
@@ -29134,13 +29261,13 @@
           });
         }
         playAudio() {
-          if (!this.audioContext)
+          if (!audioContext)
             this.initAudioContext();
           this.loadAudio();
-          const source = this.audioContext.createBufferSource();
+          const source = audioContext.createBufferSource();
           if (this.audioBuffer)
             source.buffer = this.audioBuffer;
-          source.connect(this.audioContext.destination);
+          source.connect(audioContext.destination);
           source.start(0);
         }
         // Funktion zum Abspielen von MIDI-Dateien mit 8-Bit-Effekt

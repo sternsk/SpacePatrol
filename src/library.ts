@@ -28,7 +28,7 @@ export function angle(v: Vector2d): number{
     return Math.atan2(v.y, v.x) / Math.PI * 180
 }
 
-export function rotate(v: Vector2d, n: number):Vector2d{
+export function rotatedVector(v: Vector2d, n: number):Vector2d{
     return polarVector(length(v), angle(v)+n)
 }
 

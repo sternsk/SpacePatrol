@@ -67,6 +67,7 @@ export class Spacecraft{
         if(this._device?._gElem){
             this._device._gElem.setAttribute("id", "device")
             this._gElement.appendChild(this._device._gElem)
+            console.log("gElement added")
         }
     }
 

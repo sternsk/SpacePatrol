@@ -1,16 +1,21 @@
 import { Spacecraft, fontSize } from "./Spacecraft.js";
-import { GameEnvironment } from "./GameEnvironment.js";
+import { GameEnvironment, torusWidth, torusHeight } from "./GameEnvironment.js";
 import { SpacecraftShape } from "./SpacecraftShape.js";
-import { keyboardController, device, gameFrame, viewBoxWidth } from "./GameMenu.js";
+import { keyboardController, device, gameFrame, viewBoxWidth, audioContext } from "./GameMenu.js";
 import { TractorBeam } from "./TractorBeam.js";
-import { evaluate, RequestDefinition, SpaceObjectStatus, SyncronizeSpaceObject, syncSpaceObject, Vector2d, rotate, distanceBetween, distanceVector, manipulate, manipulateSpaceObject, ManipulateSpaceObject } from "./library.js";
+import { evaluate, RequestDefinition, SpaceObjectStatus, SyncronizeSpaceObject, syncSpaceObject, Vector2d, rotatedVector, distanceBetween, distanceVector, manipulate, manipulateSpaceObject, ManipulateSpaceObject } from "./library.js";
 import { OvalShield } from "./OvalShield.js";
 
 import * as collider from "./SVGPathCollider.js"
+import { Vector2D } from "./Vector2D.js";
 
 export class SpaceGame {
+    audioBuffer?: AudioBuffer
+    private playingSound = false
+
     private spacecraft: Spacecraft
     private spaceObjects: Spacecraft[] = [];
+    
     private gameEnvironment: GameEnvironment;
     private touchControl = false
 
@@ -24,8 +29,8 @@ export class SpaceGame {
         this.textArea.style.position = "absolute"
         this.textArea.style.color = "darkgrey"
         this.textArea.style.backgroundColor = "black"
-        this.textArea.innerHTML = "this labels text is to be written yet"
-        this.textArea.setAttribute("rows", "10")
+        this.textArea.innerHTML = "this label´s text is yet to be written"
+        this.textArea.setAttribute("rows", "14")
         gameFrame.appendChild(this.textArea)
         
         if(this.touchControl){
@@ -72,14 +77,21 @@ export class SpaceGame {
     }
 
     syncReality(reality: SpaceObjectStatus[]){
+        
         reality.forEach(response => {
+            const renderDeterminant = this.defineRenderDeterminants(response.location)
+            const renderLocation = new Vector2D(response.location.x + renderDeterminant.x * torusWidth, 
+                                                response.location.y + renderDeterminant.y * torusHeight
+            )
+
             // check if element of receivedData is already in spaceObjects-Array
             const index = this.spaceObjects.findIndex(spacecraft => spacecraft.id === response.craftId)
                 
             // if so and is not an npc, update the element in spaceObjects-Array 
             // update location, impuls, direction and mass
             if(index !== -1 ){
-                this.spaceObjects[index].objectStatus.location = response.location
+                //adjust the location to apropriate render location
+                this.spaceObjects[index].objectStatus.location = renderLocation
                 this.spaceObjects[index].objectStatus.impuls = response.impuls
                 this.spaceObjects[index].objectStatus.direction = response.direction
                 this.spaceObjects[index].objectStatus.mass = response.mass
@@ -143,7 +155,7 @@ export class SpaceGame {
                    /* tractorBeam.setTarget({x: this.spaceObjects[0].location.x - this.spacecraft.location.x, 
                                             y: this.spaceObjects[0].location.y - this.spacecraft.location.y});
                                             */
-                    const target = rotate({x: this.spaceObjects[1].location.x + this.spacecraft.location.x,
+                    const target = rotatedVector({x: this.spaceObjects[1].location.x + this.spacecraft.location.x,
                         y: this.spaceObjects[1].location.y + this.spacecraft.location.y} as Vector2d, -90)
                         
                     device.activate(target)
@@ -171,26 +183,55 @@ export class SpaceGame {
         }
 
         if(device instanceof TractorBeam && keyboardController.isKeyPressed(" ")){
+
+
             const targetObject = this.spaceObjects.find(element => element.id === "planet")
-            
             const request = {} as ManipulateSpaceObject
             request.method = "tractorBeam"
             request.spaceObject = this.spacecraft.objectStatus
-            if(targetObject)
-                request.target = targetObject.id
-            evaluate(manipulateSpaceObject, request)
-
+            //let targetDeterminant
+            
             if(targetObject){
-                const targetVector = rotate(distanceVector(this.spacecraft.location, targetObject.location), -(this.spacecraft.direction + 90))
+                //targetDeterminant = this.defineRenderDeterminants(targetObject)
+                request.target = targetObject.id
+                const targetVector = rotatedVector(distanceVector(this.spacecraft.location, targetObject.location), 
+                                    -(this.spacecraft.direction + 90))
+                /*const targetVector = rotatedVector(distanceVector(this.spacecraft.location, 
+                    {x: targetObject.location.x + targetDeterminant.x * this.torusWidth, 
+                        y: targetObject.location.y + targetDeterminant.y * this.torusHeight} as Vector2d), 
+                        -(this.spacecraft.direction + 90))
+                        */
                 device.activate(targetVector)
             }
             const gElem = device._gElem
             if(gElem){
-                
                 this.spacecraft.gElement.appendChild(gElem)
+                
             }
+        evaluate(manipulateSpaceObject, request)
         }
+
         if(device instanceof OvalShield && keyboardController.isKeyPressed(" ")){
+            if(audioContext)
+                this.playSound()
+            // get the device to apply a certain radius to it
+            const device = this.spacecraft.device as OvalShield
+            // get the closest nugget
+            const nuggetList = this.spaceObjects.filter(element => element.type ==="nugget")
+            let shortestDistance = torusHeight+torusWidth
+
+            // iterate over nuggetList to track the closest nugget 
+            // dont need the nugget let closestNugget: Spacecraft | null = null
+            nuggetList.forEach(element =>{
+                const distance = distanceBetween(element.location, this.spacecraft.location)
+                if( distance < shortestDistance){
+                    shortestDistance = distance
+                    //closestNugget = element
+                }
+            })
+            device.width = shortestDistance
+            device.height = shortestDistance
+
             const request = {} as ManipulateSpaceObject
             request.method = "ovalShield"
             request.spaceObject = this.spacecraft.objectStatus
@@ -201,11 +242,13 @@ export class SpaceGame {
         this.updateElements();
         // Find the planet object within the spaceObjects array
         const planet: Spacecraft | undefined = this.spaceObjects.find(obj => obj.id === "planet");
-        
-        if(planet){
+        const station: Spacecraft | undefined = this.spaceObjects.find(obj => obj.id === "station")
+        if(planet && station){
             this.textArea.innerHTML = `spacecraft location: ${this.spacecraft.location.x.toFixed(1)}, ${this.spacecraft.location.y.toFixed(1)}
                                         planet location: ${planet.location.x.toFixed(1)}, ${planet.location.y.toFixed(1)}
-                                        distance to planet: ${distanceBetween(this.spacecraft.location, planet.location).toFixed(1)}`
+                                        station location: ${station.location.x.toFixed(1)}, ${station.location.y.toFixed(1)}
+                                        distance to planet: ${distanceBetween(this.spacecraft.location, planet.location).toFixed(1)}
+                                        number of spaceObjects: ${this.spaceObjects.length}`
                                     
         }
         /*else{}{
@@ -220,6 +263,7 @@ export class SpaceGame {
     private setupKeyUpListener() {
         keyboardController.onKeyUp((key) => {
             this.spacecraft.onKeyUp(key);
+            this.stopSound()
         });
     }
 
@@ -229,9 +273,9 @@ export class SpaceGame {
 
         this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus")
         if(this.spacecraft)
-        render(this.spacecraft, 0, 0)
-
-       /*this stupid Label thats owned by the spacecraft seems to be dependendent on the size of the svg that the spacecraft has no access to, what really sucks
+        this.render(this.spacecraft)
+        
+       /*this stupid Label thats owned by the spacecraft seems to be dependend on the size of the svg that the spacecraft has no access to, what really sucks
         if(this.gameEnvironment.screenAspectRatio < 1){
              this.spacecraft.setFontsize(5000/gameFrame.clientWidth)
             console.log("fontsize set: "+fontSize)
@@ -263,51 +307,86 @@ export class SpaceGame {
                                             Date.now(): ${Date.now()}</tspan>`);
                 }
     */
-            
-            let xCorrection: number = 0
-            let yCorrection: number = 0
-            
-            if(spaceObject.location.x < this.spacecraft.location.x - 1000 / 2){
-                xCorrection = 1
-            }
-            else if(spaceObject.location.x > this.spacecraft.location.x + 1000 / 2){
-                xCorrection = -1
-            }
-            else{
-                xCorrection = 0
-            }
-
-            if(spaceObject.location.y < this.spacecraft.location.y - 1000 / 2){
-                yCorrection = 1
-            }
-            else if(spaceObject.location.y > this.spacecraft.location.x + 1000 / 2){
-                yCorrection = -1
-            }
-            else{
-                yCorrection  = 0
-            }
-           
-            render(spaceObject, xCorrection, yCorrection)
+            this.render(spaceObject)
             });
-
         }
-  
     }
     
-}
+    defineRenderDeterminants(location: Vector2d): {x: number, y:number}{
+        let xDeterminant: number = 0
+        let yDeterminant: number = 0
+        
+        if(location.x - this.spacecraft.location.x < -torusWidth / 2){
+            xDeterminant = 1
+        }
+        else if(location.x - this.spacecraft.location.x > torusWidth / 2){
+            xDeterminant = -1
+        }
+        else{
+            xDeterminant = 0
+        }
 
-
-function render(spacecraft: Spacecraft, xCorrection: number, yCorrection: number){
-    spacecraft.gElement.setAttribute("transform", `translate (${spacecraft.location.x + xCorrection * 1000} 
-                                                                ${spacecraft.objectStatus.location.y + yCorrection * 1000}) 
-                                                    scale (${spacecraft.scale}) 
-                                                    rotate (${spacecraft.direction + spacecraft.directionCorrection})`);
-
-    if(spacecraft.label && spacecraft.labelBorder){
-    console.log("xCorrection and YCorrection not set yet!")
-    spacecraft.label.setAttribute("transform", `translate(${spacecraft.objectStatus.location.x} 
-                                                            ${spacecraft.objectStatus.location.y})`)
-    spacecraft.labelBorder.setAttribute("transform", `translate(${(spacecraft.objectStatus.location.x-7.5)+spacecraft.scale*7}, 
-                                        ${spacecraft.objectStatus.location.y})`)
+        if(location.y - this.spacecraft.location.y < -torusHeight / 2){
+            yDeterminant = 1
+        }
+        else if(location.y - this.spacecraft.location.y > torusHeight / 2){
+            yDeterminant = -1
+        }
+        else{
+            yDeterminant  = 0
+        }
+        return{x: xDeterminant, y: yDeterminant}
+           
     }
+    render(spacecraft: Spacecraft){
+        //const determinant = this.defineRenderDeterminants(spacecraft)
+        spacecraft.gElement.setAttribute("transform", `translate (${spacecraft.location.x} 
+                                                                    ${spacecraft.location.y}) 
+                                                        scale (${spacecraft.scale}) 
+                                                        rotate (${spacecraft.direction + spacecraft.directionCorrection})`);
+    
+        if(spacecraft.label && spacecraft.labelBorder){
+        console.log("xCorrection and YCorrection not set yet!")
+        spacecraft.label.setAttribute("transform", `translate(${spacecraft.objectStatus.location.x} 
+                                                                ${spacecraft.objectStatus.location.y})`)
+        spacecraft.labelBorder.setAttribute("transform", `translate(${(spacecraft.objectStatus.location.x-7.5)+spacecraft.scale*7}, 
+                                            ${spacecraft.objectStatus.location.y})`)
+        }
+    }
+
+    playSound(){
+        if(!this.playingSound){
+            console.log("beginning sound")
+            this.playingSound = true
+            fetch("../resources/Taro03.mp3")
+                    .then(response => response.arrayBuffer())
+                    .then(buffer => {
+                        if (audioContext) {
+                            return audioContext.decodeAudioData(buffer)
+                        }
+                    })
+                    .then(decodedBuffer => {
+                        if (decodedBuffer) {
+                            this.audioBuffer = decodedBuffer;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading audio file:', error)
+                    })
+                    const source = audioContext!.createBufferSource();
+                
+                if(this.audioBuffer)
+                    source.buffer = this.audioBuffer;
+        
+                source.connect(audioContext!.destination);
+                source.start(0);
+        }
+    }    
+    stopSound(){
+        console.log("stopping sound")
+        this.audioBuffer = undefined
+        this.playingSound = false
+    }   
 }
+
+
