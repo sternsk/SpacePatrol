@@ -1,10 +1,11 @@
 import { Spacecraft, fontSize } from "./Spacecraft.js";
 import { GameEnvironment, torusWidth, torusHeight } from "./GameEnvironment.js";
-import { SpacecraftShape } from "./SpacecraftShape.js";
+import { SpacecraftShape, createGElement } from "./SpacecraftShape.js";
 import { keyboardController, device, gameFrame, viewBoxWidth, audioContext } from "./GameMenu.js";
 import { TractorBeam } from "./TractorBeam.js";
 import { evaluate, RequestDefinition, SpaceObjectStatus, SyncronizeSpaceObject, syncSpaceObject, Vector2d, rotatedVector, distanceBetween, distanceVector, manipulate, manipulateSpaceObject, ManipulateSpaceObject } from "./library.js";
 import { OvalShield } from "./OvalShield.js";
+import SAT from "sat";
 
 import * as collider from "./SVGPathCollider.js"
 import { Vector2D } from "./Vector2D.js";
@@ -47,7 +48,9 @@ export class SpaceGame {
         this.spacecraft.type = type
         this.spacecraft.color = color
         if(id) this.spacecraft.id = id
-        this.spacecraft.gElement = SpacecraftShape.getCraftGElement(type)
+        //this.spacecraft.gElement = SpacecraftShape.getCraftGElement(type)
+        this.spacecraft.spacecraftShape = new SpacecraftShape(this.spacecraft.type)
+        
         if(this.spacecraft.type == "../resources/rocket.svg")
             this.spacecraft.directionCorrection = 45
         this.spacecraft.gElement.setAttribute("id", `${this.spacecraft.id}`)
@@ -99,10 +102,16 @@ export class SpaceGame {
             } else if (index === -1){
                 const spacecraft = new Spacecraft()
                 spacecraft.objectStatus = response
-                spacecraft.gElement = SpacecraftShape.getCraftGElement(spacecraft.type)
+                const spacecraftShape = new SpacecraftShape(spacecraft.type)
+                
+                spacecraft.gElement = spacecraftShape.gElement
+                
+                
+                //spacecraft.spacecraftShape.createSatPolygon(spacecraft.type)
+
                 this.spaceObjects.push(spacecraft)
                 spacecraft.gElement.setAttribute("id", `${spacecraft.id}`)
-                this.gameEnvironment.svgElement.appendChild(spacecraft.gElement)
+                this.gameEnvironment.svgElement.insertBefore(spacecraft.gElement, this.spacecraft.gElement)
             }
             
         })
@@ -128,7 +137,28 @@ export class SpaceGame {
         requestAnimationFrame(() => {
             this.gameLoop();
         });
-        
+        /*
+        // check collisions between the spacecrafts that have a satPolygon
+        for (let i = 0; i < this.spaceObjects.length; i++) {
+            const element1 = this.spaceObjects[i];
+            if (!element1.satPolygon) {
+                //console.log("found an element with SAT Polygon: "+ element1)
+           
+            for (let j = i + 1; j < this.spaceObjects.length; j++) {
+                const element2 = this.spaceObjects[j];
+                if (!element2.satPolygon) {
+                //console.log("found two elements with SAT Polygon")
+                // if two spaceObjects with SAT.Polygons appear, check the collision status between them
+                if (SAT.testPolygonPolygon(element1.satPolygon, element2.satPolygon)) {
+                    console.log("collision detected between", element1, "and", element2);
+                    // optional: break if you want to stop after the first detected collision
+                }
+            }
+            }
+            }
+        }
+*/
+
         const request = {} as SyncronizeSpaceObject
         request.spaceObject = this.spacecraft.objectStatus
         
@@ -258,6 +288,9 @@ export class SpaceGame {
         }
         */
 
+        // test collision betwen stations
+
+
     }
 
     private setupKeyUpListener() {
@@ -346,7 +379,7 @@ export class SpaceGame {
                                                         rotate (${spacecraft.direction + spacecraft.directionCorrection})`);
     
         if(spacecraft.label && spacecraft.labelBorder){
-        console.log("xCorrection and YCorrection not set yet!")
+        console.log("renderDeterminants not set yet!")
         spacecraft.label.setAttribute("transform", `translate(${spacecraft.objectStatus.location.x} 
                                                                 ${spacecraft.objectStatus.location.y})`)
         spacecraft.labelBorder.setAttribute("transform", `translate(${(spacecraft.objectStatus.location.x-7.5)+spacecraft.scale*7}, 
@@ -384,9 +417,23 @@ export class SpaceGame {
     }    
     stopSound(){
         console.log("stopping sound")
-        this.audioBuffer = undefined
-        this.playingSound = false
+       // this.audioBuffer = undefined
+       // this.playingSound = false
     }   
 }
 
 
+interface A extends B{
+    
+}
+interface B{
+    
+}
+
+namespace B{
+    export function create(): B {
+        return{} as B
+    }
+}
+
+B.create

@@ -6,6 +6,8 @@ import { DeviceFactory } from "./DeviceFactory.js"
 import { SpaceObjectStatus, polarVector, add, length, angle, distanceBetween, Vector2d, inverse } from "./library.js"
 import { TractorBeam } from "./TractorBeam.js"
 
+import SAT from "sat";
+
 // fontsize should seems to depend on svg-Size
 export let fontSize = window.innerHeight/80
 console.log("window.innerWidth: "+window.innerWidth)
@@ -26,6 +28,9 @@ export class Spacecraft{
 
     
     private _gElement: SVGGElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    private _spacecraftShape?: SpacecraftShape 
+    
+
     private _color: string
     private _touchControlType: string
     private easing = false
@@ -43,10 +48,12 @@ export class Spacecraft{
     
     constructor() {
                 
-        this.objectStatus.type = "rocket"
+        this.objectStatus.type = "rokket"
         this._color = "flün"
         this.objectStatus.craftId = "spacecraft"
         this._touchControlType = "spacecraft"
+       // this._spacecraftShape = new SpacecraftShape(this.type);
+       // this.gElement = this._spacecraftShape.gElement
         
     }
 
@@ -67,7 +74,7 @@ export class Spacecraft{
         if(this._device?._gElem){
             this._device._gElem.setAttribute("id", "device")
             this._gElement.appendChild(this._device._gElem)
-            console.log("gElement added")
+            
         }
     }
 
@@ -308,6 +315,18 @@ export class Spacecraft{
     get scale(){
         return(this._scale)
     }
+
+    get spacecraftShape(): SpacecraftShape | undefined{
+        if(this._spacecraftShape)
+            return this._spacecraftShape
+    }
+
+    set spacecraftShape(sp: SpacecraftShape){
+        this._spacecraftShape = sp
+        this.gElement = sp.gElement
+    }
+
+    
     get type(): string{
         return this.objectStatus.type
     }

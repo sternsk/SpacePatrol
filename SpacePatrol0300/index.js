@@ -84,6 +84,556 @@
     });
   };
 
+  // node_modules/sat/SAT.js
+  var require_SAT = __commonJS({
+    "node_modules/sat/SAT.js"(exports, module) {
+      (function(root, factory) {
+        "use strict";
+        if (typeof define === "function" && define["amd"]) {
+          define(factory);
+        } else if (typeof exports === "object") {
+          module["exports"] = factory();
+        } else {
+          root["SAT"] = factory();
+        }
+      })(exports, function() {
+        "use strict";
+        var SAT2 = {};
+        function Vector(x, y) {
+          this["x"] = x || 0;
+          this["y"] = y || 0;
+        }
+        SAT2["Vector"] = Vector;
+        SAT2["V"] = Vector;
+        Vector.prototype["copy"] = Vector.prototype.copy = function(other) {
+          this["x"] = other["x"];
+          this["y"] = other["y"];
+          return this;
+        };
+        Vector.prototype["clone"] = Vector.prototype.clone = function() {
+          return new Vector(this["x"], this["y"]);
+        };
+        Vector.prototype["perp"] = Vector.prototype.perp = function() {
+          var x = this["x"];
+          this["x"] = this["y"];
+          this["y"] = -x;
+          return this;
+        };
+        Vector.prototype["rotate"] = Vector.prototype.rotate = function(angle2) {
+          var x = this["x"];
+          var y = this["y"];
+          this["x"] = x * Math.cos(angle2) - y * Math.sin(angle2);
+          this["y"] = x * Math.sin(angle2) + y * Math.cos(angle2);
+          return this;
+        };
+        Vector.prototype["reverse"] = Vector.prototype.reverse = function() {
+          this["x"] = -this["x"];
+          this["y"] = -this["y"];
+          return this;
+        };
+        Vector.prototype["normalize"] = Vector.prototype.normalize = function() {
+          var d = this.len();
+          if (d > 0) {
+            this["x"] = this["x"] / d;
+            this["y"] = this["y"] / d;
+          }
+          return this;
+        };
+        Vector.prototype["add"] = Vector.prototype.add = function(other) {
+          this["x"] += other["x"];
+          this["y"] += other["y"];
+          return this;
+        };
+        Vector.prototype["sub"] = Vector.prototype.sub = function(other) {
+          this["x"] -= other["x"];
+          this["y"] -= other["y"];
+          return this;
+        };
+        Vector.prototype["scale"] = Vector.prototype.scale = function(x, y) {
+          this["x"] *= x;
+          this["y"] *= typeof y != "undefined" ? y : x;
+          return this;
+        };
+        Vector.prototype["project"] = Vector.prototype.project = function(other) {
+          var amt = this.dot(other) / other.len2();
+          this["x"] = amt * other["x"];
+          this["y"] = amt * other["y"];
+          return this;
+        };
+        Vector.prototype["projectN"] = Vector.prototype.projectN = function(other) {
+          var amt = this.dot(other);
+          this["x"] = amt * other["x"];
+          this["y"] = amt * other["y"];
+          return this;
+        };
+        Vector.prototype["reflect"] = Vector.prototype.reflect = function(axis) {
+          var x = this["x"];
+          var y = this["y"];
+          this.project(axis).scale(2);
+          this["x"] -= x;
+          this["y"] -= y;
+          return this;
+        };
+        Vector.prototype["reflectN"] = Vector.prototype.reflectN = function(axis) {
+          var x = this["x"];
+          var y = this["y"];
+          this.projectN(axis).scale(2);
+          this["x"] -= x;
+          this["y"] -= y;
+          return this;
+        };
+        Vector.prototype["dot"] = Vector.prototype.dot = function(other) {
+          return this["x"] * other["x"] + this["y"] * other["y"];
+        };
+        Vector.prototype["len2"] = Vector.prototype.len2 = function() {
+          return this.dot(this);
+        };
+        Vector.prototype["len"] = Vector.prototype.len = function() {
+          return Math.sqrt(this.len2());
+        };
+        function Circle(pos, r) {
+          this["pos"] = pos || new Vector();
+          this["r"] = r || 0;
+          this["offset"] = new Vector();
+        }
+        SAT2["Circle"] = Circle;
+        Circle.prototype["getAABBAsBox"] = Circle.prototype.getAABBAsBox = function() {
+          var r = this["r"];
+          var corner = this["pos"].clone().add(this["offset"]).sub(new Vector(r, r));
+          return new Box(corner, r * 2, r * 2);
+        };
+        Circle.prototype["getAABB"] = Circle.prototype.getAABB = function() {
+          return this.getAABBAsBox().toPolygon();
+        };
+        Circle.prototype["setOffset"] = Circle.prototype.setOffset = function(offset) {
+          this["offset"] = offset;
+          return this;
+        };
+        function Polygon2(pos, points) {
+          this["pos"] = pos || new Vector();
+          this["angle"] = 0;
+          this["offset"] = new Vector();
+          this.setPoints(points || []);
+        }
+        SAT2["Polygon"] = Polygon2;
+        Polygon2.prototype["setPoints"] = Polygon2.prototype.setPoints = function(points) {
+          var lengthChanged = !this["points"] || this["points"].length !== points.length;
+          if (lengthChanged) {
+            var i2;
+            var calcPoints = this["calcPoints"] = [];
+            var edges = this["edges"] = [];
+            var normals = this["normals"] = [];
+            for (i2 = 0; i2 < points.length; i2++) {
+              var p1 = points[i2];
+              var p2 = i2 < points.length - 1 ? points[i2 + 1] : points[0];
+              if (p1 !== p2 && p1.x === p2.x && p1.y === p2.y) {
+                points.splice(i2, 1);
+                i2 -= 1;
+                continue;
+              }
+              calcPoints.push(new Vector());
+              edges.push(new Vector());
+              normals.push(new Vector());
+            }
+          }
+          this["points"] = points;
+          this._recalc();
+          return this;
+        };
+        Polygon2.prototype["setAngle"] = Polygon2.prototype.setAngle = function(angle2) {
+          this["angle"] = angle2;
+          this._recalc();
+          return this;
+        };
+        Polygon2.prototype["setOffset"] = Polygon2.prototype.setOffset = function(offset) {
+          this["offset"] = offset;
+          this._recalc();
+          return this;
+        };
+        Polygon2.prototype["rotate"] = Polygon2.prototype.rotate = function(angle2) {
+          var points = this["points"];
+          var len = points.length;
+          for (var i2 = 0; i2 < len; i2++) {
+            points[i2].rotate(angle2);
+          }
+          this._recalc();
+          return this;
+        };
+        Polygon2.prototype["translate"] = Polygon2.prototype.translate = function(x, y) {
+          var points = this["points"];
+          var len = points.length;
+          for (var i2 = 0; i2 < len; i2++) {
+            points[i2]["x"] += x;
+            points[i2]["y"] += y;
+          }
+          this._recalc();
+          return this;
+        };
+        Polygon2.prototype._recalc = function() {
+          var calcPoints = this["calcPoints"];
+          var edges = this["edges"];
+          var normals = this["normals"];
+          var points = this["points"];
+          var offset = this["offset"];
+          var angle2 = this["angle"];
+          var len = points.length;
+          var i2;
+          for (i2 = 0; i2 < len; i2++) {
+            var calcPoint = calcPoints[i2].copy(points[i2]);
+            calcPoint["x"] += offset["x"];
+            calcPoint["y"] += offset["y"];
+            if (angle2 !== 0) {
+              calcPoint.rotate(angle2);
+            }
+          }
+          for (i2 = 0; i2 < len; i2++) {
+            var p1 = calcPoints[i2];
+            var p2 = i2 < len - 1 ? calcPoints[i2 + 1] : calcPoints[0];
+            var e = edges[i2].copy(p2).sub(p1);
+            normals[i2].copy(e).perp().normalize();
+          }
+          return this;
+        };
+        Polygon2.prototype["getAABBAsBox"] = Polygon2.prototype.getAABBAsBox = function() {
+          var points = this["calcPoints"];
+          var len = points.length;
+          var xMin = points[0]["x"];
+          var yMin = points[0]["y"];
+          var xMax = points[0]["x"];
+          var yMax = points[0]["y"];
+          for (var i2 = 1; i2 < len; i2++) {
+            var point = points[i2];
+            if (point["x"] < xMin) {
+              xMin = point["x"];
+            } else if (point["x"] > xMax) {
+              xMax = point["x"];
+            }
+            if (point["y"] < yMin) {
+              yMin = point["y"];
+            } else if (point["y"] > yMax) {
+              yMax = point["y"];
+            }
+          }
+          return new Box(this["pos"].clone().add(new Vector(xMin, yMin)), xMax - xMin, yMax - yMin);
+        };
+        Polygon2.prototype["getAABB"] = Polygon2.prototype.getAABB = function() {
+          return this.getAABBAsBox().toPolygon();
+        };
+        Polygon2.prototype["getCentroid"] = Polygon2.prototype.getCentroid = function() {
+          var points = this["calcPoints"];
+          var len = points.length;
+          var cx = 0;
+          var cy = 0;
+          var ar = 0;
+          for (var i2 = 0; i2 < len; i2++) {
+            var p1 = points[i2];
+            var p2 = i2 === len - 1 ? points[0] : points[i2 + 1];
+            var a = p1["x"] * p2["y"] - p2["x"] * p1["y"];
+            cx += (p1["x"] + p2["x"]) * a;
+            cy += (p1["y"] + p2["y"]) * a;
+            ar += a;
+          }
+          ar = ar * 3;
+          cx = cx / ar;
+          cy = cy / ar;
+          return new Vector(cx, cy);
+        };
+        function Box(pos, w, h) {
+          this["pos"] = pos || new Vector();
+          this["w"] = w || 0;
+          this["h"] = h || 0;
+        }
+        SAT2["Box"] = Box;
+        Box.prototype["toPolygon"] = Box.prototype.toPolygon = function() {
+          var pos = this["pos"];
+          var w = this["w"];
+          var h = this["h"];
+          return new Polygon2(new Vector(pos["x"], pos["y"]), [
+            new Vector(),
+            new Vector(w, 0),
+            new Vector(w, h),
+            new Vector(0, h)
+          ]);
+        };
+        function Response() {
+          this["a"] = null;
+          this["b"] = null;
+          this["overlapN"] = new Vector();
+          this["overlapV"] = new Vector();
+          this.clear();
+        }
+        SAT2["Response"] = Response;
+        Response.prototype["clear"] = Response.prototype.clear = function() {
+          this["aInB"] = true;
+          this["bInA"] = true;
+          this["overlap"] = Number.MAX_VALUE;
+          return this;
+        };
+        var T_VECTORS = [];
+        for (var i = 0; i < 10; i++) {
+          T_VECTORS.push(new Vector());
+        }
+        var T_ARRAYS = [];
+        for (var i = 0; i < 5; i++) {
+          T_ARRAYS.push([]);
+        }
+        var T_RESPONSE = new Response();
+        var TEST_POINT = new Box(new Vector(), 1e-6, 1e-6).toPolygon();
+        function flattenPointsOn(points, normal, result) {
+          var min = Number.MAX_VALUE;
+          var max = -Number.MAX_VALUE;
+          var len = points.length;
+          for (var i2 = 0; i2 < len; i2++) {
+            var dot = points[i2].dot(normal);
+            if (dot < min) {
+              min = dot;
+            }
+            if (dot > max) {
+              max = dot;
+            }
+          }
+          result[0] = min;
+          result[1] = max;
+        }
+        function isSeparatingAxis(aPos, bPos, aPoints, bPoints, axis, response) {
+          var rangeA = T_ARRAYS.pop();
+          var rangeB = T_ARRAYS.pop();
+          var offsetV = T_VECTORS.pop().copy(bPos).sub(aPos);
+          var projectedOffset = offsetV.dot(axis);
+          flattenPointsOn(aPoints, axis, rangeA);
+          flattenPointsOn(bPoints, axis, rangeB);
+          rangeB[0] += projectedOffset;
+          rangeB[1] += projectedOffset;
+          if (rangeA[0] > rangeB[1] || rangeB[0] > rangeA[1]) {
+            T_VECTORS.push(offsetV);
+            T_ARRAYS.push(rangeA);
+            T_ARRAYS.push(rangeB);
+            return true;
+          }
+          if (response) {
+            var overlap = 0;
+            if (rangeA[0] < rangeB[0]) {
+              response["aInB"] = false;
+              if (rangeA[1] < rangeB[1]) {
+                overlap = rangeA[1] - rangeB[0];
+                response["bInA"] = false;
+              } else {
+                var option1 = rangeA[1] - rangeB[0];
+                var option2 = rangeB[1] - rangeA[0];
+                overlap = option1 < option2 ? option1 : -option2;
+              }
+            } else {
+              response["bInA"] = false;
+              if (rangeA[1] > rangeB[1]) {
+                overlap = rangeA[0] - rangeB[1];
+                response["aInB"] = false;
+              } else {
+                var option1 = rangeA[1] - rangeB[0];
+                var option2 = rangeB[1] - rangeA[0];
+                overlap = option1 < option2 ? option1 : -option2;
+              }
+            }
+            var absOverlap = Math.abs(overlap);
+            if (absOverlap < response["overlap"]) {
+              response["overlap"] = absOverlap;
+              response["overlapN"].copy(axis);
+              if (overlap < 0) {
+                response["overlapN"].reverse();
+              }
+            }
+          }
+          T_VECTORS.push(offsetV);
+          T_ARRAYS.push(rangeA);
+          T_ARRAYS.push(rangeB);
+          return false;
+        }
+        SAT2["isSeparatingAxis"] = isSeparatingAxis;
+        function voronoiRegion(line, point) {
+          var len2 = line.len2();
+          var dp = point.dot(line);
+          if (dp < 0) {
+            return LEFT_VORONOI_REGION;
+          } else if (dp > len2) {
+            return RIGHT_VORONOI_REGION;
+          } else {
+            return MIDDLE_VORONOI_REGION;
+          }
+        }
+        var LEFT_VORONOI_REGION = -1;
+        var MIDDLE_VORONOI_REGION = 0;
+        var RIGHT_VORONOI_REGION = 1;
+        function pointInCircle(p, c) {
+          var differenceV = T_VECTORS.pop().copy(p).sub(c["pos"]).sub(c["offset"]);
+          var radiusSq = c["r"] * c["r"];
+          var distanceSq = differenceV.len2();
+          T_VECTORS.push(differenceV);
+          return distanceSq <= radiusSq;
+        }
+        SAT2["pointInCircle"] = pointInCircle;
+        function pointInPolygon(p, poly) {
+          TEST_POINT["pos"].copy(p);
+          T_RESPONSE.clear();
+          var result = testPolygonPolygon(TEST_POINT, poly, T_RESPONSE);
+          if (result) {
+            result = T_RESPONSE["aInB"];
+          }
+          return result;
+        }
+        SAT2["pointInPolygon"] = pointInPolygon;
+        function testCircleCircle(a, b, response) {
+          var differenceV = T_VECTORS.pop().copy(b["pos"]).add(b["offset"]).sub(a["pos"]).sub(a["offset"]);
+          var totalRadius = a["r"] + b["r"];
+          var totalRadiusSq = totalRadius * totalRadius;
+          var distanceSq = differenceV.len2();
+          if (distanceSq > totalRadiusSq) {
+            T_VECTORS.push(differenceV);
+            return false;
+          }
+          if (response) {
+            var dist = Math.sqrt(distanceSq);
+            response["a"] = a;
+            response["b"] = b;
+            response["overlap"] = totalRadius - dist;
+            response["overlapN"].copy(differenceV.normalize());
+            response["overlapV"].copy(differenceV).scale(response["overlap"]);
+            response["aInB"] = a["r"] <= b["r"] && dist <= b["r"] - a["r"];
+            response["bInA"] = b["r"] <= a["r"] && dist <= a["r"] - b["r"];
+          }
+          T_VECTORS.push(differenceV);
+          return true;
+        }
+        SAT2["testCircleCircle"] = testCircleCircle;
+        function testPolygonCircle(polygon, circle, response) {
+          var circlePos = T_VECTORS.pop().copy(circle["pos"]).add(circle["offset"]).sub(polygon["pos"]);
+          var radius = circle["r"];
+          var radius2 = radius * radius;
+          var points = polygon["calcPoints"];
+          var len = points.length;
+          var edge = T_VECTORS.pop();
+          var point = T_VECTORS.pop();
+          for (var i2 = 0; i2 < len; i2++) {
+            var next = i2 === len - 1 ? 0 : i2 + 1;
+            var prev = i2 === 0 ? len - 1 : i2 - 1;
+            var overlap = 0;
+            var overlapN = null;
+            edge.copy(polygon["edges"][i2]);
+            point.copy(circlePos).sub(points[i2]);
+            if (response && point.len2() > radius2) {
+              response["aInB"] = false;
+            }
+            var region = voronoiRegion(edge, point);
+            if (region === LEFT_VORONOI_REGION) {
+              edge.copy(polygon["edges"][prev]);
+              var point2 = T_VECTORS.pop().copy(circlePos).sub(points[prev]);
+              region = voronoiRegion(edge, point2);
+              if (region === RIGHT_VORONOI_REGION) {
+                var dist = point.len();
+                if (dist > radius) {
+                  T_VECTORS.push(circlePos);
+                  T_VECTORS.push(edge);
+                  T_VECTORS.push(point);
+                  T_VECTORS.push(point2);
+                  return false;
+                } else if (response) {
+                  response["bInA"] = false;
+                  overlapN = point.normalize();
+                  overlap = radius - dist;
+                }
+              }
+              T_VECTORS.push(point2);
+            } else if (region === RIGHT_VORONOI_REGION) {
+              edge.copy(polygon["edges"][next]);
+              point.copy(circlePos).sub(points[next]);
+              region = voronoiRegion(edge, point);
+              if (region === LEFT_VORONOI_REGION) {
+                var dist = point.len();
+                if (dist > radius) {
+                  T_VECTORS.push(circlePos);
+                  T_VECTORS.push(edge);
+                  T_VECTORS.push(point);
+                  return false;
+                } else if (response) {
+                  response["bInA"] = false;
+                  overlapN = point.normalize();
+                  overlap = radius - dist;
+                }
+              }
+            } else {
+              var normal = edge.perp().normalize();
+              var dist = point.dot(normal);
+              var distAbs = Math.abs(dist);
+              if (dist > 0 && distAbs > radius) {
+                T_VECTORS.push(circlePos);
+                T_VECTORS.push(normal);
+                T_VECTORS.push(point);
+                return false;
+              } else if (response) {
+                overlapN = normal;
+                overlap = radius - dist;
+                if (dist >= 0 || overlap < 2 * radius) {
+                  response["bInA"] = false;
+                }
+              }
+            }
+            if (overlapN && response && Math.abs(overlap) < Math.abs(response["overlap"])) {
+              response["overlap"] = overlap;
+              response["overlapN"].copy(overlapN);
+            }
+          }
+          if (response) {
+            response["a"] = polygon;
+            response["b"] = circle;
+            response["overlapV"].copy(response["overlapN"]).scale(response["overlap"]);
+          }
+          T_VECTORS.push(circlePos);
+          T_VECTORS.push(edge);
+          T_VECTORS.push(point);
+          return true;
+        }
+        SAT2["testPolygonCircle"] = testPolygonCircle;
+        function testCirclePolygon(circle, polygon, response) {
+          var result = testPolygonCircle(polygon, circle, response);
+          if (result && response) {
+            var a = response["a"];
+            var aInB = response["aInB"];
+            response["overlapN"].reverse();
+            response["overlapV"].reverse();
+            response["a"] = response["b"];
+            response["b"] = a;
+            response["aInB"] = response["bInA"];
+            response["bInA"] = aInB;
+          }
+          return result;
+        }
+        SAT2["testCirclePolygon"] = testCirclePolygon;
+        function testPolygonPolygon(a, b, response) {
+          var aPoints = a["calcPoints"];
+          var aLen = aPoints.length;
+          var bPoints = b["calcPoints"];
+          var bLen = bPoints.length;
+          for (var i2 = 0; i2 < aLen; i2++) {
+            if (isSeparatingAxis(a["pos"], b["pos"], aPoints, bPoints, a["normals"][i2], response)) {
+              return false;
+            }
+          }
+          for (var i2 = 0; i2 < bLen; i2++) {
+            if (isSeparatingAxis(a["pos"], b["pos"], aPoints, bPoints, b["normals"][i2], response)) {
+              return false;
+            }
+          }
+          if (response) {
+            response["a"] = a;
+            response["b"] = b;
+            response["overlapV"].copy(response["overlapN"]).scale(response["overlap"]);
+          }
+          return true;
+        }
+        SAT2["testPolygonPolygon"] = testPolygonPolygon;
+        return SAT2;
+      });
+    }
+  });
+
   // node_modules/distance-to-line-segment/index.js
   var require_distance_to_line_segment = __commonJS({
     "node_modules/distance-to-line-segment/index.js"(exports, module) {
@@ -448,293 +998,387 @@
   });
 
   // src/SpacecraftShape.ts
-  var getImageOutline, SpacecraftShape;
+  function createGElement(type) {
+    const gElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const additionalPaths = [];
+    const path0 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    const path1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    switch (type) {
+      case "rokket":
+        const outline = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        const inline = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        outline.setAttribute("d", `M 0 -8, 
+                                        L  -4 8,
+                                        L -2 4,
+                                        L 0 8,
+                                        L 2 6, 
+                                        L 4 8,
+                                        z`);
+        outline.setAttribute("fill", "none");
+        outline.setAttribute("stroke", `${color}`);
+        outline.setAttribute("stroke-width", "1px");
+        outline.setAttribute("vector-effect", "non-scaling-stroke");
+        inline.setAttribute("d", `M -.2 -5,
+                                        L .2 -5,
+                                        L 2 2,
+                                        L -1.5 2,
+                                        z`);
+        inline.setAttribute("fill", "none");
+        inline.setAttribute("stroke", `${color}`);
+        inline.setAttribute("stroke-width", ".5px");
+        inline.setAttribute("vector-effect", "non-scaling-stroke");
+        gElement.appendChild(outline);
+        gElement.appendChild(inline);
+        return gElement;
+      case "rainbowRocket":
+        gElement.setAttribute("fill", "grey");
+        gElement.setAttribute("stroke-width", ".5");
+        gElement.setAttribute("stroke", `${color}`);
+        const wingLeft = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        wingLeft.setAttribute("d", "M-2 -3 q-1.5 1, -2 3 q1 -0.5, 2 -1z");
+        const wingRight = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        wingRight.setAttribute("d", "M 2 -3 q 1.5 1, 2 3 q-1 -0.5, -2 -1z");
+        const summitball = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        summitball.setAttribute("cx", "0");
+        summitball.setAttribute("cy", "-9");
+        summitball.setAttribute("r", ".2");
+        const fire = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        fire.setAttribute("d", `M -2 2 Q -3 5, -2 8 Q -1 7, -1 6 Q -1 7.5, 0 9 Q 1 7.5, 1 6 Q 1 7, 2 8 Q 3 5, 2 2 Q 0 1.5, -2 2`);
+        const topwindow = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        topwindow.setAttribute("d", "M -1 -5 q .75 -.75, 1 -1 q .75 .75, 1 1 q -1 -.25, -2 0");
+        const middlewindow = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        middlewindow.setAttribute("d", "M-1 -3 q -.5 2, 0 4 q .5 .15, 1 0 q -.5 -2, 0 -4 q -.5 -.15, -1 0");
+        gElement.appendChild(wingLeft);
+        gElement.appendChild(wingRight);
+        gElement.appendChild(summitball);
+        gElement.appendChild(fire);
+        gElement.appendChild(topwindow);
+        gElement.appendChild(middlewindow);
+        console.log("rainbow rocket created");
+        return gElement;
+      case "blizzer.png":
+        gElement.setAttribute("fill", "none");
+        gElement.setAttribute("stroke-width", ".5");
+        gElement.setAttribute("stroke", `${color}`);
+        path0.setAttribute("d", `M 0,-20, 
+                                    L -4, -12 
+                                    L -8 -8
+                                    L -8 -15`);
+        additionalPaths.push(path0);
+        path1.setAttribute("d", `M 0,-20, 
+                                    L 4, -12 
+                                    L 8 -8
+                                    L 8 -15`);
+        additionalPaths.push(path1);
+        const path2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        path2.setAttribute("d", `M -4,-10, 
+                                    L -4, 0 
+                                    L -8 2
+                                    L 8 2
+                                    L 4 0
+                                    L 4 -10`);
+        additionalPaths.push(path2);
+        break;
+      case "bromber":
+        gElement.setAttribute("fill", "none");
+        gElement.setAttribute("stroke-width", ".5");
+        gElement.setAttribute("stroke", `${color}`);
+        const box = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        box.setAttribute("x", "-18");
+        box.setAttribute("y", "-25");
+        box.setAttribute("rx", "10");
+        box.setAttribute("ry", "5");
+        box.setAttribute("width", "34");
+        box.setAttribute("height", "52");
+        additionalPaths.push(box);
+        break;
+      case "helgram.png":
+        gElement.setAttribute("transform", "translate(-50,220) scale(0.0393700787401575,0.0100000)");
+        gElement.setAttribute("fill", `${color}`);
+        gElement.setAttribute("stroke", "none");
+        path0.setAttribute("d", `M1790 2633 c-11 -26 -23 -58 -27 -72 -3 -14 -12 -34 -20 -43 -13 -15
+                -14 -40 -3 -189 6 -95 15 -179 19 -187 11 -19 1 -62 -15 -69 -7 -2 -10 -12 -7
+                -21 4 -13 3 -14 -5 -3 -8 11 -13 11 -33 -2 -13 -8 -39 -18 -58 -22 -19 -4 -43
+                -16 -54 -26 -20 -18 -21 -18 -37 1 -18 20 -46 28 -35 10 3 -5 -3 -10 -14 -10
+                -12 0 -21 5 -21 10 0 6 -14 10 -31 10 -16 0 -28 -4 -25 -9 3 -5 -2 -12 -11
+                -16 -10 -3 -19 -1 -21 4 -2 6 -20 11 -41 11 -57 0 -69 29 -66 165 2 61 -1 155
+                -5 210 -4 55 -3 113 1 129 5 17 4 36 -2 47 -6 13 -6 25 1 39 12 23 -4 64 -23
+                57 -16 -5 -36 -63 -36 -104 -1 -35 14 -45 22 -15 3 9 5 -1 6 -23 0 -36 -1 -38
+                -14 -21 -13 17 -14 15 -21 -18 -3 -20 -4 -69 0 -109 3 -39 8 -119 11 -177 3
+                -58 8 -117 11 -132 5 -25 4 -26 -53 -30 -37 -3 -68 1 -87 10 -16 8 -59 14
+                -100 14 -58 0 -75 4 -94 22 -19 17 -36 21 -99 21 l-75 0 -3 131 c-1 73 -6 138
+                -11 145 -14 24 -20 164 -10 239 5 41 5 43 -9 26 -8 -11 -15 -28 -15 -38 0 -21
+                -12 -23 -40 -6 -31 20 -33 4 -5 -48 23 -44 24 -52 15 -103 -13 -70 -13 -128 0
+                -136 16 -10 12 -61 -6 -76 -14 -11 -15 -27 -9 -104 4 -49 8 -105 9 -123 2 -34
+                -8 -50 -19 -32 -4 6 -17 4 -36 -6 -45 -23 -177 -152 -206 -201 -26 -45 -106
+                -121 -152 -144 -14 -7 -38 -21 -52 -31 -23 -15 -28 -16 -33 -3 -3 8 -1 15 4
+                15 15 0 46 35 52 58 9 31 -10 38 -21 9 -12 -31 -31 -43 -41 -27 -7 12 -4 126
+                5 182 3 17 -1 28 -11 32 -22 8 -24 8 -24 -9 0 -8 -4 -15 -10 -15 -5 0 -10 17
+                -10 38 0 24 3 32 9 23 5 -8 11 -9 15 -3 3 6 2 13 -3 16 -5 3 -12 22 -15 41 -6
+                28 -12 35 -30 35 -21 0 -24 -6 -34 -82 -18 -124 -13 -216 9 -202 5 3 9 1 9 -5
+                0 -5 -5 -11 -11 -13 -9 -3 -9 -26 0 -88 16 -113 -1 -442 -29 -565 -13 -55 -13
+                -225 0 -225 6 0 10 -11 10 -25 0 -14 4 -25 8 -25 4 0 6 -28 4 -62 -2 -35 3
+                -117 12 -183 8 -66 16 -198 17 -293 1 -152 3 -173 17 -170 20 4 35 71 26 118
+                -9 51 -14 182 -6 194 3 6 5 66 3 132 -2 107 -1 123 15 132 14 8 16 18 11 56
+                -4 25 -3 46 2 46 17 0 305 -280 492 -478 21 -21 35 -29 43 -23 6 4 20 5 31 1
+                18 -7 19 -8 3 -15 -10 -4 -18 -13 -18 -20 0 -27 21 -26 54 2 32 29 36 30 143
+                31 105 1 111 0 116 -20 5 -18 10 -20 39 -12 57 14 209 13 310 -3 86 -14 100
+                -14 135 -1 21 9 66 19 100 23 54 6 64 5 70 -10 3 -10 1 -26 -5 -36 -7 -10 -12
+                -21 -12 -24 0 -13 27 -3 50 18 65 60 142 57 82 -3 -40 -39 -102 -115 -102
+                -124 0 -20 38 0 86 45 30 29 54 49 54 46 0 -3 15 7 32 24 33 29 41 32 115 31
+                29 -1 45 4 51 15 13 23 3 53 -19 53 -38 0 -27 22 56 107 47 48 116 129 153
+                180 37 51 73 95 80 98 7 2 18 -7 24 -23 11 -25 12 -23 18 36 9 77 18 89 57 70
+                34 -16 41 -53 42 -221 1 -74 5 -115 15 -130 8 -12 17 -51 21 -87 4 -36 13 -78
+                20 -95 7 -16 17 -43 24 -59 10 -24 14 -26 27 -15 17 14 16 81 -6 224 -5 39
+                -12 108 -15 154 -3 52 -10 88 -17 93 -10 6 -9 11 5 19 9 5 17 20 17 31 0 17
+                -3 19 -12 10 -19 -19 -28 -14 -28 12 0 23 3 24 41 21 l42 -4 -6 77 c-3 42 -10
+                91 -16 107 -57 183 -97 580 -71 711 7 32 15 86 17 119 3 33 9 65 13 70 10 13
+                35 184 28 191 -4 3 -2 19 2 35 10 33 0 43 -31 34 -13 -5 -17 -10 -11 -18 26
+                -33 18 -167 -10 -167 -7 0 -7 4 0 13 13 15 10 75 -5 101 -9 17 -10 17 -17 1
+                -5 -13 -9 -15 -19 -6 -11 8 -16 3 -25 -26 -6 -20 -10 -39 -8 -41 2 -2 7 6 11
+                17 3 12 10 21 15 21 13 0 18 -36 8 -54 -8 -14 -12 -15 -25 -4 -15 12 -16 7
+                -11 -49 5 -47 2 -65 -8 -74 -8 -7 -14 -31 -14 -60 0 -56 -14 -64 -28 -16 -13
+                45 -31 135 -35 177 -2 19 -4 1 -5 -40 -1 -45 6 -103 17 -145 18 -70 18 -135
+                -1 -135 -6 0 -8 -14 -5 -35 3 -19 2 -37 -2 -39 -13 -9 -90 75 -123 133 -17 31
+                -49 74 -69 96 -43 46 -111 132 -198 254 l-61 84 5 76 c8 117 6 141 -11 178 -9
+                18 -14 36 -11 40 15 15 41 -35 58 -115 l19 -87 -5 68 c-9 104 -15 126 -50 160
+                -18 19 -30 39 -27 50 4 17 22 24 22 8 0 -5 7 -11 15 -15 13 -4 14 3 10 47 -3
+                29 -7 90 -9 137 -6 142 -37 180 -76 93z m62 -153 c1 -14 0 -38 -1 -55 -2 -29
+                -3 -28 -15 12 -7 22 -13 67 -13 100 l0 58 14 -45 c8 -25 15 -56 15 -70z m-43
+                -117 c27 -107 20 -246 -11 -215 -15 15 -24 252 -10 252 6 0 16 -17 21 -37z
+                m11 -288 c0 -14 0 -27 0 -30 0 -3 -3 -6 -6 -7 -12 -5 -27 29 -21 46 10 25 27
+                19 27 -9z m-969 0 c19 -8 27 -14 19 -14 -14 0 -72 28 -59 29 4 0 22 -7 40 -15z
+                m5 -24 c8 -8 47 -17 194 -43 30 -6 81 -11 113 -12 41 -1 61 -6 67 -16 11 -19
+                -6 -161 -24 -210 -19 -48 -31 -128 -18 -115 5 6 15 28 22 50 15 48 36 80 43
+                68 3 -5 7 -38 8 -74 1 -35 6 -70 12 -76 6 -9 5 -13 -4 -13 -12 0 -12 -2 0 -9
+                11 -7 10 -12 -5 -29 -16 -19 -20 -20 -45 -7 -24 13 -27 13 -23 -3 5 -23 -11
+                -41 -76 -82 -46 -29 -133 -102 -227 -191 -11 -11 -38 -52 -59 -92 -35 -69
+                -130 -197 -145 -197 -23 0 -27 37 -24 230 4 246 22 659 31 715 7 41 38 85 60
+                85 6 0 17 7 24 15 14 16 60 20 76 6z m357 -38 c-7 -2 -19 -2 -25 0 -7 3 -2 5
+                12 5 14 0 19 -2 13 -5z m583 -27 l34 -34 0 -183 c0 -144 -3 -186 -14 -198 -8
+                -9 -19 -58 -26 -116 -11 -105 -15 -381 -5 -408 4 -8 7 -46 9 -83 1 -38 6 -77
+                10 -86 6 -13 4 -18 -7 -18 -13 0 -69 67 -137 165 -14 20 -44 56 -67 80 -23 24
+                -67 76 -99 115 -31 39 -62 69 -68 67 -6 -3 -19 2 -29 11 -25 22 -31 10 -7 -16
+                11 -12 20 -24 20 -28 0 -20 -110 107 -114 132 -1 8 -7 19 -12 22 -21 15 -47
+                80 -40 98 8 18 8 18 17 -1 5 -11 18 -33 28 -50 11 -16 30 -49 42 -73 12 -24
+                29 -46 38 -49 9 -2 23 -8 32 -13 9 -5 -10 37 -42 93 l-58 102 -11 130 c-6 72
+                -13 138 -16 149 -4 12 -2 16 5 12 7 -5 9 3 5 23 -5 23 -2 32 14 40 17 9 18 16
+                11 53 -4 24 -4 46 -1 50 15 15 241 11 260 -4 16 -13 97 8 131 34 34 26 59 22
+                97 -16z m-1136 -195 c0 -47 -5 -102 -10 -121 -6 -19 -12 -77 -15 -128 -2 -51
+                -8 -98 -12 -105 -4 -7 -8 -109 -8 -228 0 -186 2 -216 15 -215 9 1 16 -9 18
+                -25 2 -20 -2 -28 -18 -32 -13 -3 -18 -10 -14 -20 3 -10 -4 -22 -19 -32 -35
+                -23 -176 -13 -282 20 -44 14 -97 25 -118 25 -23 0 -44 7 -56 19 -18 18 -19 31
+                -16 148 5 155 13 243 26 303 8 37 7 46 -5 56 -21 15 -20 44 2 70 17 21 100 79
+                182 126 25 15 74 57 110 94 61 63 163 164 185 183 18 15 35 -50 35 -138z
+                m1253 52 c41 -59 119 -158 161 -203 18 -19 45 -58 61 -85 37 -65 70 -101 123
+                -132 l43 -26 -2 -126 c-2 -69 -2 -191 -1 -271 2 -164 -5 -206 -34 -202 -47 7
+                -274 2 -317 -6 -51 -10 -121 -2 -99 12 7 4 24 5 37 2 27 -7 45 12 24 25 -8 5
+                -24 9 -35 9 -43 0 -47 20 -50 233 -2 138 1 206 8 215 9 10 8 16 -3 24 -11 7
+                -11 11 -1 15 6 2 12 9 12 15 0 5 6 15 13 22 7 7 12 28 11 47 -5 126 -6 182 -5
+                322 1 99 5 157 11 157 6 0 25 -21 43 -47z m-1866 15 c-3 -8 -6 -5 -6 6 -1 11
+                2 17 5 13 3 -3 4 -12 1 -19z m12 -96 c1 -23 -3 -32 -11 -29 -11 3 -16 70 -8
+                97 4 13 19 -39 19 -68z m2321 -197 c0 -8 -4 -17 -10 -20 -6 -4 -10 5 -10 20 0
+                15 4 24 10 20 6 -3 10 -12 10 -20z m-1164 -107 c9 -14 7 -554 -2 -581 -3 -10
+                -19 -20 -35 -24 -33 -6 -34 -29 -1 -26 18 2 22 -6 31 -65 6 -37 12 -80 14 -95
+                3 -34 22 -32 22 2 1 40 19 35 59 -16 20 -26 56 -68 79 -93 50 -53 179 -244
+                181 -268 2 -33 -129 -36 -321 -6 -87 13 -127 14 -265 5 -109 -8 -165 -8 -172
+                -1 -10 10 -1 23 78 107 28 31 37 46 29 54 -12 12 -116 -100 -133 -145 -10 -28
+                -11 -29 -72 -22 -72 7 -101 23 -123 68 -8 18 -35 54 -58 79 -66 73 -117 135
+                -156 192 -20 28 -42 58 -49 65 -6 7 -12 20 -12 28 0 8 -6 14 -14 14 -14 0
+                -126 133 -126 151 0 6 8 8 18 5 9 -3 31 -8 47 -12 17 -3 63 -17 104 -31 103
+                -34 205 -35 286 -2 58 24 60 26 57 59 -2 26 4 41 31 69 61 66 107 130 137 188
+                26 54 80 113 208 226 30 28 34 28 51 13 21 -19 31 -12 31 21 0 13 6 23 14 23
+                8 0 16 7 20 15 7 18 32 20 42 3z m78 -108 c24 -44 61 -91 160 -207 11 -12 35
+                -46 55 -75 40 -58 151 -168 170 -168 6 0 31 -18 55 -40 42 -39 61 -77 57 -111
+                -2 -21 45 -34 65 -18 16 13 407 19 420 7 9 -9 -26 -43 -85 -83 -24 -16 -55
+                -45 -70 -64 -41 -55 -102 -110 -115 -105 -7 3 -19 -2 -26 -11 -9 -11 -9 -15
+                -1 -15 7 0 9 -5 5 -11 -4 -8 -9 -7 -15 2 -4 7 -10 11 -13 9 -2 -3 -28 -25 -56
+                -50 -28 -25 -73 -64 -100 -88 -46 -41 -49 -43 -110 -40 -56 2 -64 5 -85 33
+                -22 30 -80 122 -122 192 -21 35 -93 120 -185 216 l-47 50 1 71 c0 39 -1 76 -2
+                81 -7 31 1 475 8 475 5 0 21 -23 36 -50z m1043 -95 c-2 -20 -10 -41 -17 -48
+                -10 -10 -12 -8 -6 6 3 10 6 32 6 48 0 16 5 29 10 29 6 0 9 -15 7 -35z m-752
+                -180 c71 -74 93 -105 75 -105 -11 0 -46 27 -64 49 -6 7 -27 31 -46 51 -37 40
+                -39 43 -82 108 -40 59 -34 65 11 12 21 -25 69 -76 106 -115z m888 -92 c19 -70
+                28 -153 18 -171 -6 -11 -11 -30 -11 -41 0 -12 -7 -21 -15 -21 -8 0 -15 1 -16
+                3 -4 15 -9 223 -5 233 7 19 24 17 29 -3z m-108 -23 c11 -18 8 -126 -4 -148
+                -21 -39 -34 -15 -26 47 5 31 7 68 6 84 -1 27 12 36 24 17z m-2211 -176 c19 -7
+                91 -103 83 -110 -8 -9 -107 86 -107 102 0 16 2 16 24 8z m2366 -29 c14 -17 5
+                -36 -15 -28 -16 6 -21 43 -6 43 5 0 14 -7 21 -15z m-590 -371 c0 -3 -18 -23
+                -41 -45 -22 -21 -38 -43 -35 -48 10 -16 -10 -21 -28 -8 -16 12 -16 14 4 40 12
+                15 28 27 35 27 8 0 19 9 25 20 10 18 40 29 40 14z m-130 -244 c0 -12 -28 -25
+                -36 -17 -9 9 6 27 22 27 8 0 14 -5 14 -10z`);
+        additionalPaths.push(path0);
+        path1.setAttribute("d", "M510 910 c0 -13 30 -13 50 0 11 7 7 10 -17 10 -18 0 -33 -4 -33 -10z");
+        additionalPaths.push(path1);
+        break;
+      case "../resources/rocket.svg":
+        gElement.setAttribute("transform", "rotate(-45)");
+        break;
+      case "planet":
+        console.log("planet requested");
+        const planetImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        planetImage.href.baseVal = "../resources/planet.png";
+        planetImage.setAttribute("width", `50`);
+        planetImage.setAttribute("height", `50`);
+        planetImage.setAttribute("stroke", `${color}`);
+        planetImage.setAttribute("transform", `translate (-25,-25)`);
+        gElement.appendChild(planetImage);
+        return gElement;
+      case "station01":
+        console.log("station requested");
+        const stationImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        stationImage.href.baseVal = "../resources/station01.png";
+        stationImage.setAttribute("width", `50`);
+        stationImage.setAttribute("height", `50`);
+        stationImage.setAttribute("stroke", `${color}`);
+        stationImage.setAttribute("transform", `translate (-25,-25)`);
+        const hmtlStationImage = new Image();
+        hmtlStationImage.src = "../resources/station01.png";
+        let svgPolygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        hmtlStationImage.onload = () => {
+          const hmtlStationImageWidth = hmtlStationImage.width;
+          const scalingFactor = 50 / hmtlStationImageWidth;
+          console.log("hmtlStationImageWidth: " + hmtlStationImageWidth);
+          let polygon = getImageOutline(hmtlStationImage);
+          const pointsString = polygon.map((point) => `${point.x},${point.y}`).join(" ");
+          svgPolygon.setAttribute("points", pointsString);
+          svgPolygon.setAttribute("stroke", "brown");
+          svgPolygon.setAttribute("stroke-width", "5px");
+          svgPolygon.setAttribute("vector-effect", "non-scaling-stroke");
+          svgPolygon.setAttribute("transform", `translate(-25, -6) scale(${scalingFactor})`);
+        };
+        gElement.appendChild(svgPolygon);
+        gElement.appendChild(stationImage);
+        return gElement;
+      case "station02":
+        console.log("station02 requested");
+        const station02Image = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        station02Image.href.baseVal = "../resources/station02.png";
+        station02Image.setAttribute("width", `50`);
+        station02Image.setAttribute("height", `50`);
+        station02Image.setAttribute("stroke", `${color}`);
+        station02Image.setAttribute("transform", `translate (-25,-25)`);
+        const hmtlStation02Image = new Image();
+        hmtlStation02Image.src = "../resources/station02.png";
+        let svgPolygon02 = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
+        hmtlStation02Image.onload = () => {
+          const hmtlStation02ImageWidth = hmtlStation02Image.width;
+          const scalingFactor = 50 / hmtlStation02ImageWidth;
+          console.log("hmtlStationImageWidth: " + hmtlStation02ImageWidth);
+          let polygon02 = getImageOutline(hmtlStation02Image);
+          const pointsString = polygon02.map((point) => `${point.x},${point.y}`).join(" ");
+          svgPolygon02.setAttribute("points", pointsString);
+          svgPolygon02.setAttribute("stroke", "white");
+          svgPolygon02.setAttribute("fill", "none");
+          svgPolygon02.setAttribute("stroke-width", "1px");
+          svgPolygon02.setAttribute("vector-effect", "non-scaling-stroke");
+          svgPolygon02.setAttribute("transform", `translate(-25, -22) scale(${scalingFactor})`);
+        };
+        gElement.appendChild(svgPolygon02);
+        gElement.appendChild(station02Image);
+        return gElement;
+      case "nugget":
+        const nuggetImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
+        nuggetImage.href.baseVal = "../resources/nugget01.png";
+        nuggetImage.setAttribute("width", `30`);
+        nuggetImage.setAttribute("height", `20`);
+        nuggetImage.setAttribute("stroke", `${color}`);
+        nuggetImage.setAttribute("transform", `scale (${Math.random() * 2 - 1}) translate (-15,-10)`);
+        gElement.appendChild(nuggetImage);
+        return gElement;
+    }
+    const imageUrl = `./${type}`;
+    const image = document.createElementNS("http://www.w3.org/2000/svg", "image");
+    image.href.baseVal = imageUrl;
+    image.onload = () => {
+      let imageWidth = image.getBBox().width;
+      console.log("imageWidth: " + imageWidth);
+    };
+    image.setAttribute("width", `50`);
+    image.setAttribute("height", `50`);
+    image.setAttribute("stroke", `${color}`);
+    image.setAttribute("transform", `translate (-25,-25)`);
+    gElement.appendChild(image);
+    if (additionalPaths) {
+      additionalPaths.forEach((object) => {
+        gElement.appendChild(object);
+      });
+    }
+    return gElement;
+  }
+  function pointsToPathString(points) {
+    if (points.length === 0) return "";
+    let pathString = `M${points[0].x},${points[0].y}`;
+    for (let i = 1; i < points.length; i++) {
+      pathString += ` L${points[i].x},${points[i].y}`;
+    }
+    return pathString;
+  }
+  var import_sat, getImageOutline, SpacecraftShape;
   var init_SpacecraftShape = __esm({
     "src/SpacecraftShape.ts"() {
       "use strict";
       init_GameMenu();
+      import_sat = __toESM(require_SAT(), 1);
       getImageOutline = require_browser();
       SpacecraftShape = class {
-        static getCraftGElement(type) {
-          const gElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
-          const additionalPaths = [];
-          const path0 = document.createElementNS("http://www.w3.org/2000/svg", "path");
-          const path1 = document.createElementNS("http://www.w3.org/2000/svg", "path");
-          switch (type) {
-            case "rokket":
-              const outline = document.createElementNS("http://www.w3.org/2000/svg", "path");
-              const inline = document.createElementNS("http://www.w3.org/2000/svg", "path");
-              outline.setAttribute("d", `M 0 -8, 
-                                            L  -4 8,
-                                            L -2 4,
-                                            L 0 8,
-                                            L 2 6, 
-                                            L 4 8,
-                                            z`);
-              outline.setAttribute("fill", "none");
-              outline.setAttribute("stroke", `${color}`);
-              outline.setAttribute("stroke-width", "1px");
-              outline.setAttribute("vector-effect", "non-scaling-stroke");
-              inline.setAttribute("d", `M -.2 -5,
-                                            L .2 -5,
-                                            L 2 2,
-                                            L -1.5 2,
-                                            z`);
-              inline.setAttribute("fill", "none");
-              inline.setAttribute("stroke", `${color}`);
-              inline.setAttribute("stroke-width", ".5px");
-              inline.setAttribute("vector-effect", "non-scaling-stroke");
-              gElement.appendChild(outline);
-              gElement.appendChild(inline);
-              return gElement;
-            case "rainbowRocket":
-              gElement.setAttribute("fill", "grey");
-              gElement.setAttribute("stroke-width", ".5");
-              gElement.setAttribute("stroke", `${color}`);
-              const wingLeft = document.createElementNS("http://www.w3.org/2000/svg", "path");
-              wingLeft.setAttribute("d", "M-2 -3 q-1.5 1, -2 3 q1 -0.5, 2 -1z");
-              const wingRight = document.createElementNS("http://www.w3.org/2000/svg", "path");
-              wingRight.setAttribute("d", "M 2 -3 q 1.5 1, 2 3 q-1 -0.5, -2 -1z");
-              const summitball = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-              summitball.setAttribute("cx", "0");
-              summitball.setAttribute("cy", "-9");
-              summitball.setAttribute("r", ".2");
-              const fire = document.createElementNS("http://www.w3.org/2000/svg", "path");
-              fire.setAttribute("d", `M -2 2 Q -3 5, -2 8 Q -1 7, -1 6 Q -1 7.5, 0 9 Q 1 7.5, 1 6 Q 1 7, 2 8 Q 3 5, 2 2 Q 0 1.5, -2 2`);
-              const topwindow = document.createElementNS("http://www.w3.org/2000/svg", "path");
-              topwindow.setAttribute("d", "M -1 -5 q .75 -.75, 1 -1 q .75 .75, 1 1 q -1 -.25, -2 0");
-              const middlewindow = document.createElementNS("http://www.w3.org/2000/svg", "path");
-              middlewindow.setAttribute("d", "M-1 -3 q -.5 2, 0 4 q .5 .15, 1 0 q -.5 -2, 0 -4 q -.5 -.15, -1 0");
-              gElement.appendChild(wingLeft);
-              gElement.appendChild(wingRight);
-              gElement.appendChild(summitball);
-              gElement.appendChild(fire);
-              gElement.appendChild(topwindow);
-              gElement.appendChild(middlewindow);
-              return gElement;
-            case "blizzer.png":
-              gElement.setAttribute("fill", "none");
-              gElement.setAttribute("stroke-width", ".5");
-              gElement.setAttribute("stroke", `${color}`);
-              path0.setAttribute("d", `M 0,-20, 
-                                        L -4, -12 
-                                        L -8 -8
-                                        L -8 -15`);
-              additionalPaths.push(path0);
-              path1.setAttribute("d", `M 0,-20, 
-                                        L 4, -12 
-                                        L 8 -8
-                                        L 8 -15`);
-              additionalPaths.push(path1);
-              const path2 = document.createElementNS("http://www.w3.org/2000/svg", "path");
-              path2.setAttribute("d", `M -4,-10, 
-                                        L -4, 0 
-                                        L -8 2
-                                        L 8 2
-                                        L 4 0
-                                        L 4 -10`);
-              additionalPaths.push(path2);
-              break;
-            case "bromber":
-              gElement.setAttribute("fill", "none");
-              gElement.setAttribute("stroke-width", ".5");
-              gElement.setAttribute("stroke", `${color}`);
-              const box = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-              box.setAttribute("x", "-18");
-              box.setAttribute("y", "-25");
-              box.setAttribute("rx", "10");
-              box.setAttribute("ry", "5");
-              box.setAttribute("width", "34");
-              box.setAttribute("height", "52");
-              additionalPaths.push(box);
-              break;
-            case "helgram.png":
-              gElement.setAttribute("transform", "translate(-50,220) scale(0.0393700787401575,0.0100000)");
-              gElement.setAttribute("fill", `${color}`);
-              gElement.setAttribute("stroke", "none");
-              path0.setAttribute("d", `M1790 2633 c-11 -26 -23 -58 -27 -72 -3 -14 -12 -34 -20 -43 -13 -15
-                    -14 -40 -3 -189 6 -95 15 -179 19 -187 11 -19 1 -62 -15 -69 -7 -2 -10 -12 -7
-                    -21 4 -13 3 -14 -5 -3 -8 11 -13 11 -33 -2 -13 -8 -39 -18 -58 -22 -19 -4 -43
-                    -16 -54 -26 -20 -18 -21 -18 -37 1 -18 20 -46 28 -35 10 3 -5 -3 -10 -14 -10
-                    -12 0 -21 5 -21 10 0 6 -14 10 -31 10 -16 0 -28 -4 -25 -9 3 -5 -2 -12 -11
-                    -16 -10 -3 -19 -1 -21 4 -2 6 -20 11 -41 11 -57 0 -69 29 -66 165 2 61 -1 155
-                    -5 210 -4 55 -3 113 1 129 5 17 4 36 -2 47 -6 13 -6 25 1 39 12 23 -4 64 -23
-                    57 -16 -5 -36 -63 -36 -104 -1 -35 14 -45 22 -15 3 9 5 -1 6 -23 0 -36 -1 -38
-                    -14 -21 -13 17 -14 15 -21 -18 -3 -20 -4 -69 0 -109 3 -39 8 -119 11 -177 3
-                    -58 8 -117 11 -132 5 -25 4 -26 -53 -30 -37 -3 -68 1 -87 10 -16 8 -59 14
-                    -100 14 -58 0 -75 4 -94 22 -19 17 -36 21 -99 21 l-75 0 -3 131 c-1 73 -6 138
-                    -11 145 -14 24 -20 164 -10 239 5 41 5 43 -9 26 -8 -11 -15 -28 -15 -38 0 -21
-                    -12 -23 -40 -6 -31 20 -33 4 -5 -48 23 -44 24 -52 15 -103 -13 -70 -13 -128 0
-                    -136 16 -10 12 -61 -6 -76 -14 -11 -15 -27 -9 -104 4 -49 8 -105 9 -123 2 -34
-                    -8 -50 -19 -32 -4 6 -17 4 -36 -6 -45 -23 -177 -152 -206 -201 -26 -45 -106
-                    -121 -152 -144 -14 -7 -38 -21 -52 -31 -23 -15 -28 -16 -33 -3 -3 8 -1 15 4
-                    15 15 0 46 35 52 58 9 31 -10 38 -21 9 -12 -31 -31 -43 -41 -27 -7 12 -4 126
-                    5 182 3 17 -1 28 -11 32 -22 8 -24 8 -24 -9 0 -8 -4 -15 -10 -15 -5 0 -10 17
-                    -10 38 0 24 3 32 9 23 5 -8 11 -9 15 -3 3 6 2 13 -3 16 -5 3 -12 22 -15 41 -6
-                    28 -12 35 -30 35 -21 0 -24 -6 -34 -82 -18 -124 -13 -216 9 -202 5 3 9 1 9 -5
-                    0 -5 -5 -11 -11 -13 -9 -3 -9 -26 0 -88 16 -113 -1 -442 -29 -565 -13 -55 -13
-                    -225 0 -225 6 0 10 -11 10 -25 0 -14 4 -25 8 -25 4 0 6 -28 4 -62 -2 -35 3
-                    -117 12 -183 8 -66 16 -198 17 -293 1 -152 3 -173 17 -170 20 4 35 71 26 118
-                    -9 51 -14 182 -6 194 3 6 5 66 3 132 -2 107 -1 123 15 132 14 8 16 18 11 56
-                    -4 25 -3 46 2 46 17 0 305 -280 492 -478 21 -21 35 -29 43 -23 6 4 20 5 31 1
-                    18 -7 19 -8 3 -15 -10 -4 -18 -13 -18 -20 0 -27 21 -26 54 2 32 29 36 30 143
-                    31 105 1 111 0 116 -20 5 -18 10 -20 39 -12 57 14 209 13 310 -3 86 -14 100
-                    -14 135 -1 21 9 66 19 100 23 54 6 64 5 70 -10 3 -10 1 -26 -5 -36 -7 -10 -12
-                    -21 -12 -24 0 -13 27 -3 50 18 65 60 142 57 82 -3 -40 -39 -102 -115 -102
-                    -124 0 -20 38 0 86 45 30 29 54 49 54 46 0 -3 15 7 32 24 33 29 41 32 115 31
-                    29 -1 45 4 51 15 13 23 3 53 -19 53 -38 0 -27 22 56 107 47 48 116 129 153
-                    180 37 51 73 95 80 98 7 2 18 -7 24 -23 11 -25 12 -23 18 36 9 77 18 89 57 70
-                    34 -16 41 -53 42 -221 1 -74 5 -115 15 -130 8 -12 17 -51 21 -87 4 -36 13 -78
-                    20 -95 7 -16 17 -43 24 -59 10 -24 14 -26 27 -15 17 14 16 81 -6 224 -5 39
-                    -12 108 -15 154 -3 52 -10 88 -17 93 -10 6 -9 11 5 19 9 5 17 20 17 31 0 17
-                    -3 19 -12 10 -19 -19 -28 -14 -28 12 0 23 3 24 41 21 l42 -4 -6 77 c-3 42 -10
-                    91 -16 107 -57 183 -97 580 -71 711 7 32 15 86 17 119 3 33 9 65 13 70 10 13
-                    35 184 28 191 -4 3 -2 19 2 35 10 33 0 43 -31 34 -13 -5 -17 -10 -11 -18 26
-                    -33 18 -167 -10 -167 -7 0 -7 4 0 13 13 15 10 75 -5 101 -9 17 -10 17 -17 1
-                    -5 -13 -9 -15 -19 -6 -11 8 -16 3 -25 -26 -6 -20 -10 -39 -8 -41 2 -2 7 6 11
-                    17 3 12 10 21 15 21 13 0 18 -36 8 -54 -8 -14 -12 -15 -25 -4 -15 12 -16 7
-                    -11 -49 5 -47 2 -65 -8 -74 -8 -7 -14 -31 -14 -60 0 -56 -14 -64 -28 -16 -13
-                    45 -31 135 -35 177 -2 19 -4 1 -5 -40 -1 -45 6 -103 17 -145 18 -70 18 -135
-                    -1 -135 -6 0 -8 -14 -5 -35 3 -19 2 -37 -2 -39 -13 -9 -90 75 -123 133 -17 31
-                    -49 74 -69 96 -43 46 -111 132 -198 254 l-61 84 5 76 c8 117 6 141 -11 178 -9
-                    18 -14 36 -11 40 15 15 41 -35 58 -115 l19 -87 -5 68 c-9 104 -15 126 -50 160
-                    -18 19 -30 39 -27 50 4 17 22 24 22 8 0 -5 7 -11 15 -15 13 -4 14 3 10 47 -3
-                    29 -7 90 -9 137 -6 142 -37 180 -76 93z m62 -153 c1 -14 0 -38 -1 -55 -2 -29
-                    -3 -28 -15 12 -7 22 -13 67 -13 100 l0 58 14 -45 c8 -25 15 -56 15 -70z m-43
-                    -117 c27 -107 20 -246 -11 -215 -15 15 -24 252 -10 252 6 0 16 -17 21 -37z
-                    m11 -288 c0 -14 0 -27 0 -30 0 -3 -3 -6 -6 -7 -12 -5 -27 29 -21 46 10 25 27
-                    19 27 -9z m-969 0 c19 -8 27 -14 19 -14 -14 0 -72 28 -59 29 4 0 22 -7 40 -15z
-                    m5 -24 c8 -8 47 -17 194 -43 30 -6 81 -11 113 -12 41 -1 61 -6 67 -16 11 -19
-                    -6 -161 -24 -210 -19 -48 -31 -128 -18 -115 5 6 15 28 22 50 15 48 36 80 43
-                    68 3 -5 7 -38 8 -74 1 -35 6 -70 12 -76 6 -9 5 -13 -4 -13 -12 0 -12 -2 0 -9
-                    11 -7 10 -12 -5 -29 -16 -19 -20 -20 -45 -7 -24 13 -27 13 -23 -3 5 -23 -11
-                    -41 -76 -82 -46 -29 -133 -102 -227 -191 -11 -11 -38 -52 -59 -92 -35 -69
-                    -130 -197 -145 -197 -23 0 -27 37 -24 230 4 246 22 659 31 715 7 41 38 85 60
-                    85 6 0 17 7 24 15 14 16 60 20 76 6z m357 -38 c-7 -2 -19 -2 -25 0 -7 3 -2 5
-                    12 5 14 0 19 -2 13 -5z m583 -27 l34 -34 0 -183 c0 -144 -3 -186 -14 -198 -8
-                    -9 -19 -58 -26 -116 -11 -105 -15 -381 -5 -408 4 -8 7 -46 9 -83 1 -38 6 -77
-                    10 -86 6 -13 4 -18 -7 -18 -13 0 -69 67 -137 165 -14 20 -44 56 -67 80 -23 24
-                    -67 76 -99 115 -31 39 -62 69 -68 67 -6 -3 -19 2 -29 11 -25 22 -31 10 -7 -16
-                    11 -12 20 -24 20 -28 0 -20 -110 107 -114 132 -1 8 -7 19 -12 22 -21 15 -47
-                    80 -40 98 8 18 8 18 17 -1 5 -11 18 -33 28 -50 11 -16 30 -49 42 -73 12 -24
-                    29 -46 38 -49 9 -2 23 -8 32 -13 9 -5 -10 37 -42 93 l-58 102 -11 130 c-6 72
-                    -13 138 -16 149 -4 12 -2 16 5 12 7 -5 9 3 5 23 -5 23 -2 32 14 40 17 9 18 16
-                    11 53 -4 24 -4 46 -1 50 15 15 241 11 260 -4 16 -13 97 8 131 34 34 26 59 22
-                    97 -16z m-1136 -195 c0 -47 -5 -102 -10 -121 -6 -19 -12 -77 -15 -128 -2 -51
-                    -8 -98 -12 -105 -4 -7 -8 -109 -8 -228 0 -186 2 -216 15 -215 9 1 16 -9 18
-                    -25 2 -20 -2 -28 -18 -32 -13 -3 -18 -10 -14 -20 3 -10 -4 -22 -19 -32 -35
-                    -23 -176 -13 -282 20 -44 14 -97 25 -118 25 -23 0 -44 7 -56 19 -18 18 -19 31
-                    -16 148 5 155 13 243 26 303 8 37 7 46 -5 56 -21 15 -20 44 2 70 17 21 100 79
-                    182 126 25 15 74 57 110 94 61 63 163 164 185 183 18 15 35 -50 35 -138z
-                    m1253 52 c41 -59 119 -158 161 -203 18 -19 45 -58 61 -85 37 -65 70 -101 123
-                    -132 l43 -26 -2 -126 c-2 -69 -2 -191 -1 -271 2 -164 -5 -206 -34 -202 -47 7
-                    -274 2 -317 -6 -51 -10 -121 -2 -99 12 7 4 24 5 37 2 27 -7 45 12 24 25 -8 5
-                    -24 9 -35 9 -43 0 -47 20 -50 233 -2 138 1 206 8 215 9 10 8 16 -3 24 -11 7
-                    -11 11 -1 15 6 2 12 9 12 15 0 5 6 15 13 22 7 7 12 28 11 47 -5 126 -6 182 -5
-                    322 1 99 5 157 11 157 6 0 25 -21 43 -47z m-1866 15 c-3 -8 -6 -5 -6 6 -1 11
-                    2 17 5 13 3 -3 4 -12 1 -19z m12 -96 c1 -23 -3 -32 -11 -29 -11 3 -16 70 -8
-                    97 4 13 19 -39 19 -68z m2321 -197 c0 -8 -4 -17 -10 -20 -6 -4 -10 5 -10 20 0
-                    15 4 24 10 20 6 -3 10 -12 10 -20z m-1164 -107 c9 -14 7 -554 -2 -581 -3 -10
-                    -19 -20 -35 -24 -33 -6 -34 -29 -1 -26 18 2 22 -6 31 -65 6 -37 12 -80 14 -95
-                    3 -34 22 -32 22 2 1 40 19 35 59 -16 20 -26 56 -68 79 -93 50 -53 179 -244
-                    181 -268 2 -33 -129 -36 -321 -6 -87 13 -127 14 -265 5 -109 -8 -165 -8 -172
-                    -1 -10 10 -1 23 78 107 28 31 37 46 29 54 -12 12 -116 -100 -133 -145 -10 -28
-                    -11 -29 -72 -22 -72 7 -101 23 -123 68 -8 18 -35 54 -58 79 -66 73 -117 135
-                    -156 192 -20 28 -42 58 -49 65 -6 7 -12 20 -12 28 0 8 -6 14 -14 14 -14 0
-                    -126 133 -126 151 0 6 8 8 18 5 9 -3 31 -8 47 -12 17 -3 63 -17 104 -31 103
-                    -34 205 -35 286 -2 58 24 60 26 57 59 -2 26 4 41 31 69 61 66 107 130 137 188
-                    26 54 80 113 208 226 30 28 34 28 51 13 21 -19 31 -12 31 21 0 13 6 23 14 23
-                    8 0 16 7 20 15 7 18 32 20 42 3z m78 -108 c24 -44 61 -91 160 -207 11 -12 35
-                    -46 55 -75 40 -58 151 -168 170 -168 6 0 31 -18 55 -40 42 -39 61 -77 57 -111
-                    -2 -21 45 -34 65 -18 16 13 407 19 420 7 9 -9 -26 -43 -85 -83 -24 -16 -55
-                    -45 -70 -64 -41 -55 -102 -110 -115 -105 -7 3 -19 -2 -26 -11 -9 -11 -9 -15
-                    -1 -15 7 0 9 -5 5 -11 -4 -8 -9 -7 -15 2 -4 7 -10 11 -13 9 -2 -3 -28 -25 -56
-                    -50 -28 -25 -73 -64 -100 -88 -46 -41 -49 -43 -110 -40 -56 2 -64 5 -85 33
-                    -22 30 -80 122 -122 192 -21 35 -93 120 -185 216 l-47 50 1 71 c0 39 -1 76 -2
-                    81 -7 31 1 475 8 475 5 0 21 -23 36 -50z m1043 -95 c-2 -20 -10 -41 -17 -48
-                    -10 -10 -12 -8 -6 6 3 10 6 32 6 48 0 16 5 29 10 29 6 0 9 -15 7 -35z m-752
-                    -180 c71 -74 93 -105 75 -105 -11 0 -46 27 -64 49 -6 7 -27 31 -46 51 -37 40
-                    -39 43 -82 108 -40 59 -34 65 11 12 21 -25 69 -76 106 -115z m888 -92 c19 -70
-                    28 -153 18 -171 -6 -11 -11 -30 -11 -41 0 -12 -7 -21 -15 -21 -8 0 -15 1 -16
-                    3 -4 15 -9 223 -5 233 7 19 24 17 29 -3z m-108 -23 c11 -18 8 -126 -4 -148
-                    -21 -39 -34 -15 -26 47 5 31 7 68 6 84 -1 27 12 36 24 17z m-2211 -176 c19 -7
-                    91 -103 83 -110 -8 -9 -107 86 -107 102 0 16 2 16 24 8z m2366 -29 c14 -17 5
-                    -36 -15 -28 -16 6 -21 43 -6 43 5 0 14 -7 21 -15z m-590 -371 c0 -3 -18 -23
-                    -41 -45 -22 -21 -38 -43 -35 -48 10 -16 -10 -21 -28 -8 -16 12 -16 14 4 40 12
-                    15 28 27 35 27 8 0 19 9 25 20 10 18 40 29 40 14z m-130 -244 c0 -12 -28 -25
-                    -36 -17 -9 9 6 27 22 27 8 0 14 -5 14 -10z`);
-              additionalPaths.push(path0);
-              path1.setAttribute("d", "M510 910 c0 -13 30 -13 50 0 11 7 7 10 -17 10 -18 0 -33 -4 -33 -10z");
-              additionalPaths.push(path1);
-              break;
-            case "../resources/rocket.svg":
-              gElement.setAttribute("transform", "rotate(-45)");
-              break;
-            case "planet":
-              console.log("planet requested");
-              const planetImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
-              planetImage.href.baseVal = "../resources/planet.png";
-              planetImage.setAttribute("width", `50`);
-              planetImage.setAttribute("height", `50`);
-              planetImage.setAttribute("stroke", `${color}`);
-              planetImage.setAttribute("transform", `translate (-25,-25)`);
-              gElement.appendChild(planetImage);
-              return gElement;
-            case "station":
-              const stationImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
-              stationImage.href.baseVal = "../resources/station01.png";
-              stationImage.setAttribute("width", `50`);
-              stationImage.setAttribute("height", `50`);
-              stationImage.setAttribute("stroke", `${color}`);
-              stationImage.setAttribute("transform", `translate (-25,-25)`);
-              const hmtlStationImage = new Image();
-              hmtlStationImage.src = "../resources/station01.png";
-              let svgPolygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-              hmtlStationImage.onload = () => {
-                const hmtlStationImageWidth = hmtlStationImage.width;
-                const scalingFactor = 50 / hmtlStationImageWidth;
-                console.log("hmtlStationImageWidth: " + hmtlStationImageWidth);
-                let polygon = getImageOutline(hmtlStationImage);
-                const pointsString = polygon.map((point) => `${point.x},${point.y}`).join(" ");
-                svgPolygon.setAttribute("points", pointsString);
-                svgPolygon.setAttribute("stroke", "brown");
-                svgPolygon.setAttribute("stroke-width", "5px");
-                svgPolygon.setAttribute("vector-effect", "non-scaling-stroke");
-                svgPolygon.setAttribute("transform", `translate(-25, -6) scale(${scalingFactor})`);
-              };
-              gElement.appendChild(svgPolygon);
-              gElement.appendChild(stationImage);
-              return gElement;
-            case "nugget":
-              const nuggetImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
-              nuggetImage.href.baseVal = "../resources/nugget01.png";
-              nuggetImage.setAttribute("width", `30`);
-              nuggetImage.setAttribute("height", `20`);
-              nuggetImage.setAttribute("stroke", `${color}`);
-              nuggetImage.setAttribute("transform", `scale (${Math.random() * 2 - 1}) translate (-15,-10)`);
-              gElement.appendChild(nuggetImage);
-              return gElement;
-          }
-          const imageUrl = `./${type}`;
-          const image = document.createElementNS("http://www.w3.org/2000/svg", "image");
-          image.href.baseVal = imageUrl;
-          image.onload = () => {
-            let imageWidth = image.getBBox().width;
-            console.log("imageWidth: " + imageWidth);
-          };
-          image.setAttribute("width", `50`);
-          image.setAttribute("height", `50`);
-          image.setAttribute("stroke", `${color}`);
-          image.setAttribute("transform", `translate (-25,-25)`);
-          gElement.appendChild(image);
-          if (additionalPaths) {
-            additionalPaths.forEach((object) => {
-              gElement.appendChild(object);
-            });
-          }
-          return gElement;
+        constructor(type) {
+          __publicField(this, "gElement", document.createElementNS("http://www.w3.org/2000/svg", "g"));
+          __publicField(this, "imageElement");
+          __publicField(this, "collisionPath");
+          this.gElement = createGElement(type);
         }
-        // Funktion zum Laden der SVG-Datei
+        station02gElement() {
+          return __async(this, null, function* () {
+            this.imageElement = new Image();
+            this.imageElement.src = "../resources/station02.png";
+            let polygon;
+            let pathString;
+            return new Promise((resolve, reject) => {
+              if (this.imageElement)
+                this.imageElement.onload = () => {
+                  this.imageElement.width = 50;
+                  this.imageElement.height = 50;
+                  polygon = getImageOutline(this.imageElement);
+                  pathString = pointsToPathString(polygon);
+                  const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                  pathElement.setAttribute("d", pathString);
+                  this.gElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
+                  this.gElement.appendChild(pathElement);
+                  console.log(pathString);
+                  resolve();
+                };
+              if (this.imageElement)
+                this.imageElement.onerror = (err) => {
+                  console.error("Image failed to load");
+                  reject(err);
+                };
+            });
+          });
+        }
+        createCollisionPolygon(imageUrl) {
+          let polygon = [];
+          let vectors;
+          let satPolygon;
+          const image = new Image();
+          let scalingFactor;
+          image.src = `${imageUrl}`;
+          image.onload = () => {
+            const hmtlImageWidth = image.width;
+            scalingFactor = 50 / hmtlImageWidth;
+            console.log("hmtlImageWidth: " + hmtlImageWidth);
+            polygon = getImageOutline(image);
+          };
+          if (polygon)
+            vectors = polygon.map((point) => new import_sat.default.Vector(point.x, point.y).scale(scalingFactor));
+          satPolygon = new import_sat.default.Polygon(new import_sat.default.Vector(-25, -22), vectors);
+          this.collisionPath = satPolygon;
+        }
+        static getCraftGElement(type) {
+          if (type === "station02")
+            console.log("static station02 requested");
+          return createGElement(type);
+        }
       };
     }
   });
@@ -28117,6 +28761,7 @@
             npc: false
           });
           __publicField(this, "_gElement", document.createElementNS("http://www.w3.org/2000/svg", "g"));
+          __publicField(this, "_spacecraftShape");
           __publicField(this, "_color");
           __publicField(this, "_touchControlType");
           __publicField(this, "easing", false);
@@ -28127,7 +28772,7 @@
           __publicField(this, "_scale", 1);
           __publicField(this, "_label");
           __publicField(this, "_labelBorder");
-          this.objectStatus.type = "rocket";
+          this.objectStatus.type = "rokket";
           this._color = "fl\xFCn";
           this.objectStatus.craftId = "spacecraft";
           this._touchControlType = "spacecraft";
@@ -28145,7 +28790,6 @@
           if ((_b = this._device) == null ? void 0 : _b._gElem) {
             this._device._gElem.setAttribute("id", "device");
             this._gElement.appendChild(this._device._gElem);
-            console.log("gElement added");
           }
         }
         applyLabel(svgElement) {
@@ -28330,6 +28974,14 @@
         }
         get scale() {
           return this._scale;
+        }
+        get spacecraftShape() {
+          if (this._spacecraftShape)
+            return this._spacecraftShape;
+        }
+        set spacecraftShape(sp) {
+          this._spacecraftShape = sp;
+          this.gElement = sp.gElement;
         }
         get type() {
           return this.objectStatus.type;
@@ -28611,7 +29263,7 @@
   });
 
   // src/SpaceGame.ts
-  var SpaceGame;
+  var SpaceGame, B;
   var init_SpaceGame = __esm({
     "src/SpaceGame.ts"() {
       "use strict";
@@ -28651,7 +29303,7 @@
           this.spacecraft.type = type;
           this.spacecraft.color = color2;
           if (id) this.spacecraft.id = id;
-          this.spacecraft.gElement = SpacecraftShape.getCraftGElement(type);
+          this.spacecraft.spacecraftShape = new SpacecraftShape(this.spacecraft.type);
           if (this.spacecraft.type == "../resources/rocket.svg")
             this.spacecraft.directionCorrection = 45;
           this.spacecraft.gElement.setAttribute("id", `${this.spacecraft.id}`);
@@ -28680,10 +29332,11 @@
             } else if (index === -1) {
               const spacecraft = new Spacecraft();
               spacecraft.objectStatus = response;
-              spacecraft.gElement = SpacecraftShape.getCraftGElement(spacecraft.type);
+              const spacecraftShape = new SpacecraftShape(spacecraft.type);
+              spacecraft.gElement = spacecraftShape.gElement;
               this.spaceObjects.push(spacecraft);
               spacecraft.gElement.setAttribute("id", `${spacecraft.id}`);
-              this.gameEnvironment.svgElement.appendChild(spacecraft.gElement);
+              this.gameEnvironment.svgElement.insertBefore(spacecraft.gElement, this.spacecraft.gElement);
             }
           });
           this.spaceObjects = this.spaceObjects.filter((element) => {
@@ -28834,7 +29487,7 @@
                                                         scale (${spacecraft.scale}) 
                                                         rotate (${spacecraft.direction + spacecraft.directionCorrection})`);
           if (spacecraft.label && spacecraft.labelBorder) {
-            console.log("xCorrection and YCorrection not set yet!");
+            console.log("renderDeterminants not set yet!");
             spacecraft.label.setAttribute("transform", `translate(${spacecraft.objectStatus.location.x} 
                                                                 ${spacecraft.objectStatus.location.y})`);
             spacecraft.labelBorder.setAttribute("transform", `translate(${spacecraft.objectStatus.location.x - 7.5 + spacecraft.scale * 7}, 
@@ -28865,10 +29518,15 @@
         }
         stopSound() {
           console.log("stopping sound");
-          this.audioBuffer = void 0;
-          this.playingSound = false;
         }
       };
+      ((B2) => {
+        function create() {
+          return {};
+        }
+        B2.create = create;
+      })(B || (B = {}));
+      B.create;
     }
   });
 
@@ -29042,6 +29700,9 @@
           const homper = document.createElement("option");
           const repulsorJet = document.createElement("option");
           const station = document.createElement("option");
+          const station02 = document.createElement("option");
+          station02.setAttribute("value", "station02");
+          station02.textContent = "station02";
           const noDevice = document.createElement("option");
           noDevice.innerHTML = "disabled selected";
           noDevice.value = "ovalShield";
@@ -29062,21 +29723,6 @@
           this.deviceSelector.addEventListener("change", () => {
             device = this.deviceSelector.value;
           });
-          this.typeSelector.appendChild(option1);
-          this.typeSelector.appendChild(option2);
-          this.typeSelector.appendChild(option3);
-          this.typeSelector.appendChild(option4);
-          this.typeSelector.appendChild(repulsorJet);
-          this.typeSelector.appendChild(homper);
-          this.typeSelector.appendChild(option5);
-          this.typeSelector.appendChild(option6);
-          this.typeSelector.appendChild(option7);
-          this.typeSelector.appendChild(option8);
-          this.typeSelector.appendChild(option9);
-          this.typeSelector.appendChild(option10);
-          this.typeSelector.appendChild(option11);
-          this.typeSelector.appendChild(option12);
-          this.typeSelector.appendChild(station);
           option1.setAttribute("value", "rainbowRocket");
           option1.innerHTML = "disabled selected";
           option2.setAttribute("value", "rokket");
@@ -29092,7 +29738,7 @@
           option10.setAttribute("value", "../resources/rock.svg");
           option11.setAttribute("value", "../resources/rocket.svg");
           option12.setAttribute("value", "../resources/eye.svg");
-          station.setAttribute("value", "station");
+          station.setAttribute("value", "station01");
           option1.textContent = "Chose your vessel";
           option2.textContent = "rokket";
           option3.textContent = "rainbowRocket";
@@ -29108,6 +29754,22 @@
           option11.textContent = "rocket";
           option12.textContent = "eye";
           station.textContent = "station";
+          this.typeSelector.appendChild(option1);
+          this.typeSelector.appendChild(option2);
+          this.typeSelector.appendChild(option3);
+          this.typeSelector.appendChild(option4);
+          this.typeSelector.appendChild(repulsorJet);
+          this.typeSelector.appendChild(homper);
+          this.typeSelector.appendChild(option5);
+          this.typeSelector.appendChild(option6);
+          this.typeSelector.appendChild(option7);
+          this.typeSelector.appendChild(option8);
+          this.typeSelector.appendChild(option9);
+          this.typeSelector.appendChild(option10);
+          this.typeSelector.appendChild(option11);
+          this.typeSelector.appendChild(option12);
+          this.typeSelector.appendChild(station);
+          this.typeSelector.appendChild(station02);
           const colorSelector = document.createElement("select");
           const option13 = document.createElement("option");
           const option14 = document.createElement("option");
@@ -29337,6 +29999,9 @@
   menu.loop();
 })();
 /*! Bundled license information:
+
+sat/SAT.js:
+  (** @preserve SAT.js - Version 0.9.0 - Copyright 2012 - 2021 - Jim Riecken <jimr@jimr.ca> - released under the MIT License. https://github.com/jriecken/sat-js *)
 
 tone/build/esm/core/Tone.js:
   (**

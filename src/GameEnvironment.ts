@@ -53,8 +53,8 @@ export class GameEnvironment{
         
         this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
         this._svgElement.setAttribute("tabindex", "0")
-        
-     /*
+        /*
+        // frame of limitation
         const playfieldBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
         playfieldBorder.setAttribute("x", `${-torusWidth / 2}`)
         playfieldBorder.setAttribute("y", `${-torusHeight / 2}`)
@@ -68,7 +68,7 @@ export class GameEnvironment{
         
         playfieldBorder.setAttribute("id", "playfieldBorder")
         this._svgElement.appendChild(playfieldBorder)
-*/  
+*/
         /* viewBox seems to be resized by Chrome at windowresize 
         
         this._viewBoxBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
