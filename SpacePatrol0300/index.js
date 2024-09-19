@@ -1031,6 +1031,7 @@
         gElement.appendChild(inline);
         return gElement;
       case "rainbowRocket":
+        console.log("rainbow requested");
         gElement.setAttribute("fill", "grey");
         gElement.setAttribute("stroke-width", ".5");
         gElement.setAttribute("stroke", `${color}`);
@@ -1054,7 +1055,6 @@
         gElement.appendChild(fire);
         gElement.appendChild(topwindow);
         gElement.appendChild(middlewindow);
-        console.log("rainbow rocket created");
         return gElement;
       case "blizzer.png":
         gElement.setAttribute("fill", "none");
@@ -1215,7 +1215,6 @@
         gElement.setAttribute("transform", "rotate(-45)");
         break;
       case "planet":
-        console.log("planet requested");
         const planetImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
         planetImage.href.baseVal = "../resources/planet.png";
         planetImage.setAttribute("width", `50`);
@@ -1277,7 +1276,7 @@
         gElement.appendChild(svgPolygon02);
         gElement.appendChild(station02Image);
         return gElement;
-      case "nugget":
+      case "nugget01":
         const nuggetImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
         nuggetImage.href.baseVal = "../resources/nugget01.png";
         nuggetImage.setAttribute("width", `30`);
@@ -1322,36 +1321,49 @@
       import_sat = __toESM(require_SAT(), 1);
       getImageOutline = require_browser();
       SpacecraftShape = class {
-        constructor(type) {
+        constructor() {
           __publicField(this, "gElement", document.createElementNS("http://www.w3.org/2000/svg", "g"));
           __publicField(this, "imageElement");
           __publicField(this, "collisionPath");
-          this.gElement = createGElement(type);
         }
-        station02gElement() {
+        /*
+            constructor(type: string){
+                if(type === "station02" || type === "station01" ){
+                    this.collidableGElement(type)
+                }
+                else
+                    this.gElement = createGElement(type)
+            }
+        */
+        collidableGElement(type) {
           return __async(this, null, function* () {
             this.imageElement = new Image();
-            this.imageElement.src = "../resources/station02.png";
+            this.imageElement.src = `../resources/${type}.png`;
             let polygon;
             let pathString;
             return new Promise((resolve, reject) => {
               if (this.imageElement)
                 this.imageElement.onload = () => {
-                  this.imageElement.width = 50;
-                  this.imageElement.height = 50;
+                  const scalingFactor = 50 / this.imageElement.width;
+                  console.log("this.imageElement!.width: " + this.imageElement.width);
                   polygon = getImageOutline(this.imageElement);
                   pathString = pointsToPathString(polygon);
                   const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                  pathElement.setAttribute("stroke", "blue");
+                  pathElement.setAttribute("stroke-width", "1px");
+                  pathElement.setAttribute("vector-effect", "non-scaling-stroke");
+                  pathElement.setAttribute("fill", "none");
                   pathElement.setAttribute("d", pathString);
+                  pathElement.setAttribute("transform", ` 
+                        scale(${scalingFactor}) 
+                        translate(
+                            ${-this.imageElement.width / 2}, 
+                            ${-this.imageElement.height / 2})
+                    
+                       `);
                   this.gElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
                   this.gElement.appendChild(pathElement);
-                  console.log(pathString);
-                  resolve();
-                };
-              if (this.imageElement)
-                this.imageElement.onerror = (err) => {
-                  console.error("Image failed to load");
-                  reject(err);
+                  resolve(this.gElement);
                 };
             });
           });
@@ -29303,7 +29315,7 @@
           this.spacecraft.type = type;
           this.spacecraft.color = color2;
           if (id) this.spacecraft.id = id;
-          this.spacecraft.spacecraftShape = new SpacecraftShape(this.spacecraft.type);
+          this.spacecraft.spacecraftShape = new SpacecraftShape();
           if (this.spacecraft.type == "../resources/rocket.svg")
             this.spacecraft.directionCorrection = 45;
           this.spacecraft.gElement.setAttribute("id", `${this.spacecraft.id}`);
@@ -29317,7 +29329,7 @@
           this.gameLoop();
         }
         syncReality(reality) {
-          reality.forEach((response) => {
+          reality.forEach((response) => __async(this, null, function* () {
             const renderDeterminant = this.defineRenderDeterminants(response.location);
             const renderLocation = new Vector2D(
               response.location.x + renderDeterminant.x * torusWidth,
@@ -29332,13 +29344,16 @@
             } else if (index === -1) {
               const spacecraft = new Spacecraft();
               spacecraft.objectStatus = response;
-              const spacecraftShape = new SpacecraftShape(spacecraft.type);
-              spacecraft.gElement = spacecraftShape.gElement;
+              const spacecraftShape = new SpacecraftShape();
+              if (spacecraft.type === "station02" || spacecraft.type === "station01" || spacecraft.type === "nugget01")
+                spacecraft.gElement = yield spacecraftShape.collidableGElement(spacecraft.type);
+              else
+                spacecraft.gElement = createGElement(spacecraft.type);
               this.spaceObjects.push(spacecraft);
               spacecraft.gElement.setAttribute("id", `${spacecraft.id}`);
               this.gameEnvironment.svgElement.insertBefore(spacecraft.gElement, this.spacecraft.gElement);
             }
-          });
+          }));
           this.spaceObjects = this.spaceObjects.filter((element) => {
             const index = reality.findIndex((response) => response.craftId === element.id);
             if (index === -1) {
@@ -29448,7 +29463,6 @@
         setupKeyUpListener() {
           keyboardController.onKeyUp((key) => {
             this.spacecraft.onKeyUp(key);
-            this.stopSound();
           });
         }
         updateElements() {
@@ -29517,7 +29531,6 @@
           }
         }
         stopSound() {
-          console.log("stopping sound");
         }
       };
       ((B2) => {

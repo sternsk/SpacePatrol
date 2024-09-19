@@ -10,38 +10,49 @@ export class SpacecraftShape{
     public gElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
     private imageElement?: HTMLImageElement
     private collisionPath?: SAT.Polygon
-
+/*
     constructor(type: string){
-        
-        this.gElement = createGElement(type)
+        if(type === "station02" || type === "station01" ){
+            this.collidableGElement(type)
+        }
+        else
+            this.gElement = createGElement(type)
     }
-
-    async station02gElement(){
+*/
+    public async collidableGElement(type: string): Promise<SVGGElement>{
         this.imageElement = new Image()
-            this.imageElement.src = "../resources/station02.png"
+            this.imageElement.src = `../resources/${type}.png`
             let polygon: {x: number, y: number}[]
             let pathString
-        return new Promise<void>((resolve, reject) => {
-            if(this.imageElement)
-            this.imageElement.onload = () =>{
-                this.imageElement!.width = 50
-                this.imageElement!.height = 50
-                polygon = getImageOutline(this.imageElement)
-                pathString = pointsToPathString(polygon)
-                const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path")
-                pathElement.setAttribute("d", pathString)
-                this.gElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
-                this.gElement.appendChild(pathElement)
-                console.log(pathString)
-                resolve()
-                
-            };
-            if(this.imageElement)
-            this.imageElement.onerror = (err) => {
-                console.error("Image failed to load");
-                reject(err); // Reject if the image fails to load
-            };
-        });
+            
+            return new Promise<SVGGElement>((resolve, reject) => {
+                if(this.imageElement)
+                this.imageElement.onload = () =>{
+                   
+                   const scalingFactor = 50/this.imageElement!.width
+                    console.log("this.imageElement!.width: "+this.imageElement!.width)
+                    polygon = getImageOutline(this.imageElement)
+                    pathString = pointsToPathString(polygon)
+                    const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path")
+                    pathElement.setAttribute("stroke", "blue")
+                    pathElement.setAttribute("stroke-width", "1px")
+                    pathElement.setAttribute("vector-effect", "non-scaling-stroke")
+                    pathElement.setAttribute("fill", "none")
+                    pathElement.setAttribute("d", pathString)
+                    pathElement.setAttribute("transform", ` 
+                        scale(${scalingFactor}) 
+                        translate(
+                            ${-this.imageElement!.width/2}, 
+                            ${-this.imageElement!.height/2})
+                    
+                       `)
+                    
+                    this.gElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
+                    this.gElement.appendChild(pathElement)
+                    resolve(this.gElement)
+                };
+            })
+            
         
     };
     
@@ -116,6 +127,7 @@ export function createGElement(type: string): SVGGElement{
             return(gElement)
         
         case "rainbowRocket":
+            console.log("rainbow requested")
             gElement.setAttribute("fill", "grey");
             gElement.setAttribute("stroke-width", ".5")
             gElement.setAttribute("stroke", `${color}`)
@@ -146,7 +158,6 @@ export function createGElement(type: string): SVGGElement{
             gElement.appendChild(fire)
             gElement.appendChild(topwindow)
             gElement.appendChild(middlewindow)
-            console.log("rainbow rocket created")
             return(gElement)
         
         case "blizzer.png":
@@ -321,7 +332,6 @@ export function createGElement(type: string): SVGGElement{
                 break;
 
             case "planet":
-                console.log("planet requested")
                 const planetImage = document.createElementNS("http://www.w3.org/2000/svg", "image")
                 planetImage.href.baseVal = "../resources/planet.png"
                 planetImage.setAttribute("width", `50`)
@@ -403,7 +413,7 @@ export function createGElement(type: string): SVGGElement{
                     gElement.appendChild(station02Image)
                     return(gElement)
             
-            case "nugget":
+            case "nugget01":
                 const nuggetImage = document.createElementNS("http://www.w3.org/2000/svg", "image")
                 nuggetImage.href.baseVal = "../resources/nugget01.png"
                 nuggetImage.setAttribute("width", `30`)

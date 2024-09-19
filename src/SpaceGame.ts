@@ -49,7 +49,7 @@ export class SpaceGame {
         this.spacecraft.color = color
         if(id) this.spacecraft.id = id
         //this.spacecraft.gElement = SpacecraftShape.getCraftGElement(type)
-        this.spacecraft.spacecraftShape = new SpacecraftShape(this.spacecraft.type)
+        this.spacecraft.spacecraftShape = new SpacecraftShape()
         
         if(this.spacecraft.type == "../resources/rocket.svg")
             this.spacecraft.directionCorrection = 45
@@ -81,7 +81,7 @@ export class SpaceGame {
 
     syncReality(reality: SpaceObjectStatus[]){
         
-        reality.forEach(response => {
+        reality.forEach(async response => {
             const renderDeterminant = this.defineRenderDeterminants(response.location)
             const renderLocation = new Vector2D(response.location.x + renderDeterminant.x * torusWidth, 
                                                 response.location.y + renderDeterminant.y * torusHeight
@@ -102,10 +102,13 @@ export class SpaceGame {
             } else if (index === -1){
                 const spacecraft = new Spacecraft()
                 spacecraft.objectStatus = response
-                const spacecraftShape = new SpacecraftShape(spacecraft.type)
+                const spacecraftShape = new SpacecraftShape()
                 
-                spacecraft.gElement = spacecraftShape.gElement
                 
+                if (spacecraft.type === "station02" || spacecraft.type === "station01" || spacecraft.type === "nugget01")
+                    spacecraft.gElement = await spacecraftShape.collidableGElement(spacecraft.type)
+                else 
+                    spacecraft.gElement = createGElement(spacecraft.type)
                 
                 //spacecraft.spacecraftShape.createSatPolygon(spacecraft.type)
 
@@ -296,7 +299,7 @@ export class SpaceGame {
     private setupKeyUpListener() {
         keyboardController.onKeyUp((key) => {
             this.spacecraft.onKeyUp(key);
-            this.stopSound()
+            //this.stopSound()
         });
     }
 
@@ -416,7 +419,7 @@ export class SpaceGame {
         }
     }    
     stopSound(){
-        console.log("stopping sound")
+       // console.log("stopping sound")
        // this.audioBuffer = undefined
        // this.playingSound = false
     }   
