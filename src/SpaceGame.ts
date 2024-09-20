@@ -1,6 +1,6 @@
 import { Spacecraft, fontSize } from "./Spacecraft.js";
 import { GameEnvironment, torusWidth, torusHeight } from "./GameEnvironment.js";
-import { SpacecraftShape, createGElement } from "./SpacecraftShape.js";
+import { createGElement, collidableGElement } from "./SpacecraftShape.js";
 import { keyboardController, device, gameFrame, viewBoxWidth, audioContext } from "./GameMenu.js";
 import { TractorBeam } from "./TractorBeam.js";
 import { evaluate, RequestDefinition, SpaceObjectStatus, SyncronizeSpaceObject, syncSpaceObject, Vector2d, rotatedVector, distanceBetween, distanceVector, manipulate, manipulateSpaceObject, ManipulateSpaceObject } from "./library.js";
@@ -48,8 +48,7 @@ export class SpaceGame {
         this.spacecraft.type = type
         this.spacecraft.color = color
         if(id) this.spacecraft.id = id
-        //this.spacecraft.gElement = SpacecraftShape.getCraftGElement(type)
-        this.spacecraft.spacecraftShape = new SpacecraftShape()
+        this.spacecraft.gElement = createGElement(type)
         
         if(this.spacecraft.type == "../resources/rocket.svg")
             this.spacecraft.directionCorrection = 45
@@ -102,11 +101,12 @@ export class SpaceGame {
             } else if (index === -1){
                 const spacecraft = new Spacecraft()
                 spacecraft.objectStatus = response
-                const spacecraftShape = new SpacecraftShape()
                 
+                // define collidable objects
+                if (spacecraft.type === "station02" || spacecraft.type === "station01")
+                    spacecraft.gElement = await collidableGElement(spacecraft.type)
                 
-                if (spacecraft.type === "station02" || spacecraft.type === "station01" || spacecraft.type === "nugget01")
-                    spacecraft.gElement = await spacecraftShape.collidableGElement(spacecraft.type)
+                // the others get just a normal gElement
                 else 
                     spacecraft.gElement = createGElement(spacecraft.type)
                 

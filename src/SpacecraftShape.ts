@@ -4,7 +4,7 @@ import SVGPathCommander from "svg-path-commander";
 import { SVGPathCollider } from "./SVGPathCollider.js";
 
 var getImageOutline = require('image-outline');
-
+/*
 export class SpacecraftShape{
 
     public gElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
@@ -18,43 +18,8 @@ export class SpacecraftShape{
         else
             this.gElement = createGElement(type)
     }
-*/
-    public async collidableGElement(type: string): Promise<SVGGElement>{
-        this.imageElement = new Image()
-            this.imageElement.src = `../resources/${type}.png`
-            let polygon: {x: number, y: number}[]
-            let pathString
-            
-            return new Promise<SVGGElement>((resolve, reject) => {
-                if(this.imageElement)
-                this.imageElement.onload = () =>{
-                   
-                   const scalingFactor = 50/this.imageElement!.width
-                    console.log("this.imageElement!.width: "+this.imageElement!.width)
-                    polygon = getImageOutline(this.imageElement)
-                    pathString = pointsToPathString(polygon)
-                    const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path")
-                    pathElement.setAttribute("stroke", "blue")
-                    pathElement.setAttribute("stroke-width", "1px")
-                    pathElement.setAttribute("vector-effect", "non-scaling-stroke")
-                    pathElement.setAttribute("fill", "none")
-                    pathElement.setAttribute("d", pathString)
-                    pathElement.setAttribute("transform", ` 
-                        scale(${scalingFactor}) 
-                        translate(
-                            ${-this.imageElement!.width/2}, 
-                            ${-this.imageElement!.height/2})
-                    
-                       `)
-                    
-                    this.gElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
-                    this.gElement.appendChild(pathElement)
-                    resolve(this.gElement)
-                };
-            })
-            
-        
-    };
+
+    
     
 
     public createCollisionPolygon(imageUrl: String){
@@ -91,6 +56,44 @@ export class SpacecraftShape{
     }
 
 }
+*/
+export async function collidableGElement(type: string): Promise<SVGGElement>{
+    const imageElement = new Image()
+        imageElement.src = `../resources/${type}.png`
+        let polygon: {x: number, y: number}[]
+        let pathString
+        
+        return new Promise<SVGGElement>((resolve, reject) => {
+            if(imageElement)
+            imageElement.onload = () =>{
+               
+               const scalingFactor = 50/imageElement!.width
+                console.log("this.imageElement!.width: "+imageElement!.width)
+                polygon = getImageOutline(imageElement)
+                pathString = pointsToPathString(polygon)
+                const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path")
+                pathElement.setAttribute("stroke", "blue")
+                pathElement.setAttribute("stroke-width", "1px")
+                pathElement.setAttribute("vector-effect", "non-scaling-stroke")
+                pathElement.setAttribute("fill", "none")
+                pathElement.setAttribute("d", pathString)
+                //setting an initial transform value for the path-element before aplying it to the the g-Element
+                pathElement.setAttribute("transform", ` 
+                    scale(
+                        ${scalingFactor}) 
+                    translate(
+                        ${-imageElement!.width/2}, 
+                        ${-imageElement!.height/2}
+                    )`
+                )
+                
+                const gElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
+                gElement.appendChild(pathElement)
+                resolve(gElement)
+            };
+        })
+};
+
 export function createGElement(type: string): SVGGElement{
     
     const gElement = document.createElementNS("http://www.w3.org/2000/svg", "g")

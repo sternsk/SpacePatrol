@@ -1,9 +1,10 @@
-import { SpacecraftShape } from "./SpacecraftShape.js"
+import { createGElement } from "./SpacecraftShape.js"
 import { KeyboardController } from "./KeyboardController.js"
 import { Joystick } from "./Joystick.js"
 import * as Tone from 'tone'
 import { Midi } from '@tonejs/midi';
 import { Spacecraft } from "./Spacecraft.js";
+import { SVGPathCollider } from "./SVGPathCollider.js";
 
 
 /*export const availableTypes = ["rainbowRocket", 
@@ -106,8 +107,6 @@ export class GameMenu{
         this.deviceSelector.addEventListener("change", () =>{
         device = this.deviceSelector.value    
         })
-
-        
 
         option1.setAttribute("value", "rainbowRocket")
         option1.innerHTML = "disabled selected"
@@ -262,14 +261,14 @@ export class GameMenu{
         this.previewSvg.style.zIndex = "-1"
         this.previewSvg.style.outline = "none"
 
-        this.previewSvg.appendChild(SpacecraftShape.getCraftGElement(this.typeSelector.value))
+        this.previewSvg.appendChild(createGElement(this.typeSelector.value))
         
         this.typeSelector.addEventListener("change", () =>{
             //remove all childcomponents
             while(this.previewSvg.firstChild)
                 this.previewSvg.removeChild(this.previewSvg.firstChild)
             
-            this.previewSvg.appendChild(SpacecraftShape.getCraftGElement(this.typeSelector.value))
+            this.previewSvg.appendChild(createGElement(this.typeSelector.value))
             this.previewSvg.focus()
         })
     
@@ -278,7 +277,7 @@ export class GameMenu{
             while(this.previewSvg.firstChild)
             this.previewSvg.removeChild(this.previewSvg.firstChild)
             this.previewSvg.focus()
-            this.previewSvg.appendChild(SpacecraftShape.getCraftGElement(this.typeSelector.value))
+            this.previewSvg.appendChild(createGElement(this.typeSelector.value))
         })
     
         

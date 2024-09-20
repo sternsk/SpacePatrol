@@ -1,4 +1,4 @@
-import { SpacecraftShape } from "./SpacecraftShape.js"
+//import { SpacecraftShape } from "./SpacecraftShape.js"
 import { viewBoxWidth } from "./GameMenu.js"
 import { color } from "./GameMenu.js"
 import { Device } from "./Device.js"
@@ -28,7 +28,7 @@ export class Spacecraft{
 
     
     private _gElement: SVGGElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    private _spacecraftShape?: SpacecraftShape 
+    //private _spacecraftShape?: SpacecraftShape 
     
 
     private _color: string
@@ -315,7 +315,7 @@ export class Spacecraft{
     get scale(){
         return(this._scale)
     }
-
+/*
     get spacecraftShape(): SpacecraftShape | undefined{
         if(this._spacecraftShape)
             return this._spacecraftShape
@@ -325,7 +325,7 @@ export class Spacecraft{
         this._spacecraftShape = sp
         this.gElement = sp.gElement
     }
-
+*/
     
     get type(): string{
         return this.objectStatus.type
