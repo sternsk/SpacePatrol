@@ -1,6 +1,9 @@
 import { SpaceGame } from "./SpaceGame.js"
+
+// it would have been way more cool to import the bunch of the reflectionLab without the neccessity of importing each function inidividually
 import * as reflectionLab from "./ReflectionLab.js"
-import { Vector2d, SyncronizeSpaceObject, SpaceObjectStatus, ManipulateSpaceObject
+// when there is a change in reflection Lab this should be refelcted here as well...
+import { Vector2d, SynchronizeSpaceObject, SpaceObjectStatus, ManipulateSpaceObject
  } from "./ReflectionLab.js"
 
 export function initGame(gameFrame: HTMLElement, type: string, color: string, id: string) {
@@ -52,7 +55,7 @@ export class RequestDefinition<R, Res> {
     }
 }
 
-export const syncSpaceObject = new RequestDefinition<SyncronizeSpaceObject, SpaceObjectStatus[]>("SynchronizeSpaceObject");
+export const syncSpaceObject = new RequestDefinition<SynchronizeSpaceObject, SpaceObjectStatus[]>("SynchronizeSpaceObject");
 export const manipulateSpaceObject = new RequestDefinition<ManipulateSpaceObject, void>("ManipulateSpaceObject")
 
 export function evaluate<R, Res>(def: RequestDefinition<R, Res>, request: R): Promise<Res> {

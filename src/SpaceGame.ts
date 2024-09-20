@@ -4,7 +4,7 @@ import { createGElement, collidableGElement } from "./SpacecraftShape.js";
 import { keyboardController, device, gameFrame, viewBoxWidth, audioContext } from "./GameMenu.js";
 import { TractorBeam } from "./TractorBeam.js";
 import { evaluate, RequestDefinition, syncSpaceObject, rotatedVector, distanceBetween, distanceVector, manipulate, manipulateSpaceObject } from "./library.js";
-import { SpaceObjectStatus, SyncronizeSpaceObject, Vector2d, ManipulateSpaceObject } from "./ReflectionLab.js";
+import { SpaceObjectStatus, SynchronizeSpaceObject, Vector2d, ManipulateSpaceObject } from "./ReflectionLab.js";
 import { OvalShield } from "./OvalShield.js";
 import SAT from "sat";
 import { SVGPathCollider } from "./SVGPathCollider.js";
@@ -108,9 +108,12 @@ export class SpaceGame {
                 spacecraft.objectStatus = response
                 
                 // define collidable objects
-                if (spacecraft.type === "station02" || spacecraft.type === "station01")
-                    spacecraft.gElement = await collidableGElement(spacecraft.type)
-
+                if (spacecraft.type === "station02" || spacecraft.type === "station01"){
+                    spacecraft.objectStatus.collidable = true; 
+                    let pathElement = await collidableGElement(spacecraft.type)
+                    spacecraft.gElement = pathElement
+                    spacecraft.collider = new SVGPathCollider(pathElement)
+                }
                 
                 // the others get just a normal gElement
                 else 
@@ -146,6 +149,14 @@ export class SpaceGame {
         requestAnimationFrame(() => {
             this.gameLoop();
         });
+        this.spaceObjects.forEach((element) =>{
+            if(element.collidable){
+                this.spaceObjects.forEach((element2)=>{
+                    if(element2.collidable && element.collider && element2 != element && element2.collider)
+                        element.collider.test(element2.collider)
+                })
+            }
+        })
         /*
         // check collisions between the spacecrafts that have a satPolygon
         for (let i = 0; i < this.spaceObjects.length; i++) {
@@ -168,7 +179,7 @@ export class SpaceGame {
         }
 */
 
-        const request = {} as SyncronizeSpaceObject
+        const request = {} as SynchronizeSpaceObject
         request.spaceObject = this.spacecraft.objectStatus
         
         evaluate(syncSpaceObject, request)

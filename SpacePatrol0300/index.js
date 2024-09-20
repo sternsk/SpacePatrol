@@ -479,7 +479,7 @@
             );
             const gElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
             gElement.appendChild(pathElement);
-            resolve(gElement);
+            resolve(pathElement);
           };
       });
     });
@@ -28183,7 +28183,8 @@
             mass: 10,
             craftId: "spa\xDFcraft",
             type: "rocket",
-            npc: false
+            npc: false,
+            collidable: false
           });
           __publicField(this, "_gElement", document.createElementNS("http://www.w3.org/2000/svg", "g"));
           //private _spacecraftShape?: SpacecraftShape 
@@ -28366,6 +28367,12 @@
           } else if (this.objectStatus.direction < -180) {
             this.objectStatus.direction += 360;
           }
+        }
+        set collidable(coll) {
+          this.objectStatus.collidable = coll;
+        }
+        get collidable() {
+          return this.objectStatus.collidable;
         }
         get collider() {
           if (this._collider)
@@ -28632,6 +28639,765 @@
     }
   });
 
+  // node_modules/sat/SAT.js
+  var require_SAT = __commonJS({
+    "node_modules/sat/SAT.js"(exports, module) {
+      (function(root, factory) {
+        "use strict";
+        if (typeof define === "function" && define["amd"]) {
+          define(factory);
+        } else if (typeof exports === "object") {
+          module["exports"] = factory();
+        } else {
+          root["SAT"] = factory();
+        }
+      })(exports, function() {
+        "use strict";
+        var SAT2 = {};
+        function Vector2(x, y) {
+          this["x"] = x || 0;
+          this["y"] = y || 0;
+        }
+        SAT2["Vector"] = Vector2;
+        SAT2["V"] = Vector2;
+        Vector2.prototype["copy"] = Vector2.prototype.copy = function(other) {
+          this["x"] = other["x"];
+          this["y"] = other["y"];
+          return this;
+        };
+        Vector2.prototype["clone"] = Vector2.prototype.clone = function() {
+          return new Vector2(this["x"], this["y"]);
+        };
+        Vector2.prototype["perp"] = Vector2.prototype.perp = function() {
+          var x = this["x"];
+          this["x"] = this["y"];
+          this["y"] = -x;
+          return this;
+        };
+        Vector2.prototype["rotate"] = Vector2.prototype.rotate = function(angle2) {
+          var x = this["x"];
+          var y = this["y"];
+          this["x"] = x * Math.cos(angle2) - y * Math.sin(angle2);
+          this["y"] = x * Math.sin(angle2) + y * Math.cos(angle2);
+          return this;
+        };
+        Vector2.prototype["reverse"] = Vector2.prototype.reverse = function() {
+          this["x"] = -this["x"];
+          this["y"] = -this["y"];
+          return this;
+        };
+        Vector2.prototype["normalize"] = Vector2.prototype.normalize = function() {
+          var d = this.len();
+          if (d > 0) {
+            this["x"] = this["x"] / d;
+            this["y"] = this["y"] / d;
+          }
+          return this;
+        };
+        Vector2.prototype["add"] = Vector2.prototype.add = function(other) {
+          this["x"] += other["x"];
+          this["y"] += other["y"];
+          return this;
+        };
+        Vector2.prototype["sub"] = Vector2.prototype.sub = function(other) {
+          this["x"] -= other["x"];
+          this["y"] -= other["y"];
+          return this;
+        };
+        Vector2.prototype["scale"] = Vector2.prototype.scale = function(x, y) {
+          this["x"] *= x;
+          this["y"] *= typeof y != "undefined" ? y : x;
+          return this;
+        };
+        Vector2.prototype["project"] = Vector2.prototype.project = function(other) {
+          var amt = this.dot(other) / other.len2();
+          this["x"] = amt * other["x"];
+          this["y"] = amt * other["y"];
+          return this;
+        };
+        Vector2.prototype["projectN"] = Vector2.prototype.projectN = function(other) {
+          var amt = this.dot(other);
+          this["x"] = amt * other["x"];
+          this["y"] = amt * other["y"];
+          return this;
+        };
+        Vector2.prototype["reflect"] = Vector2.prototype.reflect = function(axis) {
+          var x = this["x"];
+          var y = this["y"];
+          this.project(axis).scale(2);
+          this["x"] -= x;
+          this["y"] -= y;
+          return this;
+        };
+        Vector2.prototype["reflectN"] = Vector2.prototype.reflectN = function(axis) {
+          var x = this["x"];
+          var y = this["y"];
+          this.projectN(axis).scale(2);
+          this["x"] -= x;
+          this["y"] -= y;
+          return this;
+        };
+        Vector2.prototype["dot"] = Vector2.prototype.dot = function(other) {
+          return this["x"] * other["x"] + this["y"] * other["y"];
+        };
+        Vector2.prototype["len2"] = Vector2.prototype.len2 = function() {
+          return this.dot(this);
+        };
+        Vector2.prototype["len"] = Vector2.prototype.len = function() {
+          return Math.sqrt(this.len2());
+        };
+        function Circle(pos, r) {
+          this["pos"] = pos || new Vector2();
+          this["r"] = r || 0;
+          this["offset"] = new Vector2();
+        }
+        SAT2["Circle"] = Circle;
+        Circle.prototype["getAABBAsBox"] = Circle.prototype.getAABBAsBox = function() {
+          var r = this["r"];
+          var corner = this["pos"].clone().add(this["offset"]).sub(new Vector2(r, r));
+          return new Box(corner, r * 2, r * 2);
+        };
+        Circle.prototype["getAABB"] = Circle.prototype.getAABB = function() {
+          return this.getAABBAsBox().toPolygon();
+        };
+        Circle.prototype["setOffset"] = Circle.prototype.setOffset = function(offset) {
+          this["offset"] = offset;
+          return this;
+        };
+        function Polygon2(pos, points) {
+          this["pos"] = pos || new Vector2();
+          this["angle"] = 0;
+          this["offset"] = new Vector2();
+          this.setPoints(points || []);
+        }
+        SAT2["Polygon"] = Polygon2;
+        Polygon2.prototype["setPoints"] = Polygon2.prototype.setPoints = function(points) {
+          var lengthChanged = !this["points"] || this["points"].length !== points.length;
+          if (lengthChanged) {
+            var i2;
+            var calcPoints = this["calcPoints"] = [];
+            var edges = this["edges"] = [];
+            var normals = this["normals"] = [];
+            for (i2 = 0; i2 < points.length; i2++) {
+              var p1 = points[i2];
+              var p2 = i2 < points.length - 1 ? points[i2 + 1] : points[0];
+              if (p1 !== p2 && p1.x === p2.x && p1.y === p2.y) {
+                points.splice(i2, 1);
+                i2 -= 1;
+                continue;
+              }
+              calcPoints.push(new Vector2());
+              edges.push(new Vector2());
+              normals.push(new Vector2());
+            }
+          }
+          this["points"] = points;
+          this._recalc();
+          return this;
+        };
+        Polygon2.prototype["setAngle"] = Polygon2.prototype.setAngle = function(angle2) {
+          this["angle"] = angle2;
+          this._recalc();
+          return this;
+        };
+        Polygon2.prototype["setOffset"] = Polygon2.prototype.setOffset = function(offset) {
+          this["offset"] = offset;
+          this._recalc();
+          return this;
+        };
+        Polygon2.prototype["rotate"] = Polygon2.prototype.rotate = function(angle2) {
+          var points = this["points"];
+          var len = points.length;
+          for (var i2 = 0; i2 < len; i2++) {
+            points[i2].rotate(angle2);
+          }
+          this._recalc();
+          return this;
+        };
+        Polygon2.prototype["translate"] = Polygon2.prototype.translate = function(x, y) {
+          var points = this["points"];
+          var len = points.length;
+          for (var i2 = 0; i2 < len; i2++) {
+            points[i2]["x"] += x;
+            points[i2]["y"] += y;
+          }
+          this._recalc();
+          return this;
+        };
+        Polygon2.prototype._recalc = function() {
+          var calcPoints = this["calcPoints"];
+          var edges = this["edges"];
+          var normals = this["normals"];
+          var points = this["points"];
+          var offset = this["offset"];
+          var angle2 = this["angle"];
+          var len = points.length;
+          var i2;
+          for (i2 = 0; i2 < len; i2++) {
+            var calcPoint = calcPoints[i2].copy(points[i2]);
+            calcPoint["x"] += offset["x"];
+            calcPoint["y"] += offset["y"];
+            if (angle2 !== 0) {
+              calcPoint.rotate(angle2);
+            }
+          }
+          for (i2 = 0; i2 < len; i2++) {
+            var p1 = calcPoints[i2];
+            var p2 = i2 < len - 1 ? calcPoints[i2 + 1] : calcPoints[0];
+            var e = edges[i2].copy(p2).sub(p1);
+            normals[i2].copy(e).perp().normalize();
+          }
+          return this;
+        };
+        Polygon2.prototype["getAABBAsBox"] = Polygon2.prototype.getAABBAsBox = function() {
+          var points = this["calcPoints"];
+          var len = points.length;
+          var xMin = points[0]["x"];
+          var yMin = points[0]["y"];
+          var xMax = points[0]["x"];
+          var yMax = points[0]["y"];
+          for (var i2 = 1; i2 < len; i2++) {
+            var point = points[i2];
+            if (point["x"] < xMin) {
+              xMin = point["x"];
+            } else if (point["x"] > xMax) {
+              xMax = point["x"];
+            }
+            if (point["y"] < yMin) {
+              yMin = point["y"];
+            } else if (point["y"] > yMax) {
+              yMax = point["y"];
+            }
+          }
+          return new Box(this["pos"].clone().add(new Vector2(xMin, yMin)), xMax - xMin, yMax - yMin);
+        };
+        Polygon2.prototype["getAABB"] = Polygon2.prototype.getAABB = function() {
+          return this.getAABBAsBox().toPolygon();
+        };
+        Polygon2.prototype["getCentroid"] = Polygon2.prototype.getCentroid = function() {
+          var points = this["calcPoints"];
+          var len = points.length;
+          var cx = 0;
+          var cy = 0;
+          var ar = 0;
+          for (var i2 = 0; i2 < len; i2++) {
+            var p1 = points[i2];
+            var p2 = i2 === len - 1 ? points[0] : points[i2 + 1];
+            var a = p1["x"] * p2["y"] - p2["x"] * p1["y"];
+            cx += (p1["x"] + p2["x"]) * a;
+            cy += (p1["y"] + p2["y"]) * a;
+            ar += a;
+          }
+          ar = ar * 3;
+          cx = cx / ar;
+          cy = cy / ar;
+          return new Vector2(cx, cy);
+        };
+        function Box(pos, w, h) {
+          this["pos"] = pos || new Vector2();
+          this["w"] = w || 0;
+          this["h"] = h || 0;
+        }
+        SAT2["Box"] = Box;
+        Box.prototype["toPolygon"] = Box.prototype.toPolygon = function() {
+          var pos = this["pos"];
+          var w = this["w"];
+          var h = this["h"];
+          return new Polygon2(new Vector2(pos["x"], pos["y"]), [
+            new Vector2(),
+            new Vector2(w, 0),
+            new Vector2(w, h),
+            new Vector2(0, h)
+          ]);
+        };
+        function Response() {
+          this["a"] = null;
+          this["b"] = null;
+          this["overlapN"] = new Vector2();
+          this["overlapV"] = new Vector2();
+          this.clear();
+        }
+        SAT2["Response"] = Response;
+        Response.prototype["clear"] = Response.prototype.clear = function() {
+          this["aInB"] = true;
+          this["bInA"] = true;
+          this["overlap"] = Number.MAX_VALUE;
+          return this;
+        };
+        var T_VECTORS = [];
+        for (var i = 0; i < 10; i++) {
+          T_VECTORS.push(new Vector2());
+        }
+        var T_ARRAYS = [];
+        for (var i = 0; i < 5; i++) {
+          T_ARRAYS.push([]);
+        }
+        var T_RESPONSE = new Response();
+        var TEST_POINT = new Box(new Vector2(), 1e-6, 1e-6).toPolygon();
+        function flattenPointsOn(points, normal, result) {
+          var min = Number.MAX_VALUE;
+          var max = -Number.MAX_VALUE;
+          var len = points.length;
+          for (var i2 = 0; i2 < len; i2++) {
+            var dot = points[i2].dot(normal);
+            if (dot < min) {
+              min = dot;
+            }
+            if (dot > max) {
+              max = dot;
+            }
+          }
+          result[0] = min;
+          result[1] = max;
+        }
+        function isSeparatingAxis(aPos, bPos, aPoints, bPoints, axis, response) {
+          var rangeA = T_ARRAYS.pop();
+          var rangeB = T_ARRAYS.pop();
+          var offsetV = T_VECTORS.pop().copy(bPos).sub(aPos);
+          var projectedOffset = offsetV.dot(axis);
+          flattenPointsOn(aPoints, axis, rangeA);
+          flattenPointsOn(bPoints, axis, rangeB);
+          rangeB[0] += projectedOffset;
+          rangeB[1] += projectedOffset;
+          if (rangeA[0] > rangeB[1] || rangeB[0] > rangeA[1]) {
+            T_VECTORS.push(offsetV);
+            T_ARRAYS.push(rangeA);
+            T_ARRAYS.push(rangeB);
+            return true;
+          }
+          if (response) {
+            var overlap = 0;
+            if (rangeA[0] < rangeB[0]) {
+              response["aInB"] = false;
+              if (rangeA[1] < rangeB[1]) {
+                overlap = rangeA[1] - rangeB[0];
+                response["bInA"] = false;
+              } else {
+                var option1 = rangeA[1] - rangeB[0];
+                var option2 = rangeB[1] - rangeA[0];
+                overlap = option1 < option2 ? option1 : -option2;
+              }
+            } else {
+              response["bInA"] = false;
+              if (rangeA[1] > rangeB[1]) {
+                overlap = rangeA[0] - rangeB[1];
+                response["aInB"] = false;
+              } else {
+                var option1 = rangeA[1] - rangeB[0];
+                var option2 = rangeB[1] - rangeA[0];
+                overlap = option1 < option2 ? option1 : -option2;
+              }
+            }
+            var absOverlap = Math.abs(overlap);
+            if (absOverlap < response["overlap"]) {
+              response["overlap"] = absOverlap;
+              response["overlapN"].copy(axis);
+              if (overlap < 0) {
+                response["overlapN"].reverse();
+              }
+            }
+          }
+          T_VECTORS.push(offsetV);
+          T_ARRAYS.push(rangeA);
+          T_ARRAYS.push(rangeB);
+          return false;
+        }
+        SAT2["isSeparatingAxis"] = isSeparatingAxis;
+        function voronoiRegion(line, point) {
+          var len2 = line.len2();
+          var dp = point.dot(line);
+          if (dp < 0) {
+            return LEFT_VORONOI_REGION;
+          } else if (dp > len2) {
+            return RIGHT_VORONOI_REGION;
+          } else {
+            return MIDDLE_VORONOI_REGION;
+          }
+        }
+        var LEFT_VORONOI_REGION = -1;
+        var MIDDLE_VORONOI_REGION = 0;
+        var RIGHT_VORONOI_REGION = 1;
+        function pointInCircle(p, c) {
+          var differenceV = T_VECTORS.pop().copy(p).sub(c["pos"]).sub(c["offset"]);
+          var radiusSq = c["r"] * c["r"];
+          var distanceSq = differenceV.len2();
+          T_VECTORS.push(differenceV);
+          return distanceSq <= radiusSq;
+        }
+        SAT2["pointInCircle"] = pointInCircle;
+        function pointInPolygon(p, poly) {
+          TEST_POINT["pos"].copy(p);
+          T_RESPONSE.clear();
+          var result = testPolygonPolygon2(TEST_POINT, poly, T_RESPONSE);
+          if (result) {
+            result = T_RESPONSE["aInB"];
+          }
+          return result;
+        }
+        SAT2["pointInPolygon"] = pointInPolygon;
+        function testCircleCircle(a, b, response) {
+          var differenceV = T_VECTORS.pop().copy(b["pos"]).add(b["offset"]).sub(a["pos"]).sub(a["offset"]);
+          var totalRadius = a["r"] + b["r"];
+          var totalRadiusSq = totalRadius * totalRadius;
+          var distanceSq = differenceV.len2();
+          if (distanceSq > totalRadiusSq) {
+            T_VECTORS.push(differenceV);
+            return false;
+          }
+          if (response) {
+            var dist = Math.sqrt(distanceSq);
+            response["a"] = a;
+            response["b"] = b;
+            response["overlap"] = totalRadius - dist;
+            response["overlapN"].copy(differenceV.normalize());
+            response["overlapV"].copy(differenceV).scale(response["overlap"]);
+            response["aInB"] = a["r"] <= b["r"] && dist <= b["r"] - a["r"];
+            response["bInA"] = b["r"] <= a["r"] && dist <= a["r"] - b["r"];
+          }
+          T_VECTORS.push(differenceV);
+          return true;
+        }
+        SAT2["testCircleCircle"] = testCircleCircle;
+        function testPolygonCircle(polygon, circle, response) {
+          var circlePos = T_VECTORS.pop().copy(circle["pos"]).add(circle["offset"]).sub(polygon["pos"]);
+          var radius = circle["r"];
+          var radius2 = radius * radius;
+          var points = polygon["calcPoints"];
+          var len = points.length;
+          var edge = T_VECTORS.pop();
+          var point = T_VECTORS.pop();
+          for (var i2 = 0; i2 < len; i2++) {
+            var next = i2 === len - 1 ? 0 : i2 + 1;
+            var prev = i2 === 0 ? len - 1 : i2 - 1;
+            var overlap = 0;
+            var overlapN = null;
+            edge.copy(polygon["edges"][i2]);
+            point.copy(circlePos).sub(points[i2]);
+            if (response && point.len2() > radius2) {
+              response["aInB"] = false;
+            }
+            var region = voronoiRegion(edge, point);
+            if (region === LEFT_VORONOI_REGION) {
+              edge.copy(polygon["edges"][prev]);
+              var point2 = T_VECTORS.pop().copy(circlePos).sub(points[prev]);
+              region = voronoiRegion(edge, point2);
+              if (region === RIGHT_VORONOI_REGION) {
+                var dist = point.len();
+                if (dist > radius) {
+                  T_VECTORS.push(circlePos);
+                  T_VECTORS.push(edge);
+                  T_VECTORS.push(point);
+                  T_VECTORS.push(point2);
+                  return false;
+                } else if (response) {
+                  response["bInA"] = false;
+                  overlapN = point.normalize();
+                  overlap = radius - dist;
+                }
+              }
+              T_VECTORS.push(point2);
+            } else if (region === RIGHT_VORONOI_REGION) {
+              edge.copy(polygon["edges"][next]);
+              point.copy(circlePos).sub(points[next]);
+              region = voronoiRegion(edge, point);
+              if (region === LEFT_VORONOI_REGION) {
+                var dist = point.len();
+                if (dist > radius) {
+                  T_VECTORS.push(circlePos);
+                  T_VECTORS.push(edge);
+                  T_VECTORS.push(point);
+                  return false;
+                } else if (response) {
+                  response["bInA"] = false;
+                  overlapN = point.normalize();
+                  overlap = radius - dist;
+                }
+              }
+            } else {
+              var normal = edge.perp().normalize();
+              var dist = point.dot(normal);
+              var distAbs = Math.abs(dist);
+              if (dist > 0 && distAbs > radius) {
+                T_VECTORS.push(circlePos);
+                T_VECTORS.push(normal);
+                T_VECTORS.push(point);
+                return false;
+              } else if (response) {
+                overlapN = normal;
+                overlap = radius - dist;
+                if (dist >= 0 || overlap < 2 * radius) {
+                  response["bInA"] = false;
+                }
+              }
+            }
+            if (overlapN && response && Math.abs(overlap) < Math.abs(response["overlap"])) {
+              response["overlap"] = overlap;
+              response["overlapN"].copy(overlapN);
+            }
+          }
+          if (response) {
+            response["a"] = polygon;
+            response["b"] = circle;
+            response["overlapV"].copy(response["overlapN"]).scale(response["overlap"]);
+          }
+          T_VECTORS.push(circlePos);
+          T_VECTORS.push(edge);
+          T_VECTORS.push(point);
+          return true;
+        }
+        SAT2["testPolygonCircle"] = testPolygonCircle;
+        function testCirclePolygon(circle, polygon, response) {
+          var result = testPolygonCircle(polygon, circle, response);
+          if (result && response) {
+            var a = response["a"];
+            var aInB = response["aInB"];
+            response["overlapN"].reverse();
+            response["overlapV"].reverse();
+            response["a"] = response["b"];
+            response["b"] = a;
+            response["aInB"] = response["bInA"];
+            response["bInA"] = aInB;
+          }
+          return result;
+        }
+        SAT2["testCirclePolygon"] = testCirclePolygon;
+        function testPolygonPolygon2(a, b, response) {
+          var aPoints = a["calcPoints"];
+          var aLen = aPoints.length;
+          var bPoints = b["calcPoints"];
+          var bLen = bPoints.length;
+          for (var i2 = 0; i2 < aLen; i2++) {
+            if (isSeparatingAxis(a["pos"], b["pos"], aPoints, bPoints, a["normals"][i2], response)) {
+              return false;
+            }
+          }
+          for (var i2 = 0; i2 < bLen; i2++) {
+            if (isSeparatingAxis(a["pos"], b["pos"], aPoints, bPoints, b["normals"][i2], response)) {
+              return false;
+            }
+          }
+          if (response) {
+            response["a"] = a;
+            response["b"] = b;
+            response["overlapV"].copy(response["overlapN"]).scale(response["overlap"]);
+          }
+          return true;
+        }
+        SAT2["testPolygonPolygon"] = testPolygonPolygon2;
+        return SAT2;
+      });
+    }
+  });
+
+  // src/SVGPathCollider.ts
+  var SAT, SVGPathCollider;
+  var init_SVGPathCollider = __esm({
+    "src/SVGPathCollider.ts"() {
+      "use strict";
+      SAT = __toESM(require_SAT(), 1);
+      SVGPathCollider = class {
+        constructor(path, separationNum = 16, isConcave = false) {
+          this.path = path;
+          this.separationNum = separationNum;
+          this.isConcave = isConcave;
+          __publicField(this, "shouldBeUpdatingBoundingBox", true);
+          __publicField(this, "boundingBox", new SAT.Polygon());
+          __publicField(this, "shouldBeUpdatingCollisionArea", true);
+          __publicField(this, "collisionArea");
+          __publicField(this, "concaveCollisionAreas", []);
+          __publicField(this, "boundingPoints");
+          __publicField(this, "isShowingCollision", false);
+          __publicField(this, "boundingBoxSvg", null);
+          __publicField(this, "collisionAreaSvg", null);
+          __publicField(this, "isBoundingBoxColliding", false);
+          this.boundingBox = new SAT.Polygon(
+            new SAT.Vector(),
+            this.times(4, () => new SAT.Vector())
+          );
+          this.collisionArea = new SAT.Polygon(
+            new SAT.Vector(),
+            this.times(separationNum, () => new SAT.Vector())
+          );
+          var ose = path.ownerSVGElement;
+          this.boundingPoints = this.times(4, () => ose.createSVGPoint());
+          if (isConcave) {
+            this.concaveCollisionAreas = this.times(
+              separationNum,
+              () => new SAT.Polygon(
+                new SAT.Vector(),
+                this.times(3, () => new SAT.Vector())
+              )
+            );
+          }
+        }
+        update() {
+          this.shouldBeUpdatingBoundingBox = true;
+          this.shouldBeUpdatingCollisionArea = true;
+          if (this.isShowingCollision) {
+            var visibility = this.isBoundingBoxColliding ? "visible" : "hidden";
+            if (this.collisionAreaSvg)
+              this.collisionAreaSvg.setAttribute("visibility", visibility);
+          }
+          this.isBoundingBoxColliding = false;
+        }
+        test(other) {
+          this.updateBoundingBox();
+          other.updateBoundingBox();
+          if (!SAT.testPolygonPolygon(this.boundingBox, other.boundingBox)) {
+            return false;
+          }
+          this.isBoundingBoxColliding = true;
+          other.isBoundingBoxColliding = true;
+          this.updateCollisionArea();
+          other.updateCollisionArea();
+          if (this.isConcave) {
+            return this.concaveCollisionAreas.some((cca) => other.testToPolygon(cca));
+          } else {
+            return other.testToPolygon(this.collisionArea);
+          }
+        }
+        showCollision(isShowingCollision = true) {
+          this.isShowingCollision = isShowingCollision;
+          var ose = this.path.ownerSVGElement;
+          if (this.boundingBoxSvg != null) {
+            ose.removeChild(this.boundingBoxSvg);
+            this.boundingBoxSvg = null;
+          }
+          if (this.collisionAreaSvg != null) {
+            ose.removeChild(this.collisionAreaSvg);
+            this.collisionAreaSvg = null;
+          }
+          if (this.isShowingCollision) {
+            this.boundingBoxSvg = this.createPath();
+            ose.appendChild(this.boundingBoxSvg);
+            this.collisionAreaSvg = this.createPath(2, 5);
+            ose.appendChild(this.collisionAreaSvg);
+          }
+        }
+        updateBoundingBox() {
+          if (!this.shouldBeUpdatingBoundingBox) {
+            return;
+          }
+          this.shouldBeUpdatingBoundingBox = false;
+          this.pathToBoundingBox(this.path, this.boundingBox.points);
+          this.boundingBox.setAngle(0);
+          if (this.isShowingCollision && this.boundingBoxSvg) {
+            this.boundingBoxSvg.setAttribute(
+              "d",
+              this.satPolygonToPathStr(this.boundingBox)
+            );
+          }
+        }
+        updateCollisionArea() {
+          if (!this.shouldBeUpdatingCollisionArea) {
+            return;
+          }
+          this.shouldBeUpdatingCollisionArea = false;
+          this.pathToCollisionArea(this.path, this.collisionArea.points);
+          if (this.isShowingCollision && this.collisionAreaSvg) {
+            this.collisionAreaSvg.setAttribute(
+              "d",
+              this.satPolygonToPathStr(this.collisionArea)
+            );
+          }
+          if (this.isConcave) {
+            var centerPos = new SAT.Vector();
+            this.collisionArea.points.forEach((pt) => {
+              centerPos.x += pt.x;
+              centerPos.y += pt.y;
+            });
+            var pl = this.separationNum;
+            centerPos.x /= pl;
+            centerPos.y /= pl;
+            this.times(pl, (i) => {
+              var p1 = this.collisionArea.points[i];
+              var p2 = this.collisionArea.points[(i + 1) % pl];
+              var cca = this.concaveCollisionAreas[i];
+              var pts = cca.points;
+              pts[0].x = p1.x;
+              pts[0].y = p1.y;
+              pts[1].x = p2.x;
+              pts[1].y = p2.y;
+              pts[2].x = centerPos.x;
+              pts[2].y = centerPos.y;
+              cca.setAngle(0);
+            });
+          } else {
+            this.collisionArea.setAngle(0);
+          }
+        }
+        testToPolygon(polygon) {
+          if (this.isConcave) {
+            return this.concaveCollisionAreas.some(
+              (cca) => SAT.testPolygonPolygon(cca, polygon)
+            );
+          } else {
+            return SAT.testPolygonPolygon(this.collisionArea, polygon);
+          }
+        }
+        pathToBoundingBox(path, points) {
+          const bbox = path.getBBox();
+          const ctm = path.getCTM();
+          this.boundingPoints[0].x = bbox.x;
+          this.boundingPoints[0].y = bbox.y;
+          this.boundingPoints[1].x = bbox.x + bbox.width;
+          this.boundingPoints[1].y = bbox.y;
+          this.boundingPoints[2].x = bbox.x + bbox.width;
+          this.boundingPoints[2].y = bbox.y + bbox.height;
+          this.boundingPoints[3].x = bbox.x;
+          this.boundingPoints[3].y = bbox.y + bbox.height;
+          this.boundingPoints.forEach((bp, i) => {
+            if (ctm)
+              bp = bp.matrixTransform(ctm);
+            var pt = points[i];
+            pt.x = bp.x;
+            pt.y = bp.y;
+          });
+        }
+        pathToCollisionArea(path, points) {
+          const ctm = path.getCTM();
+          const tl = path.getTotalLength();
+          let l = 0;
+          points.forEach((pt) => {
+            if (ctm)
+              var pal = path.getPointAtLength(l).matrixTransform(ctm);
+            else
+              pal = new DOMPoint();
+            pt.x = pal.x;
+            pt.y = pal.y;
+            l += tl / this.separationNum;
+          });
+        }
+        satPolygonToPathStr(polygon) {
+          let str = "M";
+          polygon.points.forEach((pt, i) => {
+            str += `${pt.x},${pt.y} `;
+          });
+          str += "z";
+          return str;
+        }
+        createPath(width = 1, dasharray = 10) {
+          const svg = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path"
+          );
+          svg.setAttribute("stroke", "#777");
+          svg.setAttribute("stroke-width", `${width}`);
+          svg.setAttribute("fill", "none");
+          svg.setAttribute("stroke-dasharray", `${dasharray}`);
+          return svg;
+        }
+        times(count, func) {
+          let result = [];
+          for (let i = 0; i < count; i++) {
+            result.push(func(i));
+          }
+          return result;
+        }
+      };
+    }
+  });
+
   // src/Vector2D.ts
   var Vector2D;
   var init_Vector2D = __esm({
@@ -28711,6 +29477,7 @@
       init_TractorBeam();
       init_library();
       init_OvalShield();
+      init_SVGPathCollider();
       init_Vector2D();
       SpaceGame = class {
         constructor() {
@@ -28769,9 +29536,12 @@
             } else if (index === -1) {
               const spacecraft = new Spacecraft();
               spacecraft.objectStatus = response;
-              if (spacecraft.type === "station02" || spacecraft.type === "station01")
-                spacecraft.gElement = yield collidableGElement(spacecraft.type);
-              else
+              if (spacecraft.type === "station02" || spacecraft.type === "station01") {
+                spacecraft.objectStatus.collidable = true;
+                let pathElement = yield collidableGElement(spacecraft.type);
+                spacecraft.gElement = pathElement;
+                spacecraft.collider = new SVGPathCollider(pathElement);
+              } else
                 spacecraft.gElement = createGElement(spacecraft.type);
               this.spaceObjects.push(spacecraft);
               spacecraft.gElement.setAttribute("id", `${spacecraft.id}`);
@@ -28796,6 +29566,14 @@
           var _a;
           requestAnimationFrame(() => {
             this.gameLoop();
+          });
+          this.spaceObjects.forEach((element) => {
+            if (element.collidable) {
+              this.spaceObjects.forEach((element2) => {
+                if (element2.collidable && element.collider && element2 != element && element2.collider)
+                  element.collider.test(element2.collider);
+              });
+            }
           });
           const request = {};
           request.spaceObject = this.spacecraft.objectStatus;
@@ -29444,5 +30222,8 @@ tone/build/esm/core/Tone.js:
    * @license http://opensource.org/licenses/MIT MIT License
    * @copyright 2014-2024 Yotam Mann
    *)
+
+sat/SAT.js:
+  (** @preserve SAT.js - Version 0.9.0 - Copyright 2012 - 2021 - Jim Riecken <jimr@jimr.ca> - released under the MIT License. https://github.com/jriecken/sat-js *)
 */
 //# sourceMappingURL=index.js.map

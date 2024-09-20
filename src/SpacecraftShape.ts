@@ -57,13 +57,13 @@ export class SpacecraftShape{
 
 }
 */
-export async function collidableGElement(type: string): Promise<SVGGElement>{
+export async function collidableGElement(type: string): Promise<SVGPathElement>{
     const imageElement = new Image()
         imageElement.src = `../resources/${type}.png`
         let polygon: {x: number, y: number}[]
         let pathString
         
-        return new Promise<SVGGElement>((resolve, reject) => {
+        return new Promise<SVGPathElement>((resolve, reject) => {
             if(imageElement)
             imageElement.onload = () =>{
                
@@ -89,7 +89,7 @@ export async function collidableGElement(type: string): Promise<SVGGElement>{
                 
                 const gElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
                 gElement.appendChild(pathElement)
-                resolve(gElement)
+                resolve(pathElement)
             };
         })
 };

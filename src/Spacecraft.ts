@@ -25,7 +25,8 @@ export class Spacecraft{
                                         mass: 10,
                                         craftId: "spaßcraft",
                                         type: "rocket",
-                                        npc: false
+                                        npc: false,
+                                        collidable: false
                                         } 
 
     
@@ -273,6 +274,14 @@ export class Spacecraft{
         }else if(this.objectStatus.direction < -180){
             this.objectStatus.direction += 360
         }
+    }
+
+    set collidable(coll: boolean){
+        this.objectStatus.collidable = coll
+    }
+
+    get collidable(): boolean{
+        return this.objectStatus.collidable
     }
 
     get collider(): SVGPathCollider | undefined{
