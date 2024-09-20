@@ -1,14 +1,12 @@
 import { SpaceGame } from "./SpaceGame.js"
+import * as reflectionLab from "./ReflectionLab.js"
+import { Vector2d, SyncronizeSpaceObject, SpaceObjectStatus, ManipulateSpaceObject
+ } from "./ReflectionLab.js"
 
 export function initGame(gameFrame: HTMLElement, type: string, color: string, id: string) {
     console.log("spaceGame loads")
     const game = new SpaceGame()
     game.init(type, color, id)
-}
-
-export interface Vector2d{
-    x: number
-    y: number
 }
 
 export function polarVector(length: number, angle: number): Vector2d{
@@ -45,26 +43,7 @@ export function inverse(v: Vector2d): Vector2d{
     return {x: -v.x, y: -v.y} as Vector2d
 }
 
-export interface SpaceObjectStatus {
-    location: Vector2d;
-    impuls: Vector2d;
-    direction: number;
-    rotation: number;
-    mass:number;
-    craftId: string;
-    type: string;
-    npc: boolean;
-}
 
-export interface SyncronizeSpaceObject {
-    spaceObject: SpaceObjectStatus;
-}
-
-export interface ManipulateSpaceObject{
-    spaceObject: SpaceObjectStatus;
-    target: string;
-    method: string;
-}
 
 export class RequestDefinition<R, Res> {
     readonly path: string;

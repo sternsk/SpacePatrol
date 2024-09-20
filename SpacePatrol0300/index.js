@@ -28187,6 +28187,7 @@
           });
           __publicField(this, "_gElement", document.createElementNS("http://www.w3.org/2000/svg", "g"));
           //private _spacecraftShape?: SpacecraftShape 
+          __publicField(this, "_collider");
           __publicField(this, "_color");
           __publicField(this, "_touchControlType");
           __publicField(this, "easing", false);
@@ -28365,6 +28366,14 @@
           } else if (this.objectStatus.direction < -180) {
             this.objectStatus.direction += 360;
           }
+        }
+        get collider() {
+          if (this._collider)
+            return this._collider;
+          else return void 0;
+        }
+        set collider(collider) {
+          this._collider = collider;
         }
         get direction() {
           return this.objectStatus.direction;

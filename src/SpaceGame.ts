@@ -3,12 +3,14 @@ import { GameEnvironment, torusWidth, torusHeight } from "./GameEnvironment.js";
 import { createGElement, collidableGElement } from "./SpacecraftShape.js";
 import { keyboardController, device, gameFrame, viewBoxWidth, audioContext } from "./GameMenu.js";
 import { TractorBeam } from "./TractorBeam.js";
-import { evaluate, RequestDefinition, SpaceObjectStatus, SyncronizeSpaceObject, syncSpaceObject, Vector2d, rotatedVector, distanceBetween, distanceVector, manipulate, manipulateSpaceObject, ManipulateSpaceObject } from "./library.js";
+import { evaluate, RequestDefinition, syncSpaceObject, rotatedVector, distanceBetween, distanceVector, manipulate, manipulateSpaceObject } from "./library.js";
+import { SpaceObjectStatus, SyncronizeSpaceObject, Vector2d, ManipulateSpaceObject } from "./ReflectionLab.js";
 import { OvalShield } from "./OvalShield.js";
 import SAT from "sat";
-
+import { SVGPathCollider } from "./SVGPathCollider.js";
 import * as collider from "./SVGPathCollider.js"
 import { Vector2D } from "./Vector2D.js";
+
 
 export class SpaceGame {
     audioBuffer?: AudioBuffer
@@ -16,6 +18,7 @@ export class SpaceGame {
 
     private spacecraft: Spacecraft
     private spaceObjects: Spacecraft[] = [];
+    
     
     private gameEnvironment: GameEnvironment;
     private touchControl = false
@@ -49,6 +52,8 @@ export class SpaceGame {
         this.spacecraft.color = color
         if(id) this.spacecraft.id = id
         this.spacecraft.gElement = createGElement(type)
+
+
         
         if(this.spacecraft.type == "../resources/rocket.svg")
             this.spacecraft.directionCorrection = 45
@@ -105,6 +110,7 @@ export class SpaceGame {
                 // define collidable objects
                 if (spacecraft.type === "station02" || spacecraft.type === "station01")
                     spacecraft.gElement = await collidableGElement(spacecraft.type)
+
                 
                 // the others get just a normal gElement
                 else 

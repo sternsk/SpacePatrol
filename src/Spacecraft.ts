@@ -3,10 +3,12 @@ import { viewBoxWidth } from "./GameMenu.js"
 import { color } from "./GameMenu.js"
 import { Device } from "./Device.js"
 import { DeviceFactory } from "./DeviceFactory.js"
-import { SpaceObjectStatus, polarVector, add, length, angle, distanceBetween, Vector2d, inverse } from "./library.js"
+import { polarVector, add, length, angle, distanceBetween, inverse } from "./library.js"
+import { SpaceObjectStatus, Vector2d } from "./ReflectionLab.js"
 import { TractorBeam } from "./TractorBeam.js"
 
 import SAT from "sat";
+import { SVGPathCollider } from "./SVGPathCollider.js"
 
 // fontsize should seems to depend on svg-Size
 export let fontSize = window.innerHeight/80
@@ -29,6 +31,7 @@ export class Spacecraft{
     
     private _gElement: SVGGElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
     //private _spacecraftShape?: SpacecraftShape 
+    private _collider?: SVGPathCollider
     
 
     private _color: string
@@ -271,6 +274,17 @@ export class Spacecraft{
             this.objectStatus.direction += 360
         }
     }
+
+    get collider(): SVGPathCollider | undefined{
+        if(this._collider)
+            return this._collider
+        else return undefined
+    }
+
+    set collider(collider: SVGPathCollider){
+        this._collider = collider
+    }
+
 
     get direction(): number{
         return this.objectStatus.direction
