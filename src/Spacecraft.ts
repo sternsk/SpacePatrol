@@ -8,7 +8,8 @@ import { SpaceObjectStatus, Vector2d } from "./ReflectionLab.js"
 import { TractorBeam } from "./TractorBeam.js"
 
 import SAT from "sat";
-import { SVGPathCollider } from "./SVGPathCollider.js"
+import SVGPathCollider from "SVGPathCollider.js"
+import { SpaceObjectShape } from "./SpacecraftShape.js"
 
 // fontsize should seems to depend on svg-Size
 export let fontSize = window.innerHeight/80
@@ -29,12 +30,9 @@ export class Spacecraft{
                                         collidable: false
                                         } 
 
-    
-    private _gElement: SVGGElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    //private _spacecraftShape?: SpacecraftShape 
-    private _collider?: SVGPathCollider
-    
+    private shape: SpaceObjectShape
 
+    
     private _color: string
     private _touchControlType: string
     private easing = false
@@ -56,7 +54,7 @@ export class Spacecraft{
         this._color = "flün"
         this.objectStatus.craftId = "spacecraft"
         this._touchControlType = "spacecraft"
-       // this._spacecraftShape = new SpacecraftShape(this.type);
+        this.shape = {gElement: document.createElementNS("http://www.w3.org/2000/svg", "g")}
        // this.gElement = this._spacecraftShape.gElement
         
     }
@@ -77,7 +75,7 @@ export class Spacecraft{
         // füge das gElement des Devices zum gElement des Spacecrafts hinzu.
         if(this._device?._gElem){
             this._device._gElem.setAttribute("id", "device")
-            this._gElement.appendChild(this._device._gElem)
+            this.shape.gElement.appendChild(this._device._gElem)
             
         }
     }
@@ -285,13 +283,13 @@ export class Spacecraft{
     }
 
     get collider(): SVGPathCollider | undefined{
-        if(this._collider)
-            return this._collider
+        if(this.shape.collider)
+            return this.shape.collider
         else return undefined
     }
 
     set collider(collider: SVGPathCollider){
-        this._collider = collider
+        this.shape.collider = collider
     }
 
 
@@ -375,11 +373,11 @@ export class Spacecraft{
     }
     
     get gElement(): SVGGElement{
-        return(this._gElement)
+        return(this.shape.gElement)
     }
 
     set gElement(g:SVGGElement){
-        this._gElement = g
+        this.shape.gElement = g
     }
 
     set directionCorrection(n: number){
@@ -428,7 +426,7 @@ export class Spacecraft{
                 requestAnimationFrame(animate)
 
             } else {
-                this._gElement.parentNode?.removeChild(this._gElement)
+                this.gElement.parentNode?.removeChild(this.gElement)
                 if(this._label){
                     this._label.parentNode?.removeChild(this._label)
                     this._labelBorder?.parentNode?.removeChild(this._labelBorder)

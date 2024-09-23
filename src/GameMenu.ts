@@ -4,7 +4,7 @@ import { Joystick } from "./Joystick.js"
 import * as Tone from 'tone'
 import { Midi } from '@tonejs/midi';
 import { Spacecraft } from "./Spacecraft.js";
-import { SVGPathCollider } from "./SVGPathCollider.js";
+import SVGPathCollider from "SVGPathCollider.js";
 
 
 /*export const availableTypes = ["rainbowRocket", 
@@ -80,8 +80,12 @@ export class GameMenu{
         const station02 = document.createElement("option")
         station02.setAttribute("value", "station02")
         station02.textContent = "station02"
-
-        
+        const helgramSVG = document.createElement("option")
+        helgramSVG.setAttribute("value", "helgramSVG")
+        helgramSVG.textContent = "helgramSVG"
+        const planet = document.createElement("option")
+        planet.setAttribute("value", "../resources/planet.png")
+        planet.textContent = "planet"
 
         const noDevice = document.createElement("option")
         noDevice.innerHTML = "disabled selected"
@@ -152,12 +156,14 @@ export class GameMenu{
         this.typeSelector.appendChild(option6)
         this.typeSelector.appendChild(option7)
         this.typeSelector.appendChild(option8)
+        this.typeSelector.appendChild(helgramSVG)
         this.typeSelector.appendChild(option9)
         this.typeSelector.appendChild(option10)
         this.typeSelector.appendChild(option11)
         this.typeSelector.appendChild(option12)
         this.typeSelector.appendChild(station)
         this.typeSelector.appendChild(station02)
+        this.typeSelector.appendChild(planet)
 
         const colorSelector = document.createElement("select")
         const option13 = document.createElement("option")

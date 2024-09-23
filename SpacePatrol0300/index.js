@@ -448,7 +448,7 @@
   });
 
   // src/SpacecraftShape.ts
-  function collidableGElement(type) {
+  function collidablePathElement(type) {
     return __async(this, null, function* () {
       const imageElement = new Image();
       imageElement.src = `../resources/${type}.png`;
@@ -458,7 +458,6 @@
         if (imageElement)
           imageElement.onload = () => {
             const scalingFactor = 50 / imageElement.width;
-            console.log("this.imageElement!.width: " + imageElement.width);
             polygon = getImageOutline(imageElement);
             pathString = pointsToPathString(polygon);
             const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
@@ -477,8 +476,6 @@
                         ${-imageElement.height / 2}
                     )`
             );
-            const gElement = document.createElementNS("http://www.w3.org/2000/svg", "g");
-            gElement.appendChild(pathElement);
             resolve(pathElement);
           };
       });
@@ -578,10 +575,9 @@
         box.setAttribute("height", "52");
         additionalPaths.push(box);
         break;
-      case "helgram.png":
-        gElement.setAttribute("transform", "translate(-50,220) scale(0.0393700787401575,0.0100000)");
+      case "helgramSVG":
+        gElement.setAttribute("transform", "translate(-50,-50) scale(0.0393700787401575,0.05)");
         gElement.setAttribute("fill", `${color}`);
-        gElement.setAttribute("stroke", "none");
         path0.setAttribute("d", `M1790 2633 c-11 -26 -23 -58 -27 -72 -3 -14 -12 -34 -20 -43 -13 -15
                 -14 -40 -3 -189 6 -95 15 -179 19 -187 11 -19 1 -62 -15 -69 -7 -2 -10 -12 -7
                 -21 4 -13 3 -14 -5 -3 -8 11 -13 11 -33 -2 -13 -8 -39 -18 -58 -22 -19 -4 -43
@@ -28186,9 +28182,7 @@
             npc: false,
             collidable: false
           });
-          __publicField(this, "_gElement", document.createElementNS("http://www.w3.org/2000/svg", "g"));
-          //private _spacecraftShape?: SpacecraftShape 
-          __publicField(this, "_collider");
+          __publicField(this, "shape");
           __publicField(this, "_color");
           __publicField(this, "_touchControlType");
           __publicField(this, "easing", false);
@@ -28203,6 +28197,7 @@
           this._color = "fl\xFCn";
           this.objectStatus.craftId = "spacecraft";
           this._touchControlType = "spacecraft";
+          this.shape = { gElement: document.createElementNS("http://www.w3.org/2000/svg", "g") };
         }
         accelerate(thrust) {
           let vector = polarVector(thrust, this.direction);
@@ -28216,7 +28211,7 @@
           (_a = this._device) == null ? void 0 : _a.activate();
           if ((_b = this._device) == null ? void 0 : _b._gElem) {
             this._device._gElem.setAttribute("id", "device");
-            this._gElement.appendChild(this._device._gElem);
+            this.shape.gElement.appendChild(this._device._gElem);
           }
         }
         applyLabel(svgElement) {
@@ -28375,12 +28370,12 @@
           return this.objectStatus.collidable;
         }
         get collider() {
-          if (this._collider)
-            return this._collider;
+          if (this.shape.collider)
+            return this.shape.collider;
           else return void 0;
         }
         set collider(collider) {
-          this._collider = collider;
+          this.shape.collider = collider;
         }
         get direction() {
           return this.objectStatus.direction;
@@ -28446,10 +28441,10 @@
           this.objectStatus.craftId = id;
         }
         get gElement() {
-          return this._gElement;
+          return this.shape.gElement;
         }
         set gElement(g) {
-          this._gElement = g;
+          this.shape.gElement = g;
         }
         set directionCorrection(n) {
           this._directionCorrection = n;
@@ -28489,7 +28484,7 @@
               this.update();
               requestAnimationFrame(animate);
             } else {
-              (_a = this._gElement.parentNode) == null ? void 0 : _a.removeChild(this._gElement);
+              (_a = this.gElement.parentNode) == null ? void 0 : _a.removeChild(this.gElement);
               if (this._label) {
                 (_b = this._label.parentNode) == null ? void 0 : _b.removeChild(this._label);
                 (_d = (_c = this._labelBorder) == null ? void 0 : _c.parentNode) == null ? void 0 : _d.removeChild(this._labelBorder);
@@ -29189,11 +29184,10 @@
     }
   });
 
-  // src/SVGPathCollider.ts
+  // node_modules/SVGPathCollider.ts
   var SAT, SVGPathCollider;
   var init_SVGPathCollider = __esm({
-    "src/SVGPathCollider.ts"() {
-      "use strict";
+    "node_modules/SVGPathCollider.ts"() {
       SAT = __toESM(require_SAT(), 1);
       SVGPathCollider = class {
         constructor(path, separationNum = 16, isConcave = false) {
@@ -29204,7 +29198,7 @@
           __publicField(this, "boundingBox", new SAT.Polygon());
           __publicField(this, "shouldBeUpdatingCollisionArea", true);
           __publicField(this, "collisionArea");
-          __publicField(this, "concaveCollisionAreas", []);
+          __publicField(this, "concaveCollisionAreas");
           __publicField(this, "boundingPoints");
           __publicField(this, "isShowingCollision", false);
           __publicField(this, "boundingBoxSvg", null);
@@ -29235,8 +29229,7 @@
           this.shouldBeUpdatingCollisionArea = true;
           if (this.isShowingCollision) {
             var visibility = this.isBoundingBoxColliding ? "visible" : "hidden";
-            if (this.collisionAreaSvg)
-              this.collisionAreaSvg.setAttribute("visibility", visibility);
+            this.collisionAreaSvg.setAttribute("visibility", visibility);
           }
           this.isBoundingBoxColliding = false;
         }
@@ -29281,7 +29274,7 @@
           this.shouldBeUpdatingBoundingBox = false;
           this.pathToBoundingBox(this.path, this.boundingBox.points);
           this.boundingBox.setAngle(0);
-          if (this.isShowingCollision && this.boundingBoxSvg) {
+          if (this.isShowingCollision) {
             this.boundingBoxSvg.setAttribute(
               "d",
               this.satPolygonToPathStr(this.boundingBox)
@@ -29294,7 +29287,7 @@
           }
           this.shouldBeUpdatingCollisionArea = false;
           this.pathToCollisionArea(this.path, this.collisionArea.points);
-          if (this.isShowingCollision && this.collisionAreaSvg) {
+          if (this.isShowingCollision) {
             this.collisionAreaSvg.setAttribute(
               "d",
               this.satPolygonToPathStr(this.collisionArea)
@@ -29347,8 +29340,7 @@
           this.boundingPoints[3].x = bbox.x;
           this.boundingPoints[3].y = bbox.y + bbox.height;
           this.boundingPoints.forEach((bp, i) => {
-            if (ctm)
-              bp = bp.matrixTransform(ctm);
+            bp = bp.matrixTransform(ctm);
             var pt = points[i];
             pt.x = bp.x;
             pt.y = bp.y;
@@ -29359,10 +29351,7 @@
           const tl = path.getTotalLength();
           let l = 0;
           points.forEach((pt) => {
-            if (ctm)
-              var pal = path.getPointAtLength(l).matrixTransform(ctm);
-            else
-              pal = new DOMPoint();
+            var pal = path.getPointAtLength(l).matrixTransform(ctm);
             pt.x = pal.x;
             pt.y = pal.y;
             l += tl / this.separationNum;
@@ -29536,14 +29525,20 @@
             } else if (index === -1) {
               const spacecraft = new Spacecraft();
               spacecraft.objectStatus = response;
+              this.spaceObjects.push(spacecraft);
               if (spacecraft.type === "station02" || spacecraft.type === "station01") {
+                if (spacecraft.type === "station02") {
+                  console.log("path element for " + spacecraft.type + " will be created");
+                }
                 spacecraft.objectStatus.collidable = true;
-                let pathElement = yield collidableGElement(spacecraft.type);
-                spacecraft.gElement = pathElement;
-                spacecraft.collider = new SVGPathCollider(pathElement);
+                let pathElement = yield collidablePathElement(spacecraft.type);
+                if (pathElement) {
+                  console.log("path is ready");
+                  spacecraft.gElement.appendChild(pathElement);
+                  spacecraft.collider = new SVGPathCollider(pathElement);
+                }
               } else
                 spacecraft.gElement = createGElement(spacecraft.type);
-              this.spaceObjects.push(spacecraft);
               spacecraft.gElement.setAttribute("id", `${spacecraft.id}`);
               this.gameEnvironment.svgElement.insertBefore(spacecraft.gElement, this.spacecraft.gElement);
             }
@@ -29566,14 +29561,6 @@
           var _a;
           requestAnimationFrame(() => {
             this.gameLoop();
-          });
-          this.spaceObjects.forEach((element) => {
-            if (element.collidable) {
-              this.spaceObjects.forEach((element2) => {
-                if (element2.collidable && element.collider && element2 != element && element2.collider)
-                  element.collider.test(element2.collider);
-              });
-            }
           });
           const request = {};
           request.spaceObject = this.spacecraft.objectStatus;
@@ -29857,7 +29844,7 @@
           this.path = path;
         }
       };
-      syncSpaceObject = new RequestDefinition2("SynchronizeSpaceObject");
+      syncSpaceObject = new RequestDefinition2("SynchronizeSpaceObjects");
       manipulateSpaceObject = new RequestDefinition2("ManipulateSpaceObject");
     }
   });
@@ -29918,6 +29905,12 @@
           const station02 = document.createElement("option");
           station02.setAttribute("value", "station02");
           station02.textContent = "station02";
+          const helgramSVG = document.createElement("option");
+          helgramSVG.setAttribute("value", "helgramSVG");
+          helgramSVG.textContent = "helgramSVG";
+          const planet = document.createElement("option");
+          planet.setAttribute("value", "../resources/planet.png");
+          planet.textContent = "planet";
           const noDevice = document.createElement("option");
           noDevice.innerHTML = "disabled selected";
           noDevice.value = "ovalShield";
@@ -29979,12 +29972,14 @@
           this.typeSelector.appendChild(option6);
           this.typeSelector.appendChild(option7);
           this.typeSelector.appendChild(option8);
+          this.typeSelector.appendChild(helgramSVG);
           this.typeSelector.appendChild(option9);
           this.typeSelector.appendChild(option10);
           this.typeSelector.appendChild(option11);
           this.typeSelector.appendChild(option12);
           this.typeSelector.appendChild(station);
           this.typeSelector.appendChild(station02);
+          this.typeSelector.appendChild(planet);
           const colorSelector = document.createElement("select");
           const option13 = document.createElement("option");
           const option14 = document.createElement("option");

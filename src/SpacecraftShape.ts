@@ -1,9 +1,16 @@
 import { color } from "./GameMenu.js";
 import SAT, { Polygon } from "sat";
 import SVGPathCommander from "svg-path-commander";
-import { SVGPathCollider } from "./SVGPathCollider.js";
+import SVGPathCollider from "SVGPathCollider.js";
 
 var getImageOutline = require('image-outline');
+
+export interface SpaceObjectShape{
+    gElement: SVGGElement
+    pathElement?: SVGPathElement
+    collider?: SVGPathCollider
+    imageElement?: HTMLImageElement
+}
 /*
 export class SpacecraftShape{
 
@@ -57,7 +64,7 @@ export class SpacecraftShape{
 
 }
 */
-export async function collidableGElement(type: string): Promise<SVGPathElement>{
+export async function collidablePathElement(type: string): Promise<SVGPathElement>{
     const imageElement = new Image()
         imageElement.src = `../resources/${type}.png`
         let polygon: {x: number, y: number}[]
@@ -68,7 +75,7 @@ export async function collidableGElement(type: string): Promise<SVGPathElement>{
             imageElement.onload = () =>{
                
                const scalingFactor = 50/imageElement!.width
-                console.log("this.imageElement!.width: "+imageElement!.width)
+                //console.log("this.imageElement!.width: "+imageElement!.width)
                 polygon = getImageOutline(imageElement)
                 pathString = pointsToPathString(polygon)
                 const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path")
@@ -87,8 +94,9 @@ export async function collidableGElement(type: string): Promise<SVGPathElement>{
                     )`
                 )
                 
-                const gElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
+                /*const gElement = document.createElementNS("http://www.w3.org/2000/svg", "g")
                 gElement.appendChild(pathElement)
+                */
                 resolve(pathElement)
             };
         })
@@ -208,10 +216,10 @@ export function createGElement(type: string): SVGGElement{
             additionalPaths.push(box)
             break;
 
-        case "helgram.png":
-            gElement.setAttribute("transform", "translate(-50,220) scale(0.0393700787401575,0.0100000)")
+        case "helgramSVG":
+            gElement.setAttribute("transform", "translate(-50,-50) scale(0.0393700787401575,0.05)")
             gElement.setAttribute("fill", `${color}`) 
-            gElement.setAttribute("stroke", "none")
+            //gElement.setAttribute("stroke", "none")
             
             path0.setAttribute("d", `M1790 2633 c-11 -26 -23 -58 -27 -72 -3 -14 -12 -34 -20 -43 -13 -15
                 -14 -40 -3 -189 6 -95 15 -179 19 -187 11 -19 1 -62 -15 -69 -7 -2 -10 -12 -7

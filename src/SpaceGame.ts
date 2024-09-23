@@ -1,14 +1,14 @@
 import { Spacecraft, fontSize } from "./Spacecraft.js";
 import { GameEnvironment, torusWidth, torusHeight } from "./GameEnvironment.js";
-import { createGElement, collidableGElement } from "./SpacecraftShape.js";
+import { createGElement, collidablePathElement } from "./SpacecraftShape.js";
 import { keyboardController, device, gameFrame, viewBoxWidth, audioContext } from "./GameMenu.js";
 import { TractorBeam } from "./TractorBeam.js";
 import { evaluate, RequestDefinition, syncSpaceObject, rotatedVector, distanceBetween, distanceVector, manipulate, manipulateSpaceObject } from "./library.js";
-import { SpaceObjectStatus, SynchronizeSpaceObject, Vector2d, ManipulateSpaceObject } from "./ReflectionLab.js";
+import { SpaceObjectStatus, SynchronizeSpaceObjects, Vector2d, ManipulateSpaceObject } from "./ReflectionLab.js";
 import { OvalShield } from "./OvalShield.js";
 import SAT from "sat";
-import { SVGPathCollider } from "./SVGPathCollider.js";
-import * as collider from "./SVGPathCollider.js"
+import SVGPathCollider from "SVGPathCollider.js";
+import * as collider from "SVGPathCollider.js"
 import { Vector2D } from "./Vector2D.js";
 
 
@@ -106,13 +106,21 @@ export class SpaceGame {
             } else if (index === -1){
                 const spacecraft = new Spacecraft()
                 spacecraft.objectStatus = response
-                
+                this.spaceObjects.push(spacecraft)
                 // define collidable objects
-                if (spacecraft.type === "station02" || spacecraft.type === "station01"){
+                if (spacecraft.type === "station02" || spacecraft.type === "station01" ){
+                    
+                    if(spacecraft.type === "station02"){
+                        console.log("path element for "+spacecraft.type+ " will be created")
+                    }
                     spacecraft.objectStatus.collidable = true; 
-                    let pathElement = await collidableGElement(spacecraft.type)
-                    spacecraft.gElement = pathElement
-                    spacecraft.collider = new SVGPathCollider(pathElement)
+                    let pathElement = await collidablePathElement(spacecraft.type)
+                    if(pathElement){
+                        console.log("path is ready")
+                        spacecraft.gElement.appendChild(pathElement)
+                        spacecraft.collider = new SVGPathCollider(pathElement)
+
+                    }
                 }
                 
                 // the others get just a normal gElement
@@ -121,7 +129,7 @@ export class SpaceGame {
                 
                 //spacecraft.spacecraftShape.createSatPolygon(spacecraft.type)
 
-                this.spaceObjects.push(spacecraft)
+                
                 spacecraft.gElement.setAttribute("id", `${spacecraft.id}`)
                 this.gameEnvironment.svgElement.insertBefore(spacecraft.gElement, this.spacecraft.gElement)
             }
@@ -149,6 +157,8 @@ export class SpaceGame {
         requestAnimationFrame(() => {
             this.gameLoop();
         });
+        /*
+
         this.spaceObjects.forEach((element) =>{
             if(element.collidable){
                 this.spaceObjects.forEach((element2)=>{
@@ -179,7 +189,7 @@ export class SpaceGame {
         }
 */
 
-        const request = {} as SynchronizeSpaceObject
+        const request = {} as SynchronizeSpaceObjects
         request.spaceObject = this.spacecraft.objectStatus
         
         evaluate(syncSpaceObject, request)
