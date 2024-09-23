@@ -115,23 +115,22 @@ export class SpaceGame {
                     }
                     spacecraft.objectStatus.collidable = true; 
                     let pathElement = await collidablePathElement(spacecraft.type)
-                    if(pathElement){
                         console.log("path is ready")
+                        spacecraft.shape.pathElement = pathElement
                         spacecraft.gElement.appendChild(pathElement)
-                        spacecraft.collider = new SVGPathCollider(pathElement)
-
-                    }
                 }
-                
                 // the others get just a normal gElement
                 else 
                     spacecraft.gElement = createGElement(spacecraft.type)
                 
-                //spacecraft.spacecraftShape.createSatPolygon(spacecraft.type)
-
-                
                 spacecraft.gElement.setAttribute("id", `${spacecraft.id}`)
                 this.gameEnvironment.svgElement.insertBefore(spacecraft.gElement, this.spacecraft.gElement)
+                
+                // after the spacecrafts are set to the svg, the collidable ones get a collider
+                if (spacecraft.collidable  && spacecraft.shape.pathElement){
+                    spacecraft.collider = new SVGPathCollider(spacecraft.shape.pathElement)
+                    spacecraft.collider.update()
+                }
             }
             
         })
@@ -157,10 +156,26 @@ export class SpaceGame {
         requestAnimationFrame(() => {
             this.gameLoop();
         });
+        
+        // check for collisions between spacecrafts that have collider
+        for (let i = 0; i < this.spaceObjects.length; i++) {
+            const spaceObject1 = this.spaceObjects[i];
+            if (spaceObject1.collider){
+                //spaceObject1.collider.update()
+                for (let j = i+1; j < this.spaceObjects.length; j++) {
+                    const spaceObject2 = this.spaceObjects[j];
+                    if (spaceObject2.collider){
+                  //      spaceObject2.collider.update()
+                        spaceObject1.collider.test(spaceObject2.collider)
+                    }
+                }
+            
+            }
+        }
+
         /*
 
-        this.spaceObjects.forEach((element) =>{
-            if(element.collidable){
+        
                 this.spaceObjects.forEach((element2)=>{
                     if(element2.collidable && element.collider && element2 != element && element2.collider)
                         element.collider.test(element2.collider)
@@ -243,8 +258,6 @@ export class SpaceGame {
         }
 
         if(device instanceof TractorBeam && keyboardController.isKeyPressed(" ")){
-
-
             const targetObject = this.spaceObjects.find(element => element.id === "planet")
             const request = {} as ManipulateSpaceObject
             request.method = "tractorBeam"
@@ -263,12 +276,13 @@ export class SpaceGame {
                         */
                 device.activate(targetVector)
             }
+                
             const gElem = device._gElem
             if(gElem){
                 this.spacecraft.gElement.appendChild(gElem)
-                
             }
-        evaluate(manipulateSpaceObject, request)
+            
+            evaluate(manipulateSpaceObject, request)
         }
 
         if(device instanceof OvalShield && keyboardController.isKeyPressed(" ")){
@@ -321,6 +335,7 @@ export class SpaceGame {
         // test collision betwen stations
 
 
+        
     }
 
     private setupKeyUpListener() {

@@ -30,7 +30,7 @@ export class Spacecraft{
                                         collidable: false
                                         } 
 
-    private shape: SpaceObjectShape
+    private _shape: SpaceObjectShape
 
     
     private _color: string
@@ -54,7 +54,7 @@ export class Spacecraft{
         this._color = "flün"
         this.objectStatus.craftId = "spacecraft"
         this._touchControlType = "spacecraft"
-        this.shape = {gElement: document.createElementNS("http://www.w3.org/2000/svg", "g")}
+        this._shape = {gElement: document.createElementNS("http://www.w3.org/2000/svg", "g")}
        // this.gElement = this._spacecraftShape.gElement
         
     }
@@ -75,7 +75,7 @@ export class Spacecraft{
         // füge das gElement des Devices zum gElement des Spacecrafts hinzu.
         if(this._device?._gElem){
             this._device._gElem.setAttribute("id", "device")
-            this.shape.gElement.appendChild(this._device._gElem)
+            this._shape.gElement.appendChild(this._device._gElem)
             
         }
     }
@@ -272,6 +272,13 @@ export class Spacecraft{
         }else if(this.objectStatus.direction < -180){
             this.objectStatus.direction += 360
         }
+    }
+
+    get shape(): SpaceObjectShape{
+        return this._shape
+    }
+    set shape(shape: SpaceObjectShape){
+        this._shape = shape
     }
 
     set collidable(coll: boolean){

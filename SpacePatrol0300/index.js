@@ -28182,7 +28182,7 @@
             npc: false,
             collidable: false
           });
-          __publicField(this, "shape");
+          __publicField(this, "_shape");
           __publicField(this, "_color");
           __publicField(this, "_touchControlType");
           __publicField(this, "easing", false);
@@ -28197,7 +28197,7 @@
           this._color = "fl\xFCn";
           this.objectStatus.craftId = "spacecraft";
           this._touchControlType = "spacecraft";
-          this.shape = { gElement: document.createElementNS("http://www.w3.org/2000/svg", "g") };
+          this._shape = { gElement: document.createElementNS("http://www.w3.org/2000/svg", "g") };
         }
         accelerate(thrust) {
           let vector = polarVector(thrust, this.direction);
@@ -28211,7 +28211,7 @@
           (_a = this._device) == null ? void 0 : _a.activate();
           if ((_b = this._device) == null ? void 0 : _b._gElem) {
             this._device._gElem.setAttribute("id", "device");
-            this.shape.gElement.appendChild(this._device._gElem);
+            this._shape.gElement.appendChild(this._device._gElem);
           }
         }
         applyLabel(svgElement) {
@@ -28362,6 +28362,12 @@
           } else if (this.objectStatus.direction < -180) {
             this.objectStatus.direction += 360;
           }
+        }
+        get shape() {
+          return this._shape;
+        }
+        set shape(shape) {
+          this._shape = shape;
         }
         set collidable(coll) {
           this.objectStatus.collidable = coll;
@@ -29189,6 +29195,7 @@
   var init_SVGPathCollider = __esm({
     "node_modules/SVGPathCollider.ts"() {
       SAT = __toESM(require_SAT(), 1);
+      console.log("SVGPathCollider ver.202409232312");
       SVGPathCollider = class {
         constructor(path, separationNum = 16, isConcave = false) {
           this.path = path;
@@ -29204,15 +29211,18 @@
           __publicField(this, "boundingBoxSvg", null);
           __publicField(this, "collisionAreaSvg", null);
           __publicField(this, "isBoundingBoxColliding", false);
+          console.log("this.times(4, () => new SAT.Vector()): " + this.times(4, () => new SAT.Vector()));
           this.boundingBox = new SAT.Polygon(
             new SAT.Vector(),
             this.times(4, () => new SAT.Vector())
           );
+          console.log("this.boundingBox.points in the constructor returns an array length 1 while it shoud return an array length 4: " + this.boundingBox.points + ", length: " + this.boundingBox.points.length);
           this.collisionArea = new SAT.Polygon(
             new SAT.Vector(),
             this.times(separationNum, () => new SAT.Vector())
           );
           var ose = path.ownerSVGElement;
+          console.log("ose: " + ose);
           this.boundingPoints = this.times(4, () => ose.createSVGPoint());
           if (isConcave) {
             this.concaveCollisionAreas = this.times(
@@ -29272,6 +29282,7 @@
             return;
           }
           this.shouldBeUpdatingBoundingBox = false;
+          console.log("this.boundingBox.points: " + this.boundingBox.points);
           this.pathToBoundingBox(this.path, this.boundingBox.points);
           this.boundingBox.setAngle(0);
           if (this.isShowingCollision) {
@@ -29329,6 +29340,7 @@
           }
         }
         pathToBoundingBox(path, points) {
+          console.log("points.length: " + points.length);
           const bbox = path.getBBox();
           const ctm = path.getCTM();
           this.boundingPoints[0].x = bbox.x;
@@ -29340,6 +29352,7 @@
           this.boundingPoints[3].x = bbox.x;
           this.boundingPoints[3].y = bbox.y + bbox.height;
           this.boundingPoints.forEach((bp, i) => {
+            console.log("i: " + i + ", points[i]: " + points[i]);
             bp = bp.matrixTransform(ctm);
             var pt = points[i];
             pt.x = bp.x;
@@ -29532,15 +29545,17 @@
                 }
                 spacecraft.objectStatus.collidable = true;
                 let pathElement = yield collidablePathElement(spacecraft.type);
-                if (pathElement) {
-                  console.log("path is ready");
-                  spacecraft.gElement.appendChild(pathElement);
-                  spacecraft.collider = new SVGPathCollider(pathElement);
-                }
+                console.log("path is ready");
+                spacecraft.shape.pathElement = pathElement;
+                spacecraft.gElement.appendChild(pathElement);
               } else
                 spacecraft.gElement = createGElement(spacecraft.type);
               spacecraft.gElement.setAttribute("id", `${spacecraft.id}`);
               this.gameEnvironment.svgElement.insertBefore(spacecraft.gElement, this.spacecraft.gElement);
+              if (spacecraft.collidable && spacecraft.shape.pathElement) {
+                spacecraft.collider = new SVGPathCollider(spacecraft.shape.pathElement);
+                spacecraft.collider.update();
+              }
             }
           }));
           this.spaceObjects = this.spaceObjects.filter((element) => {
@@ -29562,6 +29577,17 @@
           requestAnimationFrame(() => {
             this.gameLoop();
           });
+          for (let i = 0; i < this.spaceObjects.length; i++) {
+            const spaceObject1 = this.spaceObjects[i];
+            if (spaceObject1.collider) {
+              for (let j = i + 1; j < this.spaceObjects.length; j++) {
+                const spaceObject2 = this.spaceObjects[j];
+                if (spaceObject2.collider) {
+                  spaceObject1.collider.test(spaceObject2.collider);
+                }
+              }
+            }
+          }
           const request = {};
           request.spaceObject = this.spacecraft.objectStatus;
           evaluate(syncSpaceObject, request).then((response) => {
