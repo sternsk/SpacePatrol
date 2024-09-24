@@ -29216,13 +29216,12 @@
             new SAT.Vector(),
             this.times(4, () => new SAT.Vector())
           );
-          console.log("this.boundingBox.points in the constructor returns an array length 1 while it shoud return an array length 4: " + this.boundingBox.points + ", length: " + this.boundingBox.points.length);
+          console.log("this.boundingBox: " + this.boundingBox + ", this.boundingBox.points in the constructor returns an array length 1 while it shoud return an array length 4: " + this.boundingBox.points + ", length: " + this.boundingBox.points.length);
           this.collisionArea = new SAT.Polygon(
             new SAT.Vector(),
             this.times(separationNum, () => new SAT.Vector())
           );
           var ose = path.ownerSVGElement;
-          console.log("ose: " + ose);
           this.boundingPoints = this.times(4, () => ose.createSVGPoint());
           if (isConcave) {
             this.concaveCollisionAreas = this.times(
@@ -29580,10 +29579,11 @@
           for (let i = 0; i < this.spaceObjects.length; i++) {
             const spaceObject1 = this.spaceObjects[i];
             if (spaceObject1.collider) {
+              spaceObject1.collider.update();
               for (let j = i + 1; j < this.spaceObjects.length; j++) {
                 const spaceObject2 = this.spaceObjects[j];
                 if (spaceObject2.collider) {
-                  spaceObject1.collider.test(spaceObject2.collider);
+                  spaceObject2.collider.update();
                 }
               }
             }

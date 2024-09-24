@@ -161,11 +161,11 @@ export class SpaceGame {
         for (let i = 0; i < this.spaceObjects.length; i++) {
             const spaceObject1 = this.spaceObjects[i];
             if (spaceObject1.collider){
-                //spaceObject1.collider.update()
+                spaceObject1.collider.update()
                 for (let j = i+1; j < this.spaceObjects.length; j++) {
                     const spaceObject2 = this.spaceObjects[j];
                     if (spaceObject2.collider){
-                  //      spaceObject2.collider.update()
+                        spaceObject2.collider.update()
                         spaceObject1.collider.test(spaceObject2.collider)
                     }
                 }
