@@ -28750,20 +28750,12 @@
         function Circle(pos, r) {
           this["pos"] = pos || new Vector2();
           this["r"] = r || 0;
-          this["offset"] = new Vector2();
         }
         SAT2["Circle"] = Circle;
-        Circle.prototype["getAABBAsBox"] = Circle.prototype.getAABBAsBox = function() {
-          var r = this["r"];
-          var corner = this["pos"].clone().add(this["offset"]).sub(new Vector2(r, r));
-          return new Box(corner, r * 2, r * 2);
-        };
         Circle.prototype["getAABB"] = Circle.prototype.getAABB = function() {
-          return this.getAABBAsBox().toPolygon();
-        };
-        Circle.prototype["setOffset"] = Circle.prototype.setOffset = function(offset) {
-          this["offset"] = offset;
-          return this;
+          var r = this["r"];
+          var corner = this["pos"].clone().sub(new Vector2(r, r));
+          return new Box(corner, r * 2, r * 2).toPolygon();
         };
         function Polygon2(pos, points) {
           this["pos"] = pos || new Vector2();
@@ -28780,13 +28772,6 @@
             var edges = this["edges"] = [];
             var normals = this["normals"] = [];
             for (i2 = 0; i2 < points.length; i2++) {
-              var p1 = points[i2];
-              var p2 = i2 < points.length - 1 ? points[i2 + 1] : points[0];
-              if (p1 !== p2 && p1.x === p2.x && p1.y === p2.y) {
-                points.splice(i2, 1);
-                i2 -= 1;
-                continue;
-              }
               calcPoints.push(new Vector2());
               edges.push(new Vector2());
               normals.push(new Vector2());
@@ -28850,7 +28835,7 @@
           }
           return this;
         };
-        Polygon2.prototype["getAABBAsBox"] = Polygon2.prototype.getAABBAsBox = function() {
+        Polygon2.prototype["getAABB"] = Polygon2.prototype.getAABB = function() {
           var points = this["calcPoints"];
           var len = points.length;
           var xMin = points[0]["x"];
@@ -28870,10 +28855,7 @@
               yMax = point["y"];
             }
           }
-          return new Box(this["pos"].clone().add(new Vector2(xMin, yMin)), xMax - xMin, yMax - yMin);
-        };
-        Polygon2.prototype["getAABB"] = Polygon2.prototype.getAABB = function() {
-          return this.getAABBAsBox().toPolygon();
+          return new Box(this["pos"].clone().add(new Vector2(xMin, yMin)), xMax - xMin, yMax - yMin).toPolygon();
         };
         Polygon2.prototype["getCentroid"] = Polygon2.prototype.getCentroid = function() {
           var points = this["calcPoints"];
@@ -29019,7 +29001,7 @@
         var MIDDLE_VORONOI_REGION = 0;
         var RIGHT_VORONOI_REGION = 1;
         function pointInCircle(p, c) {
-          var differenceV = T_VECTORS.pop().copy(p).sub(c["pos"]).sub(c["offset"]);
+          var differenceV = T_VECTORS.pop().copy(p).sub(c["pos"]);
           var radiusSq = c["r"] * c["r"];
           var distanceSq = differenceV.len2();
           T_VECTORS.push(differenceV);
@@ -29037,7 +29019,7 @@
         }
         SAT2["pointInPolygon"] = pointInPolygon;
         function testCircleCircle(a, b, response) {
-          var differenceV = T_VECTORS.pop().copy(b["pos"]).add(b["offset"]).sub(a["pos"]).sub(a["offset"]);
+          var differenceV = T_VECTORS.pop().copy(b["pos"]).sub(a["pos"]);
           var totalRadius = a["r"] + b["r"];
           var totalRadiusSq = totalRadius * totalRadius;
           var distanceSq = differenceV.len2();
@@ -29060,7 +29042,7 @@
         }
         SAT2["testCircleCircle"] = testCircleCircle;
         function testPolygonCircle(polygon, circle, response) {
-          var circlePos = T_VECTORS.pop().copy(circle["pos"]).add(circle["offset"]).sub(polygon["pos"]);
+          var circlePos = T_VECTORS.pop().copy(circle["pos"]).sub(polygon["pos"]);
           var radius = circle["r"];
           var radius2 = radius * radius;
           var points = polygon["calcPoints"];
@@ -29190,12 +29172,12 @@
     }
   });
 
-  // node_modules/SVGPathCollider.ts
+  // src/svg-path-collider.ts
   var SAT, SVGPathCollider;
-  var init_SVGPathCollider = __esm({
-    "node_modules/SVGPathCollider.ts"() {
+  var init_svg_path_collider = __esm({
+    "src/svg-path-collider.ts"() {
+      "use strict";
       SAT = __toESM(require_SAT(), 1);
-      console.log("SVGPathCollider ver.202409232312");
       SVGPathCollider = class {
         constructor(path, separationNum = 16, isConcave = false) {
           this.path = path;
@@ -29211,12 +29193,10 @@
           __publicField(this, "boundingBoxSvg", null);
           __publicField(this, "collisionAreaSvg", null);
           __publicField(this, "isBoundingBoxColliding", false);
-          console.log("this.times(4, () => new SAT.Vector()): " + this.times(4, () => new SAT.Vector()));
           this.boundingBox = new SAT.Polygon(
             new SAT.Vector(),
             this.times(4, () => new SAT.Vector())
           );
-          console.log("this.boundingBox: " + this.boundingBox + ", this.boundingBox.points in the constructor returns an array length 1 while it shoud return an array length 4: " + this.boundingBox.points + ", length: " + this.boundingBox.points.length);
           this.collisionArea = new SAT.Polygon(
             new SAT.Vector(),
             this.times(separationNum, () => new SAT.Vector())
@@ -29281,7 +29261,6 @@
             return;
           }
           this.shouldBeUpdatingBoundingBox = false;
-          console.log("this.boundingBox.points: " + this.boundingBox.points);
           this.pathToBoundingBox(this.path, this.boundingBox.points);
           this.boundingBox.setAngle(0);
           if (this.isShowingCollision) {
@@ -29339,7 +29318,6 @@
           }
         }
         pathToBoundingBox(path, points) {
-          console.log("points.length: " + points.length);
           const bbox = path.getBBox();
           const ctm = path.getCTM();
           this.boundingPoints[0].x = bbox.x;
@@ -29351,7 +29329,6 @@
           this.boundingPoints[3].x = bbox.x;
           this.boundingPoints[3].y = bbox.y + bbox.height;
           this.boundingPoints.forEach((bp, i) => {
-            console.log("i: " + i + ", points[i]: " + points[i]);
             bp = bp.matrixTransform(ctm);
             var pt = points[i];
             pt.x = bp.x;
@@ -29478,7 +29455,7 @@
       init_TractorBeam();
       init_library();
       init_OvalShield();
-      init_SVGPathCollider();
+      init_svg_path_collider();
       init_Vector2D();
       SpaceGame = class {
         constructor() {
@@ -29584,6 +29561,7 @@
                 const spaceObject2 = this.spaceObjects[j];
                 if (spaceObject2.collider) {
                   spaceObject2.collider.update();
+                  console.log(spaceObject1.collider.test(spaceObject2.collider));
                 }
               }
             }
@@ -29939,21 +29917,21 @@
           planet.textContent = "planet";
           const noDevice = document.createElement("option");
           noDevice.innerHTML = "disabled selected";
-          noDevice.value = "ovalShield";
+          noDevice.value = "repulsorShield";
           noDevice.textContent = "Choose a Device";
-          const ovalShield = document.createElement("option");
-          ovalShield.value = "ovalShield";
-          ovalShield.textContent = "oval Shield";
-          const repulsorBeam = document.createElement("option");
-          repulsorBeam.value = "repulsorBeam";
-          repulsorBeam.textContent = "repulsor Beam";
+          const repulsorShield = document.createElement("option");
+          repulsorShield.value = "repulsorShield";
+          repulsorShield.textContent = "Repulsor Shield";
+          const chissel = document.createElement("option");
+          chissel.value = "chissel";
+          chissel.textContent = "Chissel";
           const tractorBeam = document.createElement("option");
           tractorBeam.value = "tractorBeam";
-          tractorBeam.textContent = "tractor Beam";
+          tractorBeam.textContent = "Tractor Beam";
           this.deviceSelector.appendChild(noDevice);
-          this.deviceSelector.appendChild(ovalShield);
-          this.deviceSelector.appendChild(repulsorBeam);
+          this.deviceSelector.appendChild(repulsorShield);
           this.deviceSelector.appendChild(tractorBeam);
+          this.deviceSelector.appendChild(chissel);
           this.deviceSelector.addEventListener("change", () => {
             device = this.deviceSelector.value;
           });
@@ -30227,7 +30205,7 @@
   // src/index.ts
   init_GameMenu();
   console.log(" ");
-  console.log("index.ts says: SpacePatrol0300 ver.0807, and this should be the first statement");
+  console.log("index.ts says: SpacePatrol0300 ver.2331, and this should be the first statement");
   console.log("But there is apperently the imports and dependencies loaded first and then the following code executed.");
   console.log("Thats why there is statements above this textblock");
   console.log(" ");
@@ -30245,6 +30223,6 @@ tone/build/esm/core/Tone.js:
    *)
 
 sat/SAT.js:
-  (** @preserve SAT.js - Version 0.9.0 - Copyright 2012 - 2021 - Jim Riecken <jimr@jimr.ca> - released under the MIT License. https://github.com/jriecken/sat-js *)
+  (** @preserve SAT.js - Version 0.7.1 - Copyright 2012 - 2018 - Jim Riecken <jimr@jimr.ca> - released under the MIT License. https://github.com/jriecken/sat-js *)
 */
 //# sourceMappingURL=index.js.map

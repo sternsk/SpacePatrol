@@ -6,9 +6,8 @@ import { TractorBeam } from "./TractorBeam.js";
 import { evaluate, RequestDefinition, syncSpaceObject, rotatedVector, distanceBetween, distanceVector, manipulate, manipulateSpaceObject } from "./library.js";
 import { SpaceObjectStatus, SynchronizeSpaceObjects, Vector2d, ManipulateSpaceObject } from "./ReflectionLab.js";
 import { OvalShield } from "./OvalShield.js";
+import SVGPathCollider from "./svg-path-collider/svg-path-collider.js";
 import SAT from "sat";
-import SVGPathCollider from "SVGPathCollider.js";
-import * as collider from "SVGPathCollider.js"
 import { Vector2D } from "./Vector2D.js";
 
 
@@ -166,7 +165,7 @@ export class SpaceGame {
                     const spaceObject2 = this.spaceObjects[j];
                     if (spaceObject2.collider){
                         spaceObject2.collider.update()
-                        spaceObject1.collider.test(spaceObject2.collider)
+                        console.log(spaceObject1.collider.test(spaceObject2.collider))
                     }
                 }
             

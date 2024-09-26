@@ -4,7 +4,7 @@ import { Joystick } from "./Joystick.js"
 import * as Tone from 'tone'
 import { Midi } from '@tonejs/midi';
 import { Spacecraft } from "./Spacecraft.js";
-import SVGPathCollider from "SVGPathCollider.js";
+import SVGPathCollider from "./svg-path-collider/svg-path-collider.js";
 
 
 /*export const availableTypes = ["rainbowRocket", 
@@ -89,25 +89,25 @@ export class GameMenu{
 
         const noDevice = document.createElement("option")
         noDevice.innerHTML = "disabled selected"
-        noDevice.value = "ovalShield"
+        noDevice.value = "repulsorShield"
         noDevice.textContent = "Choose a Device"
 
-        const ovalShield = document.createElement("option")
-        ovalShield.value = "ovalShield"
-        ovalShield.textContent = "oval Shield"
+        const repulsorShield = document.createElement("option")
+        repulsorShield.value = "repulsorShield"
+        repulsorShield.textContent = "Repulsor Shield"
 
-        const repulsorBeam = document.createElement("option")
-        repulsorBeam.value = "repulsorBeam"
-        repulsorBeam.textContent = "repulsor Beam"
+        const chissel = document.createElement("option")
+        chissel.value = "chissel"
+        chissel.textContent = "Chissel"
 
         const tractorBeam = document.createElement("option")
         tractorBeam.value = "tractorBeam"
-        tractorBeam.textContent = "tractor Beam"
+        tractorBeam.textContent = "Tractor Beam"
 
         this.deviceSelector.appendChild(noDevice)
-        this.deviceSelector.appendChild(ovalShield)
-        this.deviceSelector.appendChild(repulsorBeam)
+        this.deviceSelector.appendChild(repulsorShield)
         this.deviceSelector.appendChild(tractorBeam)
+        this.deviceSelector.appendChild(chissel)
         this.deviceSelector.addEventListener("change", () =>{
         device = this.deviceSelector.value    
         })
