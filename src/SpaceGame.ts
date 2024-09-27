@@ -3,8 +3,8 @@ import { GameEnvironment, torusWidth, torusHeight } from "./GameEnvironment.js";
 import { createGElement, collidablePathElement } from "./SpacecraftShape.js";
 import { keyboardController, device, gameFrame, viewBoxWidth, audioContext } from "./GameMenu.js";
 import { TractorBeam } from "./TractorBeam.js";
-import { evaluate, RequestDefinition, syncSpaceObject, rotatedVector, distanceBetween, distanceVector, manipulate, manipulateSpaceObject } from "./library.js";
-import { SpaceObjectStatus, SynchronizeSpaceObjects, Vector2d, ManipulateSpaceObject } from "./ReflectionLab.js";
+import { evaluate, RequestDefinition, rotatedVector, distanceBetween, distanceVector, manipulate, spacePatrolRequest} from "./library.js";
+import { SpaceObjectStatus, SpacePatrolRequest, Vector2d} from "./space-patrol-model.js";
 import { OvalShield } from "./OvalShield.js";
 import SVGPathCollider from "./svg-path-collider/svg-path-collider.js";
 import SAT from "sat";
@@ -66,7 +66,8 @@ export class SpaceGame {
         this.spacecraft.touchControlType = this.spacecraft.type
         //this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
         this.gameLoop();
-       /*case the syncSpaceObjects intervall should be less than framerate
+       
+        /*case the syncSpaceObjects intervall should be less than framerate
         setInterval(() => {
             const request = {} as SyncronizeSpaceObject
             request.spaceObject = this.spacecraft.objectStatus
@@ -202,19 +203,10 @@ export class SpaceGame {
             }
         }
 */
-
-        const request = {} as SynchronizeSpaceObjects
+        //define the request in scope of gameLoop
+        const request = {} as SpacePatrolRequest
         request.spaceObject = this.spacecraft.objectStatus
         
-        evaluate(syncSpaceObject, request)
-        .then(response => {
-            this.syncReality(response)
-        })
-        .catch(error => {
-            console.error("Failed to update spaceObjects:", error);
-        });
-        
-        // check if device TractorBeam might be used - theres some specialcases
         const device = this.spacecraft.device
         device?.deactivate()
                 
@@ -257,15 +249,12 @@ export class SpaceGame {
         }
 
         if(device instanceof TractorBeam && keyboardController.isKeyPressed(" ")){
-            const targetObject = this.spaceObjects.find(element => element.id === "planet")
-            const request = {} as ManipulateSpaceObject
-            request.method = "tractorBeam"
-            request.spaceObject = this.spacecraft.objectStatus
-            //let targetDeterminant
             
+            const targetObject = this.spaceObjects.find(element => element.id === "planet")
+            request.tractor = true
+                        
             if(targetObject){
-                //targetDeterminant = this.defineRenderDeterminants(targetObject)
-                request.target = targetObject.id
+                request.targetId = targetObject.id
                 const targetVector = rotatedVector(distanceVector(this.spacecraft.location, targetObject.location), 
                                     -(this.spacecraft.direction + 90))
                 /*const targetVector = rotatedVector(distanceVector(this.spacecraft.location, 
@@ -280,8 +269,7 @@ export class SpaceGame {
             if(gElem){
                 this.spacecraft.gElement.appendChild(gElem)
             }
-            
-            evaluate(manipulateSpaceObject, request)
+         
         }
 
         if(device instanceof OvalShield && keyboardController.isKeyPressed(" ")){
@@ -291,6 +279,8 @@ export class SpaceGame {
             const device = this.spacecraft.device as OvalShield
             // get the closest nugget
             const nuggetList = this.spaceObjects.filter(element => element.type ==="nugget")
+
+            //first set shortestDistance to the maxAvailableDistance
             let shortestDistance = torusHeight+torusWidth
 
             // iterate over nuggetList to track the closest nugget 
@@ -302,17 +292,16 @@ export class SpaceGame {
                     //closestNugget = element
                 }
             })
+            //draw the shield in a circle with radius shortestDistance
             device.width = shortestDistance
             device.height = shortestDistance
 
-            const request = {} as ManipulateSpaceObject
-            request.method = "ovalShield"
-            request.spaceObject = this.spacecraft.objectStatus
-            evaluate(manipulateSpaceObject, request)
+            request.repulsor = true
         }
 
         this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
-        this.updateElements();
+        
+        // paint the textArea in the upper left corner
         // Find the planet object within the spaceObjects array
         const planet: Spacecraft | undefined = this.spaceObjects.find(obj => obj.id === "planet");
         const station: Spacecraft | undefined = this.spaceObjects.find(obj => obj.id === "station")
@@ -322,8 +311,8 @@ export class SpaceGame {
                                         station location: ${station.location.x.toFixed(1)}, ${station.location.y.toFixed(1)}
                                         distance to planet: ${distanceBetween(this.spacecraft.location, planet.location).toFixed(1)}
                                         number of spaceObjects: ${this.spaceObjects.length}`
-                                    
         }
+
         /*else{}{
             console.log("nop planet found")
             this.textArea.innerHTML = `spacecraft location: ${this.spacecraft.location.x.toFixed(1)}, 
@@ -331,10 +320,15 @@ export class SpaceGame {
         }
         */
 
-        // test collision betwen stations
-
-
+        evaluate(spacePatrolRequest, request)
+        .then(response => {
+            this.syncReality(response)
+        })
+        .catch(error => {
+            console.error("Failed to update spaceObjects:", error);
+        });
         
+        this.updateElements();
     }
 
     private setupKeyUpListener() {

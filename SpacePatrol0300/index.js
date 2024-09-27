@@ -29172,10 +29172,10 @@
     }
   });
 
-  // src/svg-path-collider.ts
+  // src/svg-path-collider/svg-path-collider.ts
   var SAT, SVGPathCollider;
   var init_svg_path_collider = __esm({
-    "src/svg-path-collider.ts"() {
+    "src/svg-path-collider/svg-path-collider.ts"() {
       "use strict";
       SAT = __toESM(require_SAT(), 1);
       SVGPathCollider = class {
@@ -29568,11 +29568,6 @@
           }
           const request = {};
           request.spaceObject = this.spacecraft.objectStatus;
-          evaluate(syncSpaceObject, request).then((response) => {
-            this.syncReality(response);
-          }).catch((error) => {
-            console.error("Failed to update spaceObjects:", error);
-          });
           const device2 = this.spacecraft.device;
           device2 == null ? void 0 : device2.deactivate();
           if (this.touchControl) {
@@ -29605,11 +29600,9 @@
           }
           if (device2 instanceof TractorBeam && keyboardController.isKeyPressed(" ")) {
             const targetObject = this.spaceObjects.find((element) => element.id === "planet");
-            const request2 = {};
-            request2.method = "tractorBeam";
-            request2.spaceObject = this.spacecraft.objectStatus;
+            request.tractor = true;
             if (targetObject) {
-              request2.target = targetObject.id;
+              request.targetId = targetObject.id;
               const targetVector = rotatedVector(
                 distanceVector(this.spacecraft.location, targetObject.location),
                 -(this.spacecraft.direction + 90)
@@ -29620,7 +29613,6 @@
             if (gElem) {
               this.spacecraft.gElement.appendChild(gElem);
             }
-            evaluate(manipulateSpaceObject, request2);
           }
           if (device2 instanceof OvalShield && keyboardController.isKeyPressed(" ")) {
             if (audioContext)
@@ -29636,13 +29628,9 @@
             });
             device3.width = shortestDistance;
             device3.height = shortestDistance;
-            const request2 = {};
-            request2.method = "ovalShield";
-            request2.spaceObject = this.spacecraft.objectStatus;
-            evaluate(manipulateSpaceObject, request2);
+            request.repulsor = true;
           }
           this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
-          this.updateElements();
           const planet = this.spaceObjects.find((obj) => obj.id === "planet");
           const station = this.spaceObjects.find((obj) => obj.id === "station");
           if (planet && station) {
@@ -29652,6 +29640,12 @@
                                         distance to planet: ${distanceBetween(this.spacecraft.location, planet.location).toFixed(1)}
                                         number of spaceObjects: ${this.spaceObjects.length}`;
           }
+          evaluate(spacePatrolRequest, request).then((response) => {
+            this.syncReality(response);
+          }).catch((error) => {
+            console.error("Failed to update spaceObjects:", error);
+          });
+          this.updateElements();
         }
         setupKeyUpListener() {
           keyboardController.onKeyUp((key) => {
@@ -29727,10 +29721,10 @@
         }
       };
       ((B2) => {
-        function create() {
+        function create2() {
           return {};
         }
-        B2.create = create;
+        B2.create = create2;
       })(B || (B = {}));
       B.create;
     }
@@ -29742,6 +29736,7 @@
     RequestDefinition: () => RequestDefinition2,
     add: () => add,
     angle: () => angle,
+    create: () => create,
     distanceBetween: () => distanceBetween,
     distanceVector: () => distanceVector,
     evaluate: () => evaluate,
@@ -29749,41 +29744,35 @@
     inverse: () => inverse,
     length: () => length,
     manipulate: () => manipulate2,
-    manipulateSpaceObject: () => manipulateSpaceObject,
     polarVector: () => polarVector,
     rotatedVector: () => rotatedVector,
-    syncSpaceObject: () => syncSpaceObject
+    spacePatrolRequest: () => spacePatrolRequest
   });
-  function initGame(gameFrame2, type, color2, id) {
-    console.log("spaceGame loads");
-    const game = new SpaceGame();
-    game.init(type, color2, id);
-  }
-  function polarVector(length2, angle2) {
-    const radAngle = angle2 / 180 * Math.PI;
-    return { x: Math.cos(radAngle) * length2, y: Math.sin(radAngle) * length2 };
-  }
   function add(v1, v2) {
-    return { x: v1.x + v2.x, y: v1.y + v2.y };
-  }
-  function length(v) {
-    return Math.sqrt(v.x * v.x + v.y * v.y);
+    return create({ x: v1.x + v2.x, y: v1.y + v2.y });
   }
   function angle(v) {
     return Math.atan2(v.y, v.x) / Math.PI * 180;
-  }
-  function rotatedVector(v, n) {
-    return polarVector(length(v), angle(v) + n);
-  }
-  function distanceVector(v1, v2) {
-    return { x: v2.x - v1.x, y: v2.y - v1.y };
   }
   function distanceBetween(start2, destination) {
     let distanceVector2 = { x: destination.x - start2.x, y: destination.y - start2.y };
     return length(distanceVector2);
   }
+  function distanceVector(v1, v2) {
+    return create({ x: v2.x - v1.x, y: v2.y - v1.y });
+  }
   function inverse(v) {
     return { x: -v.x, y: -v.y };
+  }
+  function length(v) {
+    return Math.sqrt(v.x * v.x + v.y * v.y);
+  }
+  function polarVector(length2, angle2) {
+    const radAngle = angle2 / 180 * Math.PI;
+    return create({ x: Math.cos(radAngle) * length2, y: Math.sin(radAngle) * length2 });
+  }
+  function rotatedVector(v, n) {
+    return polarVector(length(v), angle(v) + n);
   }
   function evaluate(def, request) {
     const payload = JSON.stringify(request);
@@ -29837,7 +29826,19 @@
       xhr.send(JSON.stringify(request));
     });
   }
-  var RequestDefinition2, syncSpaceObject, manipulateSpaceObject;
+  function create(properties) {
+    const e = {};
+    if (properties) {
+      Object.assign(e, properties);
+    }
+    return e;
+  }
+  function initGame(gameFrame2, type, color2, id) {
+    console.log("spaceGame loads");
+    const game = new SpaceGame();
+    game.init(type, color2, id);
+  }
+  var RequestDefinition2, spacePatrolRequest;
   var init_library = __esm({
     "src/library.ts"() {
       "use strict";
@@ -29848,8 +29849,7 @@
           this.path = path;
         }
       };
-      syncSpaceObject = new RequestDefinition2("SynchronizeSpaceObjects");
-      manipulateSpaceObject = new RequestDefinition2("ManipulateSpaceObject");
+      spacePatrolRequest = new RequestDefinition2("SpacePatrolRequest");
     }
   });
 
