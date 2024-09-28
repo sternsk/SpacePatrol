@@ -9,6 +9,7 @@ export interface Vector2d extends m0.GenericEntity {
   y: number;
 }
 export interface SpacePatrolRequest extends m1.ServiceRequest {
+  // better if chissel was defined boolean | undefined
   chissel: boolean;
   collides: string;
   message: string;

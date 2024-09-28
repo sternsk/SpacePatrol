@@ -303,7 +303,7 @@
         var options, name, src, copy, copyIsArray, clone;
         var target = arguments[0];
         var i = 1;
-        var length2 = arguments.length;
+        var length3 = arguments.length;
         var deep = false;
         if (typeof target === "boolean") {
           deep = target;
@@ -313,7 +313,7 @@
         if (target == null || typeof target !== "object" && typeof target !== "function") {
           target = {};
         }
-        for (; i < length2; ++i) {
+        for (; i < length3; ++i) {
           options = arguments[i];
           if (options != null) {
             for (name in options) {
@@ -514,7 +514,6 @@
         gElement.appendChild(inline);
         return gElement;
       case "rainbowRocket":
-        console.log("rainbow requested");
         gElement.setAttribute("fill", "grey");
         gElement.setAttribute("stroke-width", ".5");
         gElement.setAttribute("stroke", `${color}`);
@@ -839,11 +838,1802 @@
     }
   });
 
+  // src/TriangularBeam.ts
+  var TriangularBeam;
+  var init_TriangularBeam = __esm({
+    "src/TriangularBeam.ts"() {
+      "use strict";
+      TriangularBeam = class {
+        constructor() {
+          __publicField(this, "name", "TriangularBeam");
+          __publicField(this, "count", 12);
+          __publicField(this, "_gElem", document.createElementNS("http://www.w3.org/2000/svg", "g"));
+          __publicField(this, "activated", false);
+        }
+        activate() {
+          return __async(this, null, function* () {
+            if (!this.activated) {
+              this.activated = true;
+              for (let i = 0; i < this.count; i++) {
+                const particle = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                particle.setAttribute("class", "particle");
+                particle.setAttribute("d", `M ${-2 * i - 2} ${-i * 5 - 2},
+                                            L 0 ${-i * 5 - 10}, 
+                                            L ${3 * i + 2} ${-i * 5 - 2}`);
+                particle.setAttribute("stroke", `rgb(${i / this.count * 255}, ${i * 2 / this.count * 255}, ${i / 3 / this.count * 255}`);
+                particle.setAttribute("stroke-width", "2px");
+                particle.setAttribute("vector-effect", "non-scaling-stroke");
+                particle.setAttribute("fill", `rgb (${-i * 255 + 255}, ${-i * 255 + 255}, ${-i * 255 + 255})`);
+                yield new Promise((resolve) => setTimeout(resolve, 100));
+                particle.setAttribute("opacity", `${i / this.count}`);
+                this._gElem.appendChild(particle);
+              }
+              this.activated = true;
+            }
+          });
+        }
+        deactivate() {
+          this._gElem.innerHTML = "";
+          this.activated = false;
+        }
+        dispose() {
+          if (this._gElem && this._gElem.parentNode) {
+            this._gElem.innerHTML = "";
+            this._gElem.parentNode.removeChild(this._gElem);
+          }
+          this.activated = false;
+        }
+        get gElem() {
+          return this._gElem;
+        }
+      };
+    }
+  });
+
+  // src/RepulsorShield.ts
+  var RepulsorShield;
+  var init_RepulsorShield = __esm({
+    "src/RepulsorShield.ts"() {
+      "use strict";
+      RepulsorShield = class {
+        //cycleCount = 0
+        constructor(shieldWidth, shieldHeight) {
+          __publicField(this, "name", "repulsorShield");
+          __publicField(this, "_width");
+          __publicField(this, "_height");
+          __publicField(this, "_gElem", document.createElementNS("http://www.w3.org/2000/svg", "g"));
+          __publicField(this, "activated", false);
+          this._gElem.setAttribute("class", "ovalShield");
+          this._width = shieldWidth;
+          this._height = shieldHeight;
+        }
+        activate() {
+          const boundingOval = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
+          if (!this.activated) {
+            boundingOval.setAttribute("cx", "0");
+            boundingOval.setAttribute("cy", "0");
+            boundingOval.setAttribute("vector-effect", "none-scaling-stroke");
+            boundingOval.setAttribute("stroke-width", "2px");
+            boundingOval.setAttribute("stroke", "white");
+            boundingOval.setAttribute("fill", "none");
+            this._gElem.appendChild(boundingOval);
+            this.activated = true;
+          }
+          boundingOval.setAttribute("rx", `${this._width}`);
+          boundingOval.setAttribute("ry", `${this._height}`);
+        }
+        deactivate() {
+          this._gElem.innerHTML = "";
+          this.activated = false;
+        }
+        dispose() {
+          this.deactivate();
+        }
+        set width(width) {
+          this._width = width;
+        }
+        set height(height) {
+          this._height = height;
+        }
+      };
+    }
+  });
+
+  // src/TractorBeam.ts
+  var TractorBeam;
+  var init_TractorBeam = __esm({
+    "src/TractorBeam.ts"() {
+      "use strict";
+      init_library();
+      TractorBeam = class {
+        constructor() {
+          __publicField(this, "name", "tractorBeam");
+          __publicField(this, "target", { x: 0, y: 0 });
+          __publicField(this, "activated", false);
+          __publicField(this, "_gElem");
+          this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
+          this._gElem.setAttribute("id", "device");
+        }
+        activate(target) {
+          this.target = target;
+          const beam = document.createElementNS("http://www.w3.org/2000/svg", "line");
+          if (!this.activated) {
+            beam.setAttribute("id", "beam");
+            beam.setAttribute("x1", "0");
+            beam.setAttribute("y1", "0");
+            beam.setAttribute("vector-effect", "non-scaling-stroke");
+            this._gElem.appendChild(beam);
+            this.activated = true;
+          }
+          beam.setAttribute("x2", `${this.target.x}`);
+          beam.setAttribute("y2", `${this.target.y}`);
+          beam.setAttribute("stroke", `rgb(${Math.floor(Math.random() * 255)}, 
+                                        ${Math.floor(Math.random() * 255)}, 
+                                        ${Math.floor(Math.random() * 255)})`);
+          beam.setAttribute("stroke-width", `${100 / length(target)}`);
+        }
+        deactivate() {
+          this._gElem.innerHTML = "";
+          this.activated = false;
+        }
+        dispose() {
+          if (this._gElem && this._gElem.parentNode) {
+            this._gElem.innerHTML = "";
+            this._gElem.parentNode.removeChild(this._gElem);
+          }
+          this.activated = false;
+        }
+        setTarget(target) {
+          this.target = target;
+        }
+      };
+    }
+  });
+
+  // src/DeviceFactory.ts
+  var DeviceFactory;
+  var init_DeviceFactory = __esm({
+    "src/DeviceFactory.ts"() {
+      "use strict";
+      init_TriangularBeam();
+      init_RepulsorShield();
+      init_TractorBeam();
+      DeviceFactory = class {
+        static createDevice(type, ...args) {
+          const deviceCreator = this.deviceMap[type];
+          if (deviceCreator) {
+            return deviceCreator(...args);
+          } else {
+            return new TractorBeam();
+          }
+        }
+      };
+      __publicField(DeviceFactory, "deviceMap", {
+        "repulsorBeam": () => new TriangularBeam(),
+        "repulsorShield": (...args) => new RepulsorShield(args[0], args[1]),
+        "tractorBeam": (...args) => new TractorBeam()
+      });
+    }
+  });
+
+  // src/Spacecraft.ts
+  var fontSize, Spacecraft;
+  var init_Spacecraft = __esm({
+    "src/Spacecraft.ts"() {
+      "use strict";
+      init_GameMenu();
+      init_GameMenu();
+      init_DeviceFactory();
+      init_library();
+      init_TractorBeam();
+      init_library();
+      fontSize = window.innerHeight / 80;
+      console.log("window.innerWidth: " + window.innerWidth);
+      console.log("fontSize = window.innerHeight/80: " + window.innerHeight / 80);
+      console.log();
+      Spacecraft = class {
+        constructor() {
+          __publicField(this, "objectStatus", create({
+            location: { x: 50, y: 50 },
+            impuls: { x: 0, y: 0 },
+            direction: -60,
+            rotation: 0,
+            mass: 10,
+            craftId: "spa\xDFcraft",
+            type: "rocket",
+            npc: false,
+            collidable: false
+          }));
+          __publicField(this, "_shape");
+          __publicField(this, "_color");
+          __publicField(this, "_touchControlType");
+          __publicField(this, "easing", false);
+          __publicField(this, "_maneuverability", 7);
+          __publicField(this, "_directionCorrection", 90);
+          __publicField(this, "_device");
+          __publicField(this, "_lastUpdate", Date.now());
+          __publicField(this, "_scale", 1);
+          __publicField(this, "_label");
+          __publicField(this, "_labelBorder");
+          this.objectStatus.type = "rokket";
+          this._color = "fl\xFCn";
+          this.objectStatus.craftId = "spacecraft";
+          this._touchControlType = "spacecraft";
+          this._shape = { gElement: document.createElementNS("http://www.w3.org/2000/svg", "g") };
+        }
+        accelerate(thrust) {
+          let vector = polarVector(thrust, this.direction);
+          this.objectStatus.impuls = add(this.objectStatus.impuls, vector);
+        }
+        addDevice(type, args) {
+          this._device = DeviceFactory.createDevice(type, ...args);
+        }
+        operate() {
+          var _a, _b;
+          (_a = this._device) == null ? void 0 : _a.activate();
+          if ((_b = this._device) == null ? void 0 : _b._gElem) {
+            this._device._gElem.setAttribute("id", "device");
+            this._shape.gElement.appendChild(this._device._gElem);
+          }
+        }
+        applyLabel(svgElement) {
+          this._labelBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          svgElement.appendChild(this._labelBorder);
+          this._labelBorder.setAttribute("x", `${this.scale * 6.7}`);
+          this._labelBorder.setAttribute("y", `${-fontSize}`);
+          this._labelBorder.setAttribute("stroke-width", "2px");
+          this._labelBorder.setAttribute("stroke", "grey");
+          this._labelBorder.setAttribute("vector-effect", "non-scaling-stroke");
+          this._labelBorder.setAttribute("fill", "lightgrey");
+          this._labelBorder.setAttribute("fill-opacity", ".8");
+          this._label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+          svgElement.appendChild(this._label);
+          this._label.setAttribute("font-size", `${fontSize}px`);
+          console.log("fontSize: " + fontSize);
+          console.log("viewBoxWidth: " + viewBoxWidth);
+          this._label.innerHTML = `<tspan x="${this._scale * 7}">label text is yet to be written`;
+          setTimeout(() => {
+            if (this._labelBorder && this._label) {
+              this._labelBorder.style.width = (this._label.getBBox().width * 1.1).toString();
+              this._labelBorder.style.height = (this._label.getBBox().height * 1.1).toString();
+            }
+          });
+        }
+        setFontsize(newFontSize) {
+          fontSize = newFontSize;
+        }
+        brake(dampingFactor) {
+          const newLength = length(this.objectStatus.impuls) * (1 - dampingFactor);
+          this.objectStatus.impuls = polarVector(newLength, angle(this.objectStatus.impuls));
+          if (length(this.objectStatus.impuls) < 0.01) {
+            this.objectStatus.impuls.x = 0;
+            this.objectStatus.impuls.y = 0;
+          }
+        }
+        gradualBrake() {
+          return __async(this, null, function* () {
+            while (length(this.objectStatus.impuls) > 0.01) {
+              this.brake(0.1);
+              yield this.delay(100);
+            }
+            this.objectStatus.impuls.x = 0;
+            this.objectStatus.impuls.y = 0;
+          });
+        }
+        delay(ms) {
+          return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+        handleKeyboardInput(keysPressed) {
+          if (keysPressed["ArrowLeft"]) {
+            this.rotate(-this._maneuverability);
+          }
+          if (keysPressed["ArrowRight"]) {
+            this.rotate(this._maneuverability);
+          }
+          if (keysPressed["ArrowUp"]) {
+            this.accelerate(this._maneuverability / 50);
+          }
+          if (keysPressed["ArrowDown"]) {
+            this.brake(this._maneuverability / 50);
+          }
+          if (keysPressed[" "] && !(this.device instanceof TractorBeam)) {
+            this.operate();
+          }
+        }
+        onKeyUp(key) {
+          switch (key) {
+            case " ":
+              if (this.device)
+                this.device.dispose();
+          }
+        }
+        handleTouchControl(vector) {
+          let deltaAngle = this.objectStatus.direction - angle(vector);
+          switch (this.objectStatus.type) {
+            case `rokket`:
+              this.objectStatus.impuls = add(this.objectStatus.impuls, vector);
+              this.objectStatus.direction = angle(vector);
+              break;
+            case `rainbowRocket`:
+              this.objectStatus.impuls = add(this.objectStatus.impuls, vector);
+              if (deltaAngle > 0 && deltaAngle < 180 || deltaAngle < -180) {
+                this.rotate(-5);
+              } else if (deltaAngle < 0 || deltaAngle > 180) {
+                this.rotate(5);
+              }
+              break;
+            case `../resources/bromber.svg`:
+              this.objectStatus.impuls = add(this.objectStatus.impuls, vector);
+              if (deltaAngle < -180)
+                deltaAngle += 360;
+              if (deltaAngle > 180)
+                deltaAngle -= 360;
+              if (Math.abs(deltaAngle) > 8) {
+                this.rotate(-180 / deltaAngle);
+              }
+              break;
+            case `../resources/blizzer.png`:
+              this.objectStatus.impuls = add(this.objectStatus.impuls, vector);
+              if (!this.easing) {
+                this.easing = true;
+                const startDirection = this.objectStatus.direction;
+                this.ease(startDirection, angle(vector));
+              }
+              break;
+            case `../resources/eye.svg`:
+              const horizontalValue = vector.x;
+              const verticalValue = vector.y;
+              this.accelerate(-verticalValue);
+              this.rotate(horizontalValue * this._maneuverability * 50);
+              break;
+            default:
+              this.objectStatus.impuls = add(this.objectStatus.impuls, vector);
+              this.objectStatus.direction = angle(vector);
+          }
+        }
+        ease(oldDirection, target) {
+          return __async(this, null, function* () {
+            const deltaAngle = target - this.objectStatus.direction;
+            let easeValue;
+            const steps = Math.ceil(Math.abs(deltaAngle));
+            for (let i = 1; i <= steps; i++) {
+              easeValue = this.easeInOutBack(i / steps);
+              this.objectStatus.direction = oldDirection + easeValue * deltaAngle;
+              yield new Promise((resolve) => setTimeout(resolve, 10));
+            }
+            this.easing = false;
+          });
+        }
+        easeInOutBack(x) {
+          const c1 = 1.70158;
+          const c2 = c1 * 1.525;
+          return x < 0.5 ? Math.pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2) / 2 : (Math.pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
+        }
+        pseudoOrbit(vector) {
+          const distance = distanceBetween(vector, this.objectStatus.location);
+          if (distance < viewBoxWidth / 2)
+            this._scale = Math.cos(distance / (viewBoxWidth / 4) * Math.PI / 4);
+          if (distance > viewBoxWidth / 2) {
+            inverse(this.objectStatus.impuls);
+          }
+        }
+        rotate(angle3) {
+          this.objectStatus.direction += angle3;
+          if (this.objectStatus.direction > 180) {
+            this.objectStatus.direction -= 360;
+          } else if (this.objectStatus.direction < -180) {
+            this.objectStatus.direction += 360;
+          }
+        }
+        get shape() {
+          return this._shape;
+        }
+        set shape(shape) {
+          this._shape = shape;
+        }
+        set collidable(coll) {
+          this.objectStatus.collidable = coll;
+        }
+        get collidable() {
+          return this.objectStatus.collidable;
+        }
+        get collider() {
+          if (this.shape.collider)
+            return this.shape.collider;
+          else return void 0;
+        }
+        set collider(collider) {
+          this.shape.collider = collider;
+        }
+        get direction() {
+          return this.objectStatus.direction;
+        }
+        get directionCorrection() {
+          return this._directionCorrection;
+        }
+        set direction(x) {
+          this.objectStatus.direction = x;
+        }
+        get device() {
+          if (this._device) return this._device;
+          else return void 0;
+        }
+        get label() {
+          return this._label;
+        }
+        get labelBorder() {
+          return this._labelBorder;
+        }
+        get lastUpdate() {
+          return this._lastUpdate;
+        }
+        get location() {
+          return this.objectStatus.location;
+        }
+        get npc() {
+          return this.objectStatus.npc;
+        }
+        set location(location) {
+          this.objectStatus.location = location;
+        }
+        get scale() {
+          return this._scale;
+        }
+        /*
+            get spacecraftShape(): SpacecraftShape | undefined{
+                if(this._spacecraftShape)
+                    return this._spacecraftShape
+            }
+        
+            set spacecraftShape(sp: SpacecraftShape){
+                this._spacecraftShape = sp
+                this.gElement = sp.gElement
+            }
+        */
+        get type() {
+          return this.objectStatus.type;
+        }
+        set type(type) {
+          this.objectStatus.type = type;
+        }
+        get color() {
+          return this._color;
+        }
+        set color(color2) {
+          this._color = color2;
+        }
+        get id() {
+          return this.objectStatus.craftId;
+        }
+        set id(id) {
+          this.objectStatus.craftId = id;
+        }
+        get gElement() {
+          return this.shape.gElement;
+        }
+        set gElement(g) {
+          this.shape.gElement = g;
+        }
+        set directionCorrection(n) {
+          this._directionCorrection = n;
+        }
+        set scale(scale) {
+          this._scale = scale;
+        }
+        set touchControlType(newType) {
+          if (newType === "rokket" || newType === "rainbowRocket")
+            this._touchControlType = "spacecraft";
+          else this._touchControlType = "butterfly";
+        }
+        setLabelText(text) {
+          if (this._label) {
+            this._label.setAttribute("font-family", "Arial");
+            this._label.setAttribute("stroke-width", ".05");
+            this._label.setAttribute("stroke", `${color}`);
+            this._label.innerHTML = text;
+          }
+          if (this._labelBorder && this._label) {
+            this._labelBorder.style.width = (this._label.getBBox().width * 1.1).toString();
+            this._labelBorder.style.height = (this._label.getBBox().height * 1.1).toString();
+          }
+        }
+        update() {
+          if (!this.npc) {
+            this.objectStatus.location = add(this.objectStatus.impuls, this.objectStatus.location);
+            this.direction += this.objectStatus.rotation;
+          }
+        }
+        vanish() {
+          console.log("vanish called");
+          const animate = () => {
+            var _a, _b, _c, _d;
+            if (this._scale > 0.1) {
+              this._scale -= this._scale / 100;
+              this.update();
+              requestAnimationFrame(animate);
+            } else {
+              (_a = this.gElement.parentNode) == null ? void 0 : _a.removeChild(this.gElement);
+              if (this._label) {
+                (_b = this._label.parentNode) == null ? void 0 : _b.removeChild(this._label);
+                (_d = (_c = this._labelBorder) == null ? void 0 : _c.parentNode) == null ? void 0 : _d.removeChild(this._labelBorder);
+              }
+            }
+          };
+          animate();
+        }
+      };
+    }
+  });
+
+  // src/GameEnvironment.ts
+  var torusWidth, torusHeight, GameEnvironment;
+  var init_GameEnvironment = __esm({
+    "src/GameEnvironment.ts"() {
+      "use strict";
+      init_Joystick();
+      init_GameMenu();
+      init_library();
+      torusWidth = 1e3;
+      torusHeight = 1e3;
+      GameEnvironment = class {
+        constructor() {
+          __publicField(this, "screenAspectRatio");
+          __publicField(this, "viewBoxToScreenRatio");
+          __publicField(this, "viewBoxWidth");
+          __publicField(this, "viewBoxHeight");
+          __publicField(this, "viewBoxLeft");
+          __publicField(this, "viewBoxTop");
+          __publicField(this, "label", document.createElement("HTMLLabelElement"));
+          __publicField(this, "_svgElement");
+          //private _viewBoxBorder: SVGRectElement;
+          __publicField(this, "_joystick", new Joystick());
+          if (gameFrame.offsetHeight != 0) {
+            this.screenAspectRatio = gameFrame.offsetWidth / gameFrame.offsetHeight;
+            console.log("gameFrame.offsetWidth: " + gameFrame.offsetWidth);
+            console.log("gameFrame.clientWidth: " + gameFrame.clientWidth);
+            console.log("window.innerWidth: " + window.innerWidth);
+            console.log("this.screenAspectRatio: " + this.screenAspectRatio);
+          } else {
+            console.log("gameFrame not properly sized");
+            this.screenAspectRatio = 0.8;
+          }
+          this.viewBoxWidth = 300;
+          this.viewBoxToScreenRatio = this.viewBoxWidth / window.innerWidth;
+          this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio;
+          this.viewBoxLeft = -this.viewBoxWidth / 2;
+          this.viewBoxTop = -this.viewBoxHeight / 2;
+          this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          this.insertBackgroundImage();
+          this._svgElement.style.position = "absolute";
+          this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+          this._svgElement.setAttribute("tabindex", "0");
+          gameFrame.appendChild(this._svgElement);
+          gameFrame.style.height = `${window.innerHeight}px`;
+          gameFrame.appendChild(this._joystick.htmlElement);
+          gameFrame.appendChild(this._joystick.fireButton);
+          this.joystick.htmlElement.style.display = "none";
+          this.joystick.fireButton.style.display = "none";
+        }
+        displayTouchControl() {
+          this.joystick.htmlElement.style.display = "block";
+          this.joystick.fireButton.style.display = "block";
+        }
+        get joystick() {
+          return this._joystick;
+        }
+        get svgElement() {
+          return this._svgElement;
+        }
+        handleResize() {
+          this.updateLabel();
+          gameFrame.style.width = `${window.innerWidth}px`;
+          gameFrame.style.height = `${window.innerHeight}px`;
+          this._svgElement.style.width = `${window.innerWidth}px`;
+          this._svgElement.style.height = `${window.innerHeight}px`;
+          this.viewBoxWidth = window.innerWidth * this.viewBoxToScreenRatio;
+          this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio;
+          this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+        }
+        updateLabel() {
+          this.label.innerHTML = `gameFrame.clientWidth doesnt change: ${gameFrame.clientWidth}, gameFrame.clientHeight: ${gameFrame.clientHeight}<br>
+                                    window.innerWidth is dynamic: ${window.innerWidth}, window.innerHeight: ${window.innerHeight}<br>
+                                    this.viewBoxWidth: ${this.viewBoxWidth}, this.viewBoxHeight: ${this.viewBoxHeight}<br>
+                                    this._svgElement.getAttribute("viewBox"): ${this._svgElement.getAttribute("viewBox")}`;
+        }
+        setLabel(text) {
+          this.label.innerHTML = text;
+        }
+        handleSpacecraft(spacecraft, option) {
+          switch (option) {
+            case "pseudoOrbit":
+              spacecraft.pseudoOrbit(create({ x: 0, y: 0 }));
+              break;
+            case "staticTorus":
+              if (spacecraft.location.x < this.viewBoxLeft)
+                spacecraft.location.x = this.viewBoxLeft + this.viewBoxWidth;
+              else if (spacecraft.location.x > this.viewBoxLeft + this.viewBoxWidth)
+                spacecraft.location.x = this.viewBoxLeft;
+              if (spacecraft.location.y < this.viewBoxTop)
+                spacecraft.location.y = this.viewBoxTop + this.viewBoxHeight;
+              else if (spacecraft.location.y > this.viewBoxTop + this.viewBoxHeight)
+                spacecraft.location.y = this.viewBoxTop;
+              break;
+            case "scroll":
+              this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth / 2;
+              this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2;
+              this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+              break;
+            case "pseudoTorus":
+              this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth / 2;
+              this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2;
+              this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+              if (spacecraft.location.x > torusWidth / 2) {
+                spacecraft.location.x = -torusWidth / 2;
+              } else if (spacecraft.location.x < -torusWidth / 2) {
+                spacecraft.location.x = torusWidth / 2;
+              }
+              if (spacecraft.location.y > torusHeight / 2) {
+                spacecraft.location.y = -torusHeight / 2;
+              } else if (spacecraft.location.y < -torusHeight / 2) {
+                spacecraft.location.y = torusHeight / 2;
+              }
+              break;
+          }
+          if (Math.abs(spacecraft.location.x) > torusWidth / 2 || Math.abs(spacecraft.location.y) > torusHeight / 2) {
+            spacecraft.objectStatus.impuls = polarVector(length(spacecraft.objectStatus.impuls) * 0.5, angle(spacecraft.objectStatus.impuls));
+          }
+        }
+        insertBackgroundImage() {
+          const bgImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
+          const bgImagWidth = torusWidth * 2;
+          const bgImageHeight = torusHeight * 2;
+          this._svgElement.appendChild(bgImage);
+          bgImage.href.baseVal = "../resources/background10.jpg";
+          bgImage.onload = () => {
+            const imageWidth = bgImage.getBBox().width;
+            const imageHeight = bgImage.getBBox().height;
+            bgImage.style.width = bgImagWidth.toString();
+            bgImage.style.x = `${-bgImagWidth / 2}`;
+            bgImage.style.y = `${-bgImageHeight / 2}`;
+            bgImage.style.zIndex = "-1";
+          };
+        }
+      };
+    }
+  });
+
+  // node_modules/sat/SAT.js
+  var require_SAT = __commonJS({
+    "node_modules/sat/SAT.js"(exports, module) {
+      (function(root, factory) {
+        "use strict";
+        if (typeof define === "function" && define["amd"]) {
+          define(factory);
+        } else if (typeof exports === "object") {
+          module["exports"] = factory();
+        } else {
+          root["SAT"] = factory();
+        }
+      })(exports, function() {
+        "use strict";
+        var SAT2 = {};
+        function Vector2(x, y) {
+          this["x"] = x || 0;
+          this["y"] = y || 0;
+        }
+        SAT2["Vector"] = Vector2;
+        SAT2["V"] = Vector2;
+        Vector2.prototype["copy"] = Vector2.prototype.copy = function(other) {
+          this["x"] = other["x"];
+          this["y"] = other["y"];
+          return this;
+        };
+        Vector2.prototype["clone"] = Vector2.prototype.clone = function() {
+          return new Vector2(this["x"], this["y"]);
+        };
+        Vector2.prototype["perp"] = Vector2.prototype.perp = function() {
+          var x = this["x"];
+          this["x"] = this["y"];
+          this["y"] = -x;
+          return this;
+        };
+        Vector2.prototype["rotate"] = Vector2.prototype.rotate = function(angle3) {
+          var x = this["x"];
+          var y = this["y"];
+          this["x"] = x * Math.cos(angle3) - y * Math.sin(angle3);
+          this["y"] = x * Math.sin(angle3) + y * Math.cos(angle3);
+          return this;
+        };
+        Vector2.prototype["reverse"] = Vector2.prototype.reverse = function() {
+          this["x"] = -this["x"];
+          this["y"] = -this["y"];
+          return this;
+        };
+        Vector2.prototype["normalize"] = Vector2.prototype.normalize = function() {
+          var d = this.len();
+          if (d > 0) {
+            this["x"] = this["x"] / d;
+            this["y"] = this["y"] / d;
+          }
+          return this;
+        };
+        Vector2.prototype["add"] = Vector2.prototype.add = function(other) {
+          this["x"] += other["x"];
+          this["y"] += other["y"];
+          return this;
+        };
+        Vector2.prototype["sub"] = Vector2.prototype.sub = function(other) {
+          this["x"] -= other["x"];
+          this["y"] -= other["y"];
+          return this;
+        };
+        Vector2.prototype["scale"] = Vector2.prototype.scale = function(x, y) {
+          this["x"] *= x;
+          this["y"] *= typeof y != "undefined" ? y : x;
+          return this;
+        };
+        Vector2.prototype["project"] = Vector2.prototype.project = function(other) {
+          var amt = this.dot(other) / other.len2();
+          this["x"] = amt * other["x"];
+          this["y"] = amt * other["y"];
+          return this;
+        };
+        Vector2.prototype["projectN"] = Vector2.prototype.projectN = function(other) {
+          var amt = this.dot(other);
+          this["x"] = amt * other["x"];
+          this["y"] = amt * other["y"];
+          return this;
+        };
+        Vector2.prototype["reflect"] = Vector2.prototype.reflect = function(axis) {
+          var x = this["x"];
+          var y = this["y"];
+          this.project(axis).scale(2);
+          this["x"] -= x;
+          this["y"] -= y;
+          return this;
+        };
+        Vector2.prototype["reflectN"] = Vector2.prototype.reflectN = function(axis) {
+          var x = this["x"];
+          var y = this["y"];
+          this.projectN(axis).scale(2);
+          this["x"] -= x;
+          this["y"] -= y;
+          return this;
+        };
+        Vector2.prototype["dot"] = Vector2.prototype.dot = function(other) {
+          return this["x"] * other["x"] + this["y"] * other["y"];
+        };
+        Vector2.prototype["len2"] = Vector2.prototype.len2 = function() {
+          return this.dot(this);
+        };
+        Vector2.prototype["len"] = Vector2.prototype.len = function() {
+          return Math.sqrt(this.len2());
+        };
+        function Circle(pos, r) {
+          this["pos"] = pos || new Vector2();
+          this["r"] = r || 0;
+        }
+        SAT2["Circle"] = Circle;
+        Circle.prototype["getAABB"] = Circle.prototype.getAABB = function() {
+          var r = this["r"];
+          var corner = this["pos"].clone().sub(new Vector2(r, r));
+          return new Box(corner, r * 2, r * 2).toPolygon();
+        };
+        function Polygon2(pos, points) {
+          this["pos"] = pos || new Vector2();
+          this["angle"] = 0;
+          this["offset"] = new Vector2();
+          this.setPoints(points || []);
+        }
+        SAT2["Polygon"] = Polygon2;
+        Polygon2.prototype["setPoints"] = Polygon2.prototype.setPoints = function(points) {
+          var lengthChanged = !this["points"] || this["points"].length !== points.length;
+          if (lengthChanged) {
+            var i2;
+            var calcPoints = this["calcPoints"] = [];
+            var edges = this["edges"] = [];
+            var normals = this["normals"] = [];
+            for (i2 = 0; i2 < points.length; i2++) {
+              calcPoints.push(new Vector2());
+              edges.push(new Vector2());
+              normals.push(new Vector2());
+            }
+          }
+          this["points"] = points;
+          this._recalc();
+          return this;
+        };
+        Polygon2.prototype["setAngle"] = Polygon2.prototype.setAngle = function(angle3) {
+          this["angle"] = angle3;
+          this._recalc();
+          return this;
+        };
+        Polygon2.prototype["setOffset"] = Polygon2.prototype.setOffset = function(offset) {
+          this["offset"] = offset;
+          this._recalc();
+          return this;
+        };
+        Polygon2.prototype["rotate"] = Polygon2.prototype.rotate = function(angle3) {
+          var points = this["points"];
+          var len = points.length;
+          for (var i2 = 0; i2 < len; i2++) {
+            points[i2].rotate(angle3);
+          }
+          this._recalc();
+          return this;
+        };
+        Polygon2.prototype["translate"] = Polygon2.prototype.translate = function(x, y) {
+          var points = this["points"];
+          var len = points.length;
+          for (var i2 = 0; i2 < len; i2++) {
+            points[i2]["x"] += x;
+            points[i2]["y"] += y;
+          }
+          this._recalc();
+          return this;
+        };
+        Polygon2.prototype._recalc = function() {
+          var calcPoints = this["calcPoints"];
+          var edges = this["edges"];
+          var normals = this["normals"];
+          var points = this["points"];
+          var offset = this["offset"];
+          var angle3 = this["angle"];
+          var len = points.length;
+          var i2;
+          for (i2 = 0; i2 < len; i2++) {
+            var calcPoint = calcPoints[i2].copy(points[i2]);
+            calcPoint["x"] += offset["x"];
+            calcPoint["y"] += offset["y"];
+            if (angle3 !== 0) {
+              calcPoint.rotate(angle3);
+            }
+          }
+          for (i2 = 0; i2 < len; i2++) {
+            var p1 = calcPoints[i2];
+            var p2 = i2 < len - 1 ? calcPoints[i2 + 1] : calcPoints[0];
+            var e = edges[i2].copy(p2).sub(p1);
+            normals[i2].copy(e).perp().normalize();
+          }
+          return this;
+        };
+        Polygon2.prototype["getAABB"] = Polygon2.prototype.getAABB = function() {
+          var points = this["calcPoints"];
+          var len = points.length;
+          var xMin = points[0]["x"];
+          var yMin = points[0]["y"];
+          var xMax = points[0]["x"];
+          var yMax = points[0]["y"];
+          for (var i2 = 1; i2 < len; i2++) {
+            var point = points[i2];
+            if (point["x"] < xMin) {
+              xMin = point["x"];
+            } else if (point["x"] > xMax) {
+              xMax = point["x"];
+            }
+            if (point["y"] < yMin) {
+              yMin = point["y"];
+            } else if (point["y"] > yMax) {
+              yMax = point["y"];
+            }
+          }
+          return new Box(this["pos"].clone().add(new Vector2(xMin, yMin)), xMax - xMin, yMax - yMin).toPolygon();
+        };
+        Polygon2.prototype["getCentroid"] = Polygon2.prototype.getCentroid = function() {
+          var points = this["calcPoints"];
+          var len = points.length;
+          var cx = 0;
+          var cy = 0;
+          var ar = 0;
+          for (var i2 = 0; i2 < len; i2++) {
+            var p1 = points[i2];
+            var p2 = i2 === len - 1 ? points[0] : points[i2 + 1];
+            var a = p1["x"] * p2["y"] - p2["x"] * p1["y"];
+            cx += (p1["x"] + p2["x"]) * a;
+            cy += (p1["y"] + p2["y"]) * a;
+            ar += a;
+          }
+          ar = ar * 3;
+          cx = cx / ar;
+          cy = cy / ar;
+          return new Vector2(cx, cy);
+        };
+        function Box(pos, w, h) {
+          this["pos"] = pos || new Vector2();
+          this["w"] = w || 0;
+          this["h"] = h || 0;
+        }
+        SAT2["Box"] = Box;
+        Box.prototype["toPolygon"] = Box.prototype.toPolygon = function() {
+          var pos = this["pos"];
+          var w = this["w"];
+          var h = this["h"];
+          return new Polygon2(new Vector2(pos["x"], pos["y"]), [
+            new Vector2(),
+            new Vector2(w, 0),
+            new Vector2(w, h),
+            new Vector2(0, h)
+          ]);
+        };
+        function Response() {
+          this["a"] = null;
+          this["b"] = null;
+          this["overlapN"] = new Vector2();
+          this["overlapV"] = new Vector2();
+          this.clear();
+        }
+        SAT2["Response"] = Response;
+        Response.prototype["clear"] = Response.prototype.clear = function() {
+          this["aInB"] = true;
+          this["bInA"] = true;
+          this["overlap"] = Number.MAX_VALUE;
+          return this;
+        };
+        var T_VECTORS = [];
+        for (var i = 0; i < 10; i++) {
+          T_VECTORS.push(new Vector2());
+        }
+        var T_ARRAYS = [];
+        for (var i = 0; i < 5; i++) {
+          T_ARRAYS.push([]);
+        }
+        var T_RESPONSE = new Response();
+        var TEST_POINT = new Box(new Vector2(), 1e-6, 1e-6).toPolygon();
+        function flattenPointsOn(points, normal, result) {
+          var min = Number.MAX_VALUE;
+          var max = -Number.MAX_VALUE;
+          var len = points.length;
+          for (var i2 = 0; i2 < len; i2++) {
+            var dot = points[i2].dot(normal);
+            if (dot < min) {
+              min = dot;
+            }
+            if (dot > max) {
+              max = dot;
+            }
+          }
+          result[0] = min;
+          result[1] = max;
+        }
+        function isSeparatingAxis(aPos, bPos, aPoints, bPoints, axis, response) {
+          var rangeA = T_ARRAYS.pop();
+          var rangeB = T_ARRAYS.pop();
+          var offsetV = T_VECTORS.pop().copy(bPos).sub(aPos);
+          var projectedOffset = offsetV.dot(axis);
+          flattenPointsOn(aPoints, axis, rangeA);
+          flattenPointsOn(bPoints, axis, rangeB);
+          rangeB[0] += projectedOffset;
+          rangeB[1] += projectedOffset;
+          if (rangeA[0] > rangeB[1] || rangeB[0] > rangeA[1]) {
+            T_VECTORS.push(offsetV);
+            T_ARRAYS.push(rangeA);
+            T_ARRAYS.push(rangeB);
+            return true;
+          }
+          if (response) {
+            var overlap = 0;
+            if (rangeA[0] < rangeB[0]) {
+              response["aInB"] = false;
+              if (rangeA[1] < rangeB[1]) {
+                overlap = rangeA[1] - rangeB[0];
+                response["bInA"] = false;
+              } else {
+                var option1 = rangeA[1] - rangeB[0];
+                var option2 = rangeB[1] - rangeA[0];
+                overlap = option1 < option2 ? option1 : -option2;
+              }
+            } else {
+              response["bInA"] = false;
+              if (rangeA[1] > rangeB[1]) {
+                overlap = rangeA[0] - rangeB[1];
+                response["aInB"] = false;
+              } else {
+                var option1 = rangeA[1] - rangeB[0];
+                var option2 = rangeB[1] - rangeA[0];
+                overlap = option1 < option2 ? option1 : -option2;
+              }
+            }
+            var absOverlap = Math.abs(overlap);
+            if (absOverlap < response["overlap"]) {
+              response["overlap"] = absOverlap;
+              response["overlapN"].copy(axis);
+              if (overlap < 0) {
+                response["overlapN"].reverse();
+              }
+            }
+          }
+          T_VECTORS.push(offsetV);
+          T_ARRAYS.push(rangeA);
+          T_ARRAYS.push(rangeB);
+          return false;
+        }
+        SAT2["isSeparatingAxis"] = isSeparatingAxis;
+        function voronoiRegion(line, point) {
+          var len2 = line.len2();
+          var dp = point.dot(line);
+          if (dp < 0) {
+            return LEFT_VORONOI_REGION;
+          } else if (dp > len2) {
+            return RIGHT_VORONOI_REGION;
+          } else {
+            return MIDDLE_VORONOI_REGION;
+          }
+        }
+        var LEFT_VORONOI_REGION = -1;
+        var MIDDLE_VORONOI_REGION = 0;
+        var RIGHT_VORONOI_REGION = 1;
+        function pointInCircle(p, c) {
+          var differenceV = T_VECTORS.pop().copy(p).sub(c["pos"]);
+          var radiusSq = c["r"] * c["r"];
+          var distanceSq = differenceV.len2();
+          T_VECTORS.push(differenceV);
+          return distanceSq <= radiusSq;
+        }
+        SAT2["pointInCircle"] = pointInCircle;
+        function pointInPolygon(p, poly) {
+          TEST_POINT["pos"].copy(p);
+          T_RESPONSE.clear();
+          var result = testPolygonPolygon2(TEST_POINT, poly, T_RESPONSE);
+          if (result) {
+            result = T_RESPONSE["aInB"];
+          }
+          return result;
+        }
+        SAT2["pointInPolygon"] = pointInPolygon;
+        function testCircleCircle(a, b, response) {
+          var differenceV = T_VECTORS.pop().copy(b["pos"]).sub(a["pos"]);
+          var totalRadius = a["r"] + b["r"];
+          var totalRadiusSq = totalRadius * totalRadius;
+          var distanceSq = differenceV.len2();
+          if (distanceSq > totalRadiusSq) {
+            T_VECTORS.push(differenceV);
+            return false;
+          }
+          if (response) {
+            var dist = Math.sqrt(distanceSq);
+            response["a"] = a;
+            response["b"] = b;
+            response["overlap"] = totalRadius - dist;
+            response["overlapN"].copy(differenceV.normalize());
+            response["overlapV"].copy(differenceV).scale(response["overlap"]);
+            response["aInB"] = a["r"] <= b["r"] && dist <= b["r"] - a["r"];
+            response["bInA"] = b["r"] <= a["r"] && dist <= a["r"] - b["r"];
+          }
+          T_VECTORS.push(differenceV);
+          return true;
+        }
+        SAT2["testCircleCircle"] = testCircleCircle;
+        function testPolygonCircle(polygon, circle, response) {
+          var circlePos = T_VECTORS.pop().copy(circle["pos"]).sub(polygon["pos"]);
+          var radius = circle["r"];
+          var radius2 = radius * radius;
+          var points = polygon["calcPoints"];
+          var len = points.length;
+          var edge = T_VECTORS.pop();
+          var point = T_VECTORS.pop();
+          for (var i2 = 0; i2 < len; i2++) {
+            var next = i2 === len - 1 ? 0 : i2 + 1;
+            var prev = i2 === 0 ? len - 1 : i2 - 1;
+            var overlap = 0;
+            var overlapN = null;
+            edge.copy(polygon["edges"][i2]);
+            point.copy(circlePos).sub(points[i2]);
+            if (response && point.len2() > radius2) {
+              response["aInB"] = false;
+            }
+            var region = voronoiRegion(edge, point);
+            if (region === LEFT_VORONOI_REGION) {
+              edge.copy(polygon["edges"][prev]);
+              var point2 = T_VECTORS.pop().copy(circlePos).sub(points[prev]);
+              region = voronoiRegion(edge, point2);
+              if (region === RIGHT_VORONOI_REGION) {
+                var dist = point.len();
+                if (dist > radius) {
+                  T_VECTORS.push(circlePos);
+                  T_VECTORS.push(edge);
+                  T_VECTORS.push(point);
+                  T_VECTORS.push(point2);
+                  return false;
+                } else if (response) {
+                  response["bInA"] = false;
+                  overlapN = point.normalize();
+                  overlap = radius - dist;
+                }
+              }
+              T_VECTORS.push(point2);
+            } else if (region === RIGHT_VORONOI_REGION) {
+              edge.copy(polygon["edges"][next]);
+              point.copy(circlePos).sub(points[next]);
+              region = voronoiRegion(edge, point);
+              if (region === LEFT_VORONOI_REGION) {
+                var dist = point.len();
+                if (dist > radius) {
+                  T_VECTORS.push(circlePos);
+                  T_VECTORS.push(edge);
+                  T_VECTORS.push(point);
+                  return false;
+                } else if (response) {
+                  response["bInA"] = false;
+                  overlapN = point.normalize();
+                  overlap = radius - dist;
+                }
+              }
+            } else {
+              var normal = edge.perp().normalize();
+              var dist = point.dot(normal);
+              var distAbs = Math.abs(dist);
+              if (dist > 0 && distAbs > radius) {
+                T_VECTORS.push(circlePos);
+                T_VECTORS.push(normal);
+                T_VECTORS.push(point);
+                return false;
+              } else if (response) {
+                overlapN = normal;
+                overlap = radius - dist;
+                if (dist >= 0 || overlap < 2 * radius) {
+                  response["bInA"] = false;
+                }
+              }
+            }
+            if (overlapN && response && Math.abs(overlap) < Math.abs(response["overlap"])) {
+              response["overlap"] = overlap;
+              response["overlapN"].copy(overlapN);
+            }
+          }
+          if (response) {
+            response["a"] = polygon;
+            response["b"] = circle;
+            response["overlapV"].copy(response["overlapN"]).scale(response["overlap"]);
+          }
+          T_VECTORS.push(circlePos);
+          T_VECTORS.push(edge);
+          T_VECTORS.push(point);
+          return true;
+        }
+        SAT2["testPolygonCircle"] = testPolygonCircle;
+        function testCirclePolygon(circle, polygon, response) {
+          var result = testPolygonCircle(polygon, circle, response);
+          if (result && response) {
+            var a = response["a"];
+            var aInB = response["aInB"];
+            response["overlapN"].reverse();
+            response["overlapV"].reverse();
+            response["a"] = response["b"];
+            response["b"] = a;
+            response["aInB"] = response["bInA"];
+            response["bInA"] = aInB;
+          }
+          return result;
+        }
+        SAT2["testCirclePolygon"] = testCirclePolygon;
+        function testPolygonPolygon2(a, b, response) {
+          var aPoints = a["calcPoints"];
+          var aLen = aPoints.length;
+          var bPoints = b["calcPoints"];
+          var bLen = bPoints.length;
+          for (var i2 = 0; i2 < aLen; i2++) {
+            if (isSeparatingAxis(a["pos"], b["pos"], aPoints, bPoints, a["normals"][i2], response)) {
+              return false;
+            }
+          }
+          for (var i2 = 0; i2 < bLen; i2++) {
+            if (isSeparatingAxis(a["pos"], b["pos"], aPoints, bPoints, b["normals"][i2], response)) {
+              return false;
+            }
+          }
+          if (response) {
+            response["a"] = a;
+            response["b"] = b;
+            response["overlapV"].copy(response["overlapN"]).scale(response["overlap"]);
+          }
+          return true;
+        }
+        SAT2["testPolygonPolygon"] = testPolygonPolygon2;
+        return SAT2;
+      });
+    }
+  });
+
+  // src/svg-path-collider/svg-path-collider.ts
+  var SAT, SVGPathCollider;
+  var init_svg_path_collider = __esm({
+    "src/svg-path-collider/svg-path-collider.ts"() {
+      "use strict";
+      SAT = __toESM(require_SAT(), 1);
+      SVGPathCollider = class {
+        constructor(path, separationNum = 16, isConcave = false) {
+          this.path = path;
+          this.separationNum = separationNum;
+          this.isConcave = isConcave;
+          __publicField(this, "shouldBeUpdatingBoundingBox", true);
+          __publicField(this, "boundingBox", new SAT.Polygon());
+          __publicField(this, "shouldBeUpdatingCollisionArea", true);
+          __publicField(this, "collisionArea");
+          __publicField(this, "concaveCollisionAreas");
+          __publicField(this, "boundingPoints");
+          __publicField(this, "isShowingCollision", false);
+          __publicField(this, "boundingBoxSvg", null);
+          __publicField(this, "collisionAreaSvg", null);
+          __publicField(this, "isBoundingBoxColliding", false);
+          this.boundingBox = new SAT.Polygon(
+            new SAT.Vector(),
+            this.times(4, () => new SAT.Vector())
+          );
+          this.collisionArea = new SAT.Polygon(
+            new SAT.Vector(),
+            this.times(separationNum, () => new SAT.Vector())
+          );
+          var ose = path.ownerSVGElement;
+          this.boundingPoints = this.times(4, () => ose.createSVGPoint());
+          if (isConcave) {
+            this.concaveCollisionAreas = this.times(
+              separationNum,
+              () => new SAT.Polygon(
+                new SAT.Vector(),
+                this.times(3, () => new SAT.Vector())
+              )
+            );
+          }
+        }
+        update() {
+          this.shouldBeUpdatingBoundingBox = true;
+          this.shouldBeUpdatingCollisionArea = true;
+          if (this.isShowingCollision) {
+            var visibility = this.isBoundingBoxColliding ? "visible" : "hidden";
+            this.collisionAreaSvg.setAttribute("visibility", visibility);
+          }
+          this.isBoundingBoxColliding = false;
+        }
+        test(other) {
+          this.updateBoundingBox();
+          other.updateBoundingBox();
+          if (!SAT.testPolygonPolygon(this.boundingBox, other.boundingBox)) {
+            return false;
+          }
+          this.isBoundingBoxColliding = true;
+          other.isBoundingBoxColliding = true;
+          this.updateCollisionArea();
+          other.updateCollisionArea();
+          if (this.isConcave) {
+            return this.concaveCollisionAreas.some((cca) => other.testToPolygon(cca));
+          } else {
+            return other.testToPolygon(this.collisionArea);
+          }
+        }
+        showCollision(isShowingCollision = true) {
+          this.isShowingCollision = isShowingCollision;
+          var ose = this.path.ownerSVGElement;
+          if (this.boundingBoxSvg != null) {
+            ose.removeChild(this.boundingBoxSvg);
+            this.boundingBoxSvg = null;
+          }
+          if (this.collisionAreaSvg != null) {
+            ose.removeChild(this.collisionAreaSvg);
+            this.collisionAreaSvg = null;
+          }
+          if (this.isShowingCollision) {
+            this.boundingBoxSvg = this.createPath();
+            ose.appendChild(this.boundingBoxSvg);
+            this.collisionAreaSvg = this.createPath(2, 5);
+            ose.appendChild(this.collisionAreaSvg);
+          }
+        }
+        updateBoundingBox() {
+          if (!this.shouldBeUpdatingBoundingBox) {
+            return;
+          }
+          this.shouldBeUpdatingBoundingBox = false;
+          this.pathToBoundingBox(this.path, this.boundingBox.points);
+          this.boundingBox.setAngle(0);
+          if (this.isShowingCollision) {
+            this.boundingBoxSvg.setAttribute(
+              "d",
+              this.satPolygonToPathStr(this.boundingBox)
+            );
+          }
+        }
+        updateCollisionArea() {
+          if (!this.shouldBeUpdatingCollisionArea) {
+            return;
+          }
+          this.shouldBeUpdatingCollisionArea = false;
+          this.pathToCollisionArea(this.path, this.collisionArea.points);
+          if (this.isShowingCollision) {
+            this.collisionAreaSvg.setAttribute(
+              "d",
+              this.satPolygonToPathStr(this.collisionArea)
+            );
+          }
+          if (this.isConcave) {
+            var centerPos = new SAT.Vector();
+            this.collisionArea.points.forEach((pt) => {
+              centerPos.x += pt.x;
+              centerPos.y += pt.y;
+            });
+            var pl = this.separationNum;
+            centerPos.x /= pl;
+            centerPos.y /= pl;
+            this.times(pl, (i) => {
+              var p1 = this.collisionArea.points[i];
+              var p2 = this.collisionArea.points[(i + 1) % pl];
+              var cca = this.concaveCollisionAreas[i];
+              var pts = cca.points;
+              pts[0].x = p1.x;
+              pts[0].y = p1.y;
+              pts[1].x = p2.x;
+              pts[1].y = p2.y;
+              pts[2].x = centerPos.x;
+              pts[2].y = centerPos.y;
+              cca.setAngle(0);
+            });
+          } else {
+            this.collisionArea.setAngle(0);
+          }
+        }
+        testToPolygon(polygon) {
+          if (this.isConcave) {
+            return this.concaveCollisionAreas.some(
+              (cca) => SAT.testPolygonPolygon(cca, polygon)
+            );
+          } else {
+            return SAT.testPolygonPolygon(this.collisionArea, polygon);
+          }
+        }
+        pathToBoundingBox(path, points) {
+          const bbox = path.getBBox();
+          const ctm = path.getCTM();
+          this.boundingPoints[0].x = bbox.x;
+          this.boundingPoints[0].y = bbox.y;
+          this.boundingPoints[1].x = bbox.x + bbox.width;
+          this.boundingPoints[1].y = bbox.y;
+          this.boundingPoints[2].x = bbox.x + bbox.width;
+          this.boundingPoints[2].y = bbox.y + bbox.height;
+          this.boundingPoints[3].x = bbox.x;
+          this.boundingPoints[3].y = bbox.y + bbox.height;
+          this.boundingPoints.forEach((bp, i) => {
+            bp = bp.matrixTransform(ctm);
+            var pt = points[i];
+            pt.x = bp.x;
+            pt.y = bp.y;
+          });
+        }
+        pathToCollisionArea(path, points) {
+          const ctm = path.getCTM();
+          const tl = path.getTotalLength();
+          let l = 0;
+          points.forEach((pt) => {
+            var pal = path.getPointAtLength(l).matrixTransform(ctm);
+            pt.x = pal.x;
+            pt.y = pal.y;
+            l += tl / this.separationNum;
+          });
+        }
+        satPolygonToPathStr(polygon) {
+          let str = "M";
+          polygon.points.forEach((pt, i) => {
+            str += `${pt.x},${pt.y} `;
+          });
+          str += "z";
+          return str;
+        }
+        createPath(width = 1, dasharray = 10) {
+          const svg = document.createElementNS(
+            "http://www.w3.org/2000/svg",
+            "path"
+          );
+          svg.setAttribute("stroke", "#777");
+          svg.setAttribute("stroke-width", `${width}`);
+          svg.setAttribute("fill", "none");
+          svg.setAttribute("stroke-dasharray", `${dasharray}`);
+          return svg;
+        }
+        times(count, func) {
+          let result = [];
+          for (let i = 0; i < count; i++) {
+            result.push(func(i));
+          }
+          return result;
+        }
+      };
+    }
+  });
+
+  // src/SpaceGame.ts
+  var SpaceGame, B;
+  var init_SpaceGame = __esm({
+    "src/SpaceGame.ts"() {
+      "use strict";
+      init_Spacecraft();
+      init_GameEnvironment();
+      init_SpacecraftShape();
+      init_GameMenu();
+      init_TractorBeam();
+      init_library();
+      init_RepulsorShield();
+      init_svg_path_collider();
+      init_library();
+      SpaceGame = class {
+        constructor() {
+          __publicField(this, "audioBuffer");
+          __publicField(this, "playingSound", false);
+          __publicField(this, "spacecraft");
+          __publicField(this, "spaceObjects", []);
+          __publicField(this, "gameEnvironment");
+          __publicField(this, "touchControl", false);
+          __publicField(this, "textArea", document.createElement("textArea"));
+          this.spacecraft = new Spacecraft();
+          this.gameEnvironment = new GameEnvironment();
+          this.textArea.style.position = "absolute";
+          this.textArea.style.color = "darkgrey";
+          this.textArea.style.backgroundColor = "black";
+          this.textArea.innerHTML = "this label\xB4s text is yet to be written";
+          this.textArea.setAttribute("rows", "14");
+          gameFrame.appendChild(this.textArea);
+          if (this.touchControl) {
+            this.gameEnvironment.displayTouchControl();
+            this.gameEnvironment.joystick.addObserver(() => this.handleTouchEndEvent());
+          }
+          this.setupKeyUpListener();
+          gameFrame.focus();
+        }
+        init(type, color2, id) {
+          this.spacecraft.type = type;
+          this.spacecraft.color = color2;
+          if (id) this.spacecraft.id = id;
+          this.spacecraft.gElement = createGElement(type);
+          if (this.spacecraft.type == "../resources/rocket.svg")
+            this.spacecraft.directionCorrection = 45;
+          this.spacecraft.gElement.setAttribute("id", `${this.spacecraft.id}`);
+          this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement);
+          console.log("device: " + device);
+          this.spacecraft.addDevice(`${device}`, [
+            this.spacecraft.gElement.getBBox().width / 3,
+            this.spacecraft.gElement.getBBox().height / 3
+          ]);
+          this.spacecraft.touchControlType = this.spacecraft.type;
+          this.gameLoop();
+        }
+        syncReality(reality) {
+          reality.forEach((response) => __async(this, null, function* () {
+            const renderDeterminant = this.defineRenderDeterminants(response.location);
+            const renderLocation = create({
+              x: response.location.x + renderDeterminant.x * torusWidth,
+              y: response.location.y + renderDeterminant.y * torusHeight
+            });
+            const index = this.spaceObjects.findIndex((spacecraft) => spacecraft.id === response.craftId);
+            if (index !== -1) {
+              this.spaceObjects[index].objectStatus.location = renderLocation;
+              this.spaceObjects[index].objectStatus.impuls = response.impuls;
+              this.spaceObjects[index].objectStatus.direction = response.direction;
+              this.spaceObjects[index].objectStatus.mass = response.mass;
+            } else if (index === -1) {
+              const spacecraft = new Spacecraft();
+              spacecraft.objectStatus = response;
+              this.spaceObjects.push(spacecraft);
+              if (spacecraft.type === "station02" || spacecraft.type === "station01") {
+                spacecraft.objectStatus.collidable = true;
+                let pathElement = yield collidablePathElement(spacecraft.type);
+                spacecraft.shape.pathElement = pathElement;
+                spacecraft.gElement.appendChild(pathElement);
+              } else
+                spacecraft.gElement = createGElement(spacecraft.type);
+              spacecraft.gElement.setAttribute("id", `${spacecraft.id}`);
+              this.gameEnvironment.svgElement.insertBefore(spacecraft.gElement, this.spacecraft.gElement);
+              if (spacecraft.collidable && spacecraft.shape.pathElement) {
+                spacecraft.collider = new SVGPathCollider(spacecraft.shape.pathElement);
+                spacecraft.collider.update();
+              }
+            }
+          }));
+          this.spaceObjects = this.spaceObjects.filter((element) => {
+            const index = reality.findIndex((response) => response.craftId === element.id);
+            if (index === -1) {
+              element.vanish();
+              return false;
+            }
+            return true;
+          });
+        }
+        handleTouchEndEvent() {
+          return __async(this, null, function* () {
+            this.spacecraft.gradualBrake();
+          });
+        }
+        gameLoop() {
+          var _a;
+          requestAnimationFrame(() => {
+            this.gameLoop();
+          });
+          for (let i = 0; i < this.spaceObjects.length; i++) {
+            const spaceObject1 = this.spaceObjects[i];
+            if (spaceObject1.collider) {
+              spaceObject1.collider.update();
+              for (let j = i + 1; j < this.spaceObjects.length; j++) {
+                const spaceObject2 = this.spaceObjects[j];
+                if (spaceObject2.collider) {
+                  spaceObject2.collider.update();
+                  if (spaceObject1.collider.test(spaceObject2.collider))
+                    console.log("collision detected");
+                }
+              }
+            }
+          }
+          const device2 = this.spacecraft.device;
+          device2 == null ? void 0 : device2.deactivate();
+          const request = create({
+            chissel: false,
+            spaceObject: this.spacecraft.objectStatus,
+            collides: "",
+            message: "",
+            repulsor: false,
+            targetId: "",
+            tractor: false
+          });
+          if (this.touchControl) {
+            if (this.gameEnvironment.joystick.isTouched) {
+              this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value);
+            }
+            if (this.gameEnvironment.joystick.fires) {
+              if (device2 instanceof TractorBeam && this.spaceObjects[1]) {
+                const target = rotatedVector({
+                  x: this.spaceObjects[1].location.x + this.spacecraft.location.x,
+                  y: this.spaceObjects[1].location.y + this.spacecraft.location.y
+                }, -90);
+                device2.activate(target);
+                const gElem = device2._gElem;
+                if (gElem) {
+                  this.spacecraft.gElement.appendChild(gElem);
+                }
+              } else this.spacecraft.operate();
+            } else if ((_a = this.spacecraft.device) == null ? void 0 : _a.activated) {
+              this.spacecraft.device.deactivate();
+            }
+          }
+          if (keyboardController.isKeyPressed("w")) {
+            this.gameEnvironment.viewBoxWidth += this.gameEnvironment.viewBoxWidth / 100;
+            this.gameEnvironment.viewBoxHeight += this.gameEnvironment.viewBoxHeight / 100;
+          }
+          if (keyboardController.isKeyPressed("s")) {
+            this.gameEnvironment.viewBoxWidth -= this.gameEnvironment.viewBoxWidth / 100;
+            this.gameEnvironment.viewBoxHeight -= this.gameEnvironment.viewBoxHeight / 100;
+          }
+          if (device2 instanceof TractorBeam && keyboardController.isKeyPressed(" ")) {
+            const targetObject = this.spaceObjects.find((element) => element.id === "planet");
+            request.tractor = true;
+            if (targetObject) {
+              request.targetId = targetObject.id;
+              const targetVector = rotatedVector(
+                distanceVector(this.spacecraft.location, targetObject.location),
+                -(this.spacecraft.direction + 90)
+              );
+              device2.activate(targetVector);
+            }
+            const gElem = device2._gElem;
+            if (gElem) {
+              this.spacecraft.gElement.appendChild(gElem);
+            }
+          }
+          if (device2 instanceof RepulsorShield && keyboardController.isKeyPressed(" ")) {
+            if (audioContext)
+              this.playSound();
+            request.repulsor = true;
+            const nuggetList = this.spaceObjects.filter((element) => element.type === "nugget01");
+            let shortestDistance = torusHeight + torusWidth;
+            nuggetList.forEach((element) => {
+              const distance = distanceBetween(element.location, this.spacecraft.location);
+              if (distance < shortestDistance) {
+                shortestDistance = distance;
+              }
+            });
+            device2.width = shortestDistance;
+            device2.height = shortestDistance;
+            const gElem = device2._gElem;
+            if (gElem) {
+              this.spacecraft.gElement.appendChild(gElem);
+            }
+          }
+          this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
+          const planet = this.spaceObjects.find((obj) => obj.id === "planet");
+          const station = this.spaceObjects.find((obj) => obj.id === "station");
+          if (planet && station) {
+            this.textArea.innerHTML = `spacecraft location: ${this.spacecraft.location.x.toFixed(1)}, ${this.spacecraft.location.y.toFixed(1)}
+                                        planet location: ${planet.location.x.toFixed(1)}, ${planet.location.y.toFixed(1)}
+                                        station location: ${station.location.x.toFixed(1)}, ${station.location.y.toFixed(1)}
+                                        distance to planet: ${distanceBetween(this.spacecraft.location, planet.location).toFixed(1)}
+                                        number of spaceObjects: ${this.spaceObjects.length}`;
+          }
+          evaluate(spacePatrolRequest, request).then((response) => {
+            this.syncReality(response);
+          }).catch((error) => {
+            console.error("Failed to update spaceObjects:", error);
+          });
+          this.updateElements();
+        }
+        setupKeyUpListener() {
+          keyboardController.onKeyUp((key) => {
+            this.spacecraft.onKeyUp(key);
+          });
+        }
+        updateElements() {
+          this.spacecraft.update();
+          this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus");
+          if (this.spacecraft)
+            this.render(this.spacecraft);
+          if (this.spaceObjects.length > 0) {
+            this.spaceObjects.forEach((spaceObject) => {
+              this.render(spaceObject);
+            });
+          }
+        }
+        defineRenderDeterminants(location) {
+          let xDeterminant = 0;
+          let yDeterminant = 0;
+          if (location.x - this.spacecraft.location.x < -torusWidth / 2) {
+            xDeterminant = 1;
+          } else if (location.x - this.spacecraft.location.x > torusWidth / 2) {
+            xDeterminant = -1;
+          } else {
+            xDeterminant = 0;
+          }
+          if (location.y - this.spacecraft.location.y < -torusHeight / 2) {
+            yDeterminant = 1;
+          } else if (location.y - this.spacecraft.location.y > torusHeight / 2) {
+            yDeterminant = -1;
+          } else {
+            yDeterminant = 0;
+          }
+          return { x: xDeterminant, y: yDeterminant };
+        }
+        render(spacecraft) {
+          spacecraft.gElement.setAttribute("transform", `translate (${spacecraft.location.x} 
+                                                                    ${spacecraft.location.y}) 
+                                                        scale (${spacecraft.scale}) 
+                                                        rotate (${spacecraft.direction + spacecraft.directionCorrection})`);
+          if (spacecraft.label && spacecraft.labelBorder) {
+            console.log("renderDeterminants not set yet!");
+            spacecraft.label.setAttribute("transform", `translate(${spacecraft.objectStatus.location.x} 
+                                                                ${spacecraft.objectStatus.location.y})`);
+            spacecraft.labelBorder.setAttribute("transform", `translate(${spacecraft.objectStatus.location.x - 7.5 + spacecraft.scale * 7}, 
+                                            ${spacecraft.objectStatus.location.y})`);
+          }
+        }
+        playSound() {
+          if (!this.playingSound) {
+            console.log("beginning sound");
+            this.playingSound = true;
+            fetch("../resources/Taro03.mp3").then((response) => response.arrayBuffer()).then((buffer) => {
+              if (audioContext) {
+                return audioContext.decodeAudioData(buffer);
+              }
+            }).then((decodedBuffer) => {
+              if (decodedBuffer) {
+                this.audioBuffer = decodedBuffer;
+              }
+            }).catch((error) => {
+              console.error("Error loading audio file:", error);
+            });
+            const source = audioContext.createBufferSource();
+            if (this.audioBuffer)
+              source.buffer = this.audioBuffer;
+            source.connect(audioContext.destination);
+            source.start(0);
+          }
+        }
+        stopSound() {
+        }
+      };
+      ((B2) => {
+        function create2() {
+          return {};
+        }
+        B2.create = create2;
+      })(B || (B = {}));
+      B.create;
+    }
+  });
+
+  // src/library.ts
+  var library_exports = {};
+  __export(library_exports, {
+    RequestDefinition: () => RequestDefinition2,
+    add: () => add,
+    angle: () => angle,
+    create: () => create,
+    distanceBetween: () => distanceBetween,
+    distanceVector: () => distanceVector,
+    evaluate: () => evaluate,
+    initGame: () => initGame,
+    inverse: () => inverse,
+    length: () => length,
+    polarVector: () => polarVector,
+    rotatedVector: () => rotatedVector,
+    spacePatrolRequest: () => spacePatrolRequest
+  });
+  function add(v1, v2) {
+    return create({ x: v1.x + v2.x, y: v1.y + v2.y });
+  }
+  function angle(v) {
+    return Math.atan2(v.y, v.x) / Math.PI * 180;
+  }
+  function distanceBetween(start2, destination) {
+    let distanceVector2 = { x: destination.x - start2.x, y: destination.y - start2.y };
+    return length(distanceVector2);
+  }
+  function distanceVector(v1, v2) {
+    return create({ x: v2.x - v1.x, y: v2.y - v1.y });
+  }
+  function inverse(v) {
+    return { x: -v.x, y: -v.y };
+  }
+  function length(v) {
+    return Math.sqrt(v.x * v.x + v.y * v.y);
+  }
+  function polarVector(length3, angle3) {
+    const radAngle = angle3 / 180 * Math.PI;
+    return create({ x: Math.cos(radAngle) * length3, y: Math.sin(radAngle) * length3 });
+  }
+  function rotatedVector(v, n) {
+    return polarVector(length(v), angle(v) + n);
+  }
+  function evaluate(def, request) {
+    const payload = JSON.stringify(request);
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", `/api/main/${def.path}`, true);
+      xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+      xhr.onreadystatechange = () => {
+        if (xhr.readyState === XMLHttpRequest.DONE) {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              resolve(response);
+            } catch (error) {
+              reject(new Error("Failed to parse response: " + xhr.responseText));
+            }
+          } else {
+            reject(new Error("Request failed with status: " + xhr.status));
+          }
+        }
+      };
+      xhr.onerror = () => {
+        reject(new Error("Network error"));
+      };
+      xhr.send(JSON.stringify(request));
+    });
+  }
+  function create(properties) {
+    const e = {};
+    if (properties) {
+      Object.assign(e, properties);
+    }
+    return e;
+  }
+  function initGame(gameFrame2, type, color2, id) {
+    console.log("spaceGame loads");
+    const game = new SpaceGame();
+    game.init(type, color2, id);
+  }
+  var RequestDefinition2, spacePatrolRequest;
+  var init_library = __esm({
+    "src/library.ts"() {
+      "use strict";
+      init_SpaceGame();
+      RequestDefinition2 = class {
+        constructor(path) {
+          __publicField(this, "path");
+          this.path = path;
+        }
+      };
+      spacePatrolRequest = new RequestDefinition2("SpacePatrolRequest");
+    }
+  });
+
   // src/Joystick.ts
   var Joystick;
   var init_Joystick = __esm({
     "src/Joystick.ts"() {
       "use strict";
+      init_library();
       Joystick = class {
         // Array von Funktionen, die beim touchend-Ereignis aufgerufen werden
         constructor() {
@@ -953,24 +2743,24 @@
           const centerY = this._htmlElement.offsetHeight / 2;
           const distance = Math.sqrt(__pow(offsetX - centerX, 2) + __pow(offsetY - centerY, 2));
           const relativDistance = distance / centerX;
-          const angle2 = Math.atan2(offsetY - centerY, offsetX - centerX);
+          const angle3 = Math.atan2(offsetY - centerY, offsetX - centerX);
           if (distance <= centerX) {
             this._knobElement.style.left = `${offsetX}px`;
             this._knobElement.style.top = `${offsetY}px`;
           } else {
-            const x = centerX + centerX * Math.cos(angle2);
-            const y = centerY + centerY * Math.sin(angle2);
+            const x = centerX + centerX * Math.cos(angle3);
+            const y = centerY + centerY * Math.sin(angle3);
             this._knobElement.style.left = `${x}px`;
             this._knobElement.style.top = `${y}px`;
           }
-          this._value = { x: Math.cos(angle2) * relativDistance / 10, y: Math.sin(angle2) * relativDistance / 10 };
+          this._value = create({ x: Math.cos(angle3) * relativDistance / 10, y: Math.sin(angle3) * relativDistance / 10 });
         }
         onTouchEnd(event) {
           event.preventDefault();
           this._isTouched = false;
           this._knobElement.style.left = "50%";
           this._knobElement.style.top = "50%";
-          this._value = { x: 0, y: 0 };
+          this._value = create({ x: 0, y: 0 });
           this.touchEndObservers.forEach((observer) => observer());
         }
       };
@@ -1303,11 +3093,11 @@
                   if (lastAutomationEvent !== void 0 && isSetValueCurveAutomationEvent(lastAutomationEvent) && lastAutomationEvent.startTime + lastAutomationEvent.duration > eventTime) {
                     var duration = eventTime - lastAutomationEvent.startTime;
                     var ratio = (lastAutomationEvent.values.length - 1) / lastAutomationEvent.duration;
-                    var length2 = Math.max(2, 1 + Math.ceil(duration * ratio));
-                    var fraction = duration / (length2 - 1) * ratio;
-                    var values = lastAutomationEvent.values.slice(0, length2);
+                    var length3 = Math.max(2, 1 + Math.ceil(duration * ratio));
+                    var fraction = duration / (length3 - 1) * ratio;
+                    var values = lastAutomationEvent.values.slice(0, length3);
                     if (fraction < 1) {
-                      for (var i = 1; i < length2; i += 1) {
+                      for (var i = 1; i < length3; i += 1) {
                         var factor = fraction * i % 1;
                         values[i] = lastAutomationEvent.values[i - 1] * (1 - factor) + lastAutomationEvent.values[i] * factor;
                       }
@@ -2090,11 +3880,11 @@
             if (nativeOfflineAudioContextConstructor2 === null) {
               throw new Error("Missing the native OfflineAudioContext constructor.");
             }
-            const { length: length2, numberOfChannels, sampleRate } = __spreadValues(__spreadValues({}, DEFAULT_OPTIONS2), options);
+            const { length: length3, numberOfChannels, sampleRate } = __spreadValues(__spreadValues({}, DEFAULT_OPTIONS2), options);
             if (nativeOfflineAudioContext === null) {
               nativeOfflineAudioContext = new nativeOfflineAudioContextConstructor2(1, 1, 44100);
             }
-            const audioBuffer = nativeAudioBufferConstructor2 !== null && cacheTestResult2(testNativeAudioBufferConstructorSupport, testNativeAudioBufferConstructorSupport) ? new nativeAudioBufferConstructor2({ length: length2, numberOfChannels, sampleRate }) : nativeOfflineAudioContext.createBuffer(numberOfChannels, length2, sampleRate);
+            const audioBuffer = nativeAudioBufferConstructor2 !== null && cacheTestResult2(testNativeAudioBufferConstructorSupport, testNativeAudioBufferConstructorSupport) ? new nativeAudioBufferConstructor2({ length: length3, numberOfChannels, sampleRate }) : nativeOfflineAudioContext.createBuffer(numberOfChannels, length3, sampleRate);
             if (audioBuffer.numberOfChannels === 0) {
               throw createNotSupportedError2();
             }
@@ -3832,8 +5622,8 @@
         const arrays = [];
         for (let i = 0; i < x; i += 1) {
           const array = [];
-          const length2 = typeof y === "number" ? y : y[i];
-          for (let j = 0; j < length2; j += 1) {
+          const length3 = typeof y === "number" ? y : y[i];
+          for (let j = 0; j < length3; j += 1) {
             array.push(new Float32Array(128));
           }
           arrays.push(array);
@@ -3869,10 +5659,10 @@
       init_get_audio_worklet_processor();
       init_is_owned_by_context();
       processBuffer = (proxy, renderedBuffer, nativeOfflineAudioContext, options, outputChannelCount, processorConstructor, exposeCurrentFrameAndCurrentTime2) => __async(void 0, null, function* () {
-        const length2 = renderedBuffer === null ? Math.ceil(proxy.context.length / 128) * 128 : renderedBuffer.length;
+        const length3 = renderedBuffer === null ? Math.ceil(proxy.context.length / 128) * 128 : renderedBuffer.length;
         const numberOfInputChannels = options.channelCount * options.numberOfInputs;
         const numberOfOutputChannels = outputChannelCount.reduce((sum, value) => sum + value, 0);
-        const processedBuffer = numberOfOutputChannels === 0 ? null : nativeOfflineAudioContext.createBuffer(numberOfOutputChannels, length2, nativeOfflineAudioContext.sampleRate);
+        const processedBuffer = numberOfOutputChannels === 0 ? null : nativeOfflineAudioContext.createBuffer(numberOfOutputChannels, length3, nativeOfflineAudioContext.sampleRate);
         if (processorConstructor === void 0) {
           throw new Error("Missing the processor constructor.");
         }
@@ -3881,7 +5671,7 @@
         const inputs = createNestedArrays(options.numberOfInputs, options.channelCount);
         const outputs = createNestedArrays(options.numberOfOutputs, outputChannelCount);
         const parameters = Array.from(proxy.parameters.keys()).reduce((prmtrs, name) => __spreadProps(__spreadValues({}, prmtrs), { [name]: new Float32Array(128) }), {});
-        for (let i = 0; i < length2; i += 128) {
+        for (let i = 0; i < length3; i += 128) {
           if (options.numberOfInputs > 0 && renderedBuffer !== null) {
             for (let j = 0; j < options.numberOfInputs; j += 1) {
               for (let k = 0; k < options.channelCount; k += 1) {
@@ -4125,8 +5915,8 @@
           createBiquadFilter() {
             return new biquadFilterNodeConstructor2(this);
           }
-          createBuffer(numberOfChannels, length2, sampleRate) {
-            return new audioBufferConstructor2({ length: length2, numberOfChannels, sampleRate });
+          createBuffer(numberOfChannels, length3, sampleRate) {
+            return new audioBufferConstructor2({ length: length3, numberOfChannels, sampleRate });
           }
           createBufferSource() {
             return new audioBufferSourceNodeConstructor2(this);
@@ -4770,12 +6560,12 @@
   var init_create_native_offline_audio_context = __esm({
     "node_modules/standardized-audio-context/build/es2019/factories/create-native-offline-audio-context.js"() {
       createCreateNativeOfflineAudioContext = (createNotSupportedError2, nativeOfflineAudioContextConstructor2) => {
-        return (numberOfChannels, length2, sampleRate) => {
+        return (numberOfChannels, length3, sampleRate) => {
           if (nativeOfflineAudioContextConstructor2 === null) {
             throw new Error("Missing the native OfflineAudioContext constructor.");
           }
           try {
-            return new nativeOfflineAudioContextConstructor2(numberOfChannels, length2, sampleRate);
+            return new nativeOfflineAudioContextConstructor2(numberOfChannels, length3, sampleRate);
           } catch (err) {
             if (err.name === "SyntaxError") {
               throw createNotSupportedError2();
@@ -6205,8 +7995,8 @@
       createMinimalOfflineAudioContextConstructor = (cacheTestResult2, createInvalidStateError2, createNativeOfflineAudioContext2, minimalBaseAudioContextConstructor2, startRendering2) => {
         return class MinimalOfflineAudioContext extends minimalBaseAudioContextConstructor2 {
           constructor(options) {
-            const { length: length2, numberOfChannels, sampleRate } = __spreadValues(__spreadValues({}, DEFAULT_OPTIONS15), options);
-            const nativeOfflineAudioContext = createNativeOfflineAudioContext2(numberOfChannels, length2, sampleRate);
+            const { length: length3, numberOfChannels, sampleRate } = __spreadValues(__spreadValues({}, DEFAULT_OPTIONS15), options);
+            const nativeOfflineAudioContext = createNativeOfflineAudioContext2(numberOfChannels, length3, sampleRate);
             if (!cacheTestResult2(testPromiseSupport, () => testPromiseSupport(nativeOfflineAudioContext))) {
               nativeOfflineAudioContext.addEventListener("statechange", /* @__PURE__ */ (() => {
                 let i = 0;
@@ -6225,7 +8015,7 @@
               })());
             }
             super(nativeOfflineAudioContext, numberOfChannels);
-            this._length = length2;
+            this._length = length3;
             this._nativeOfflineAudioContext = nativeOfflineAudioContext;
             this._state = null;
           }
@@ -6367,8 +8157,8 @@
         nativeAnalyserNode.getFloatTimeDomainData = (array) => {
           const byteTimeDomainData = new Uint8Array(array.length);
           nativeAnalyserNode.getByteTimeDomainData(byteTimeDomainData);
-          const length2 = Math.max(byteTimeDomainData.length, nativeAnalyserNode.fftSize);
-          for (let i = 0; i < length2; i += 1) {
+          const length3 = Math.max(byteTimeDomainData.length, nativeAnalyserNode.fftSize);
+          for (let i = 0; i < length3; i += 1) {
             array[i] = (byteTimeDomainData[i] - 128) * 78125e-7;
           }
           return array;
@@ -7128,8 +8918,8 @@
                     }
                   }
                   if (processorConstructor.parameterDescriptors !== void 0) {
-                    const length2 = processorConstructor.parameterDescriptors.length;
-                    for (let j = 0; j < length2; j += 1) {
+                    const length3 = processorConstructor.parameterDescriptors.length;
+                    for (let j = 0; j < length3; j += 1) {
                       const constantSourceNode = constantSourceNodes[j];
                       constantSourceNode.disconnect(inputChannelMergerNode, 0, numberOfInputChannels + j);
                       constantSourceNode.stop();
@@ -7646,8 +9436,8 @@
               if (frequencyHz.length !== magResponse.length || magResponse.length !== phaseResponse.length) {
                 throw createInvalidAccessError2();
               }
-              const length2 = frequencyHz.length;
-              for (let i = 0; i < length2; i += 1) {
+              const length3 = frequencyHz.length;
+              for (let i = 0; i < length3; i += 1) {
                 const omega = -Math.PI * (frequencyHz[i] / nyquist);
                 const z = [Math.cos(omega), Math.sin(omega)];
                 const numerator = evaluatePolynomial(convertedFeedforward, z);
@@ -8529,16 +10319,16 @@
                 const positiveCurve = new Float32Array(curveLength + 2 - curveLength % 2);
                 negativeCurve[0] = value[0];
                 positiveCurve[0] = -value[curveLength - 1];
-                const length2 = Math.ceil((curveLength + 1) / 2);
+                const length3 = Math.ceil((curveLength + 1) / 2);
                 const centerIndex = (curveLength + 1) / 2 - 1;
-                for (let i = 1; i < length2; i += 1) {
-                  const theoreticIndex = i / length2 * centerIndex;
+                for (let i = 1; i < length3; i += 1) {
+                  const theoreticIndex = i / length3 * centerIndex;
                   const lowerIndex = Math.floor(theoreticIndex);
                   const upperIndex = Math.ceil(theoreticIndex);
                   negativeCurve[i] = lowerIndex === upperIndex ? value[lowerIndex] : (1 - (theoreticIndex - lowerIndex)) * value[lowerIndex] + (1 - (upperIndex - theoreticIndex)) * value[upperIndex];
                   positiveCurve[i] = lowerIndex === upperIndex ? -value[curveLength - 1 - lowerIndex] : -((1 - (theoreticIndex - lowerIndex)) * value[curveLength - 1 - lowerIndex]) - (1 - (upperIndex - theoreticIndex)) * value[curveLength - 1 - upperIndex];
                 }
-                negativeCurve[length2] = curveLength % 2 === 1 ? value[length2 - 1] : (value[length2 - 2] + value[length2 - 1]) / 2;
+                negativeCurve[length3] = curveLength % 2 === 1 ? value[length3 - 1] : (value[length3 - 2] + value[length3 - 1]) / 2;
                 negativeWaveShaperNode.curve = negativeCurve;
                 positiveWaveShaperNode.curve = positiveCurve;
               }
@@ -8639,8 +10429,8 @@
             } else {
               throw new Error("The given parameters are not valid.");
             }
-            const { length: length2, numberOfChannels, sampleRate } = __spreadValues(__spreadValues({}, DEFAULT_OPTIONS16), options);
-            const nativeOfflineAudioContext = createNativeOfflineAudioContext2(numberOfChannels, length2, sampleRate);
+            const { length: length3, numberOfChannels, sampleRate } = __spreadValues(__spreadValues({}, DEFAULT_OPTIONS16), options);
+            const nativeOfflineAudioContext = createNativeOfflineAudioContext2(numberOfChannels, length3, sampleRate);
             if (!cacheTestResult2(testPromiseSupport, () => testPromiseSupport(nativeOfflineAudioContext))) {
               nativeOfflineAudioContext.addEventListener("statechange", /* @__PURE__ */ (() => {
                 let i = 0;
@@ -8659,7 +10449,7 @@
               })());
             }
             super(nativeOfflineAudioContext, numberOfChannels);
-            this._length = length2;
+            this._length = length3;
             this._nativeOfflineAudioContext = nativeOfflineAudioContext;
             this._state = null;
           }
@@ -9760,8 +11550,8 @@
           });
           const audioBufferSourceNode = nativeContext.createBufferSource();
           const whenConnected = () => {
-            const length2 = channelMergerNode.numberOfInputs;
-            for (let i = 0; i < length2; i += 1) {
+            const length3 = channelMergerNode.numberOfInputs;
+            for (let i = 0; i < length3; i += 1) {
               audioBufferSourceNode.connect(channelMergerNode, 0, i);
             }
           };
@@ -9794,11 +11584,11 @@
         if (curve === null) {
           return false;
         }
-        const length2 = curve.length;
-        if (length2 % 2 !== 0) {
-          return curve[Math.floor(length2 / 2)] !== 0;
+        const length3 = curve.length;
+        if (length3 % 2 !== 0) {
+          return curve[Math.floor(length3 / 2)] !== 0;
         }
-        return curve[length2 / 2 - 1] + curve[length2 / 2] !== 0;
+        return curve[length3 / 2 - 1] + curve[length3 / 2] !== 0;
       };
     }
   });
@@ -13882,8 +15672,8 @@
   function createAudioContext(options) {
     return new audioContextConstructor(options);
   }
-  function createOfflineAudioContext(channels, length2, sampleRate) {
-    return new offlineAudioContextConstructor(channels, length2, sampleRate);
+  function createOfflineAudioContext(channels, length3, sampleRate) {
+    return new offlineAudioContextConstructor(channels, length3, sampleRate);
   }
   function createAudioWorkletNode(context2, name, options) {
     assert(isDefined(audioWorkletNodeConstructor), "AudioWorkletNode only works in a secure context (https or localhost)");
@@ -14780,8 +16570,8 @@
         createBiquadFilter() {
           return this._context.createBiquadFilter();
         }
-        createBuffer(numberOfChannels, length2, sampleRate) {
-          return this._context.createBuffer(numberOfChannels, length2, sampleRate);
+        createBuffer(numberOfChannels, length3, sampleRate) {
+          return this._context.createBuffer(numberOfChannels, length3, sampleRate);
         }
         createChannelMerger(numberOfInputs) {
           return this._context.createChannelMerger(numberOfInputs);
@@ -15498,8 +17288,8 @@
           const startSamples = Math.floor(start2 * this.sampleRate);
           const endSamples = Math.floor(end * this.sampleRate);
           assert(startSamples < endSamples, "The start time must be less than the end time");
-          const length2 = endSamples - startSamples;
-          const retBuffer = getContext().createBuffer(this.numberOfChannels, length2, this.sampleRate);
+          const length3 = endSamples - startSamples;
+          const retBuffer = getContext().createBuffer(this.numberOfChannels, length3, this.sampleRate);
           for (let channel = 0; channel < this.numberOfChannels; channel++) {
             retBuffer.copyToChannel(this.getChannelData(channel).subarray(startSamples, endSamples), channel);
           }
@@ -19693,9 +21483,9 @@
          * // map the input signal from [-1, 1] to [0, 10]
          * shaper.setMap((val, index) => (val + 1) * 5);
          */
-        setMap(mapping, length2 = 1024) {
-          const array = new Float32Array(length2);
-          for (let i = 0, len = length2; i < len; i++) {
+        setMap(mapping, length3 = 1024) {
+          const array = new Float32Array(length3);
+          for (let i = 0, len = length3; i < len; i++) {
             const normalized = i / (len - 1) * 2 - 1;
             array[i] = mapping(normalized, i);
           }
@@ -20920,9 +22710,9 @@
   });
 
   // node_modules/tone/build/esm/source/oscillator/OscillatorInterface.js
-  function generateWaveform(instance, length2) {
+  function generateWaveform(instance, length3) {
     return __awaiter(this, void 0, void 0, function* () {
-      const duration = length2 / instance.context.sampleRate;
+      const duration = length3 / instance.context.sampleRate;
       const context2 = new OfflineContext(1, duration, instance.context.sampleRate);
       const clone = new instance.constructor(Object.assign(instance.get(), {
         // should do 2 iterations
@@ -21355,8 +23145,8 @@
           this.type = this._type;
         }
         asArray() {
-          return __awaiter(this, arguments, void 0, function* (length2 = 1024) {
-            return generateWaveform(this, length2);
+          return __awaiter(this, arguments, void 0, function* (length3 = 1024) {
+            return generateWaveform(this, length3);
           });
         }
         dispose() {
@@ -21552,8 +23342,8 @@
           this._carrier.partials = partials;
         }
         asArray() {
-          return __awaiter(this, arguments, void 0, function* (length2 = 1024) {
-            return generateWaveform(this, length2);
+          return __awaiter(this, arguments, void 0, function* (length3 = 1024) {
+            return generateWaveform(this, length3);
           });
         }
         /**
@@ -21706,8 +23496,8 @@
           this._carrier.partials = partials;
         }
         asArray() {
-          return __awaiter(this, arguments, void 0, function* (length2 = 1024) {
-            return generateWaveform(this, length2);
+          return __awaiter(this, arguments, void 0, function* (length3 = 1024) {
+            return generateWaveform(this, length3);
           });
         }
         /**
@@ -21845,8 +23635,8 @@
           this._triangle.type = type;
         }
         asArray() {
-          return __awaiter(this, arguments, void 0, function* (length2 = 1024) {
-            return generateWaveform(this, length2);
+          return __awaiter(this, arguments, void 0, function* (length3 = 1024) {
+            return generateWaveform(this, length3);
           });
         }
         /**
@@ -22035,8 +23825,8 @@
           this._type = this._oscillators[0].type;
         }
         asArray() {
-          return __awaiter(this, arguments, void 0, function* (length2 = 1024) {
-            return generateWaveform(this, length2);
+          return __awaiter(this, arguments, void 0, function* (length3 = 1024) {
+            return generateWaveform(this, length3);
           });
         }
         /**
@@ -22160,8 +23950,8 @@
           this._modulator.phase = phase;
         }
         asArray() {
-          return __awaiter(this, arguments, void 0, function* (length2 = 1024) {
-            return generateWaveform(this, length2);
+          return __awaiter(this, arguments, void 0, function* (length3 = 1024) {
+            return generateWaveform(this, length3);
           });
         }
         /**
@@ -22484,8 +24274,8 @@
           }
         }
         asArray() {
-          return __awaiter(this, arguments, void 0, function* (length2 = 1024) {
-            return generateWaveform(this, length2);
+          return __awaiter(this, arguments, void 0, function* (length3 = 1024) {
+            return generateWaveform(this, length3);
           });
         }
         dispose() {
@@ -23363,8 +25153,8 @@
          * envelope to fit the length.
          */
         asArray() {
-          return __awaiter(this, arguments, void 0, function* (length2 = 1024) {
-            const duration = length2 / this.context.sampleRate;
+          return __awaiter(this, arguments, void 0, function* (length3 = 1024) {
+            const duration = length3 / this.context.sampleRate;
             const context2 = new OfflineContext(1, duration, this.context.sampleRate);
             const attackPortion = this.toSeconds(this.attack) + this.toSeconds(this.decay);
             const envelopeDuration = attackPortion + this.toSeconds(this.release);
@@ -25867,63 +27657,63 @@
             if (eventTypeByte === 255) {
               event2.meta = true;
               var metatypeByte = p.readUInt8();
-              var length2 = p.readVarInt();
+              var length3 = p.readVarInt();
               switch (metatypeByte) {
                 case 0:
                   event2.type = "sequenceNumber";
-                  if (length2 !== 2) throw "Expected length for sequenceNumber event is 2, got " + length2;
+                  if (length3 !== 2) throw "Expected length for sequenceNumber event is 2, got " + length3;
                   event2.number = p.readUInt16();
                   return event2;
                 case 1:
                   event2.type = "text";
-                  event2.text = p.readString(length2);
+                  event2.text = p.readString(length3);
                   return event2;
                 case 2:
                   event2.type = "copyrightNotice";
-                  event2.text = p.readString(length2);
+                  event2.text = p.readString(length3);
                   return event2;
                 case 3:
                   event2.type = "trackName";
-                  event2.text = p.readString(length2);
+                  event2.text = p.readString(length3);
                   return event2;
                 case 4:
                   event2.type = "instrumentName";
-                  event2.text = p.readString(length2);
+                  event2.text = p.readString(length3);
                   return event2;
                 case 5:
                   event2.type = "lyrics";
-                  event2.text = p.readString(length2);
+                  event2.text = p.readString(length3);
                   return event2;
                 case 6:
                   event2.type = "marker";
-                  event2.text = p.readString(length2);
+                  event2.text = p.readString(length3);
                   return event2;
                 case 7:
                   event2.type = "cuePoint";
-                  event2.text = p.readString(length2);
+                  event2.text = p.readString(length3);
                   return event2;
                 case 32:
                   event2.type = "channelPrefix";
-                  if (length2 != 1) throw "Expected length for channelPrefix event is 1, got " + length2;
+                  if (length3 != 1) throw "Expected length for channelPrefix event is 1, got " + length3;
                   event2.channel = p.readUInt8();
                   return event2;
                 case 33:
                   event2.type = "portPrefix";
-                  if (length2 != 1) throw "Expected length for portPrefix event is 1, got " + length2;
+                  if (length3 != 1) throw "Expected length for portPrefix event is 1, got " + length3;
                   event2.port = p.readUInt8();
                   return event2;
                 case 47:
                   event2.type = "endOfTrack";
-                  if (length2 != 0) throw "Expected length for endOfTrack event is 0, got " + length2;
+                  if (length3 != 0) throw "Expected length for endOfTrack event is 0, got " + length3;
                   return event2;
                 case 81:
                   event2.type = "setTempo";
-                  if (length2 != 3) throw "Expected length for setTempo event is 3, got " + length2;
+                  if (length3 != 3) throw "Expected length for setTempo event is 3, got " + length3;
                   event2.microsecondsPerBeat = p.readUInt24();
                   return event2;
                 case 84:
                   event2.type = "smpteOffset";
-                  if (length2 != 5) throw "Expected length for smpteOffset event is 5, got " + length2;
+                  if (length3 != 5) throw "Expected length for smpteOffset event is 5, got " + length3;
                   var hourByte = p.readUInt8();
                   var FRAME_RATES = { 0: 24, 32: 25, 64: 29, 96: 30 };
                   event2.frameRate = FRAME_RATES[hourByte & 96];
@@ -25935,10 +27725,10 @@
                   return event2;
                 case 88:
                   event2.type = "timeSignature";
-                  if (length2 != 2 && length2 != 4) throw "Expected length for timeSignature event is 4 or 2, got " + length2;
+                  if (length3 != 2 && length3 != 4) throw "Expected length for timeSignature event is 4 or 2, got " + length3;
                   event2.numerator = p.readUInt8();
                   event2.denominator = 1 << p.readUInt8();
-                  if (length2 === 4) {
+                  if (length3 === 4) {
                     event2.metronome = p.readUInt8();
                     event2.thirtyseconds = p.readUInt8();
                   } else {
@@ -25948,29 +27738,29 @@
                   return event2;
                 case 89:
                   event2.type = "keySignature";
-                  if (length2 != 2) throw "Expected length for keySignature event is 2, got " + length2;
+                  if (length3 != 2) throw "Expected length for keySignature event is 2, got " + length3;
                   event2.key = p.readInt8();
                   event2.scale = p.readUInt8();
                   return event2;
                 case 127:
                   event2.type = "sequencerSpecific";
-                  event2.data = p.readBytes(length2);
+                  event2.data = p.readBytes(length3);
                   return event2;
                 default:
                   event2.type = "unknownMeta";
-                  event2.data = p.readBytes(length2);
+                  event2.data = p.readBytes(length3);
                   event2.metatypeByte = metatypeByte;
                   return event2;
               }
             } else if (eventTypeByte == 240) {
               event2.type = "sysEx";
-              var length2 = p.readVarInt();
-              event2.data = p.readBytes(length2);
+              var length3 = p.readVarInt();
+              event2.data = p.readBytes(length3);
               return event2;
             } else if (eventTypeByte == 247) {
               event2.type = "endSysEx";
-              var length2 = p.readVarInt();
-              event2.data = p.readBytes(length2);
+              var length3 = p.readVarInt();
+              event2.data = p.readBytes(length3);
               return event2;
             } else {
               throw "Unrecognised MIDI event type byte: " + eventTypeByte;
@@ -26100,11 +27890,11 @@
       };
       Parser.prototype.readChunk = function() {
         var id = this.readString(4);
-        var length2 = this.readUInt32();
-        var data = this.readBytes(length2);
+        var length3 = this.readUInt32();
+        var data = this.readBytes(length3);
         return {
           id,
-          length: length2,
+          length: length3,
           data
         };
       };
@@ -27977,1882 +29767,6 @@
     }
   });
 
-  // src/TriangularBeam.ts
-  var TriangularBeam;
-  var init_TriangularBeam = __esm({
-    "src/TriangularBeam.ts"() {
-      "use strict";
-      TriangularBeam = class {
-        constructor() {
-          __publicField(this, "name", "TriangularBeam");
-          __publicField(this, "count", 12);
-          __publicField(this, "_gElem", document.createElementNS("http://www.w3.org/2000/svg", "g"));
-          __publicField(this, "activated", false);
-        }
-        activate() {
-          return __async(this, null, function* () {
-            if (!this.activated) {
-              this.activated = true;
-              for (let i = 0; i < this.count; i++) {
-                const particle = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                particle.setAttribute("class", "particle");
-                particle.setAttribute("d", `M ${-2 * i - 2} ${-i * 5 - 2},
-                                            L 0 ${-i * 5 - 10}, 
-                                            L ${3 * i + 2} ${-i * 5 - 2}`);
-                particle.setAttribute("stroke", `rgb(${i / this.count * 255}, ${i * 2 / this.count * 255}, ${i / 3 / this.count * 255}`);
-                particle.setAttribute("stroke-width", "2px");
-                particle.setAttribute("vector-effect", "non-scaling-stroke");
-                particle.setAttribute("fill", `rgb (${-i * 255 + 255}, ${-i * 255 + 255}, ${-i * 255 + 255})`);
-                yield new Promise((resolve) => setTimeout(resolve, 100));
-                particle.setAttribute("opacity", `${i / this.count}`);
-                this._gElem.appendChild(particle);
-              }
-              this.activated = true;
-            }
-          });
-        }
-        deactivate() {
-          this._gElem.innerHTML = "";
-          this.activated = false;
-        }
-        dispose() {
-          if (this._gElem && this._gElem.parentNode) {
-            this._gElem.innerHTML = "";
-            this._gElem.parentNode.removeChild(this._gElem);
-          }
-          this.activated = false;
-        }
-        get gElem() {
-          return this._gElem;
-        }
-      };
-    }
-  });
-
-  // src/OvalShield.ts
-  var OvalShield;
-  var init_OvalShield = __esm({
-    "src/OvalShield.ts"() {
-      "use strict";
-      OvalShield = class {
-        //cycleCount = 0
-        constructor(shieldWidth, shieldHeight) {
-          __publicField(this, "name", "ovalShield");
-          __publicField(this, "_width");
-          __publicField(this, "_height");
-          __publicField(this, "_gElem", document.createElementNS("http://www.w3.org/2000/svg", "g"));
-          __publicField(this, "activated", false);
-          this._gElem.setAttribute("class", "ovalShield");
-          this._width = shieldWidth;
-          this._height = shieldHeight;
-        }
-        activate() {
-          const boundingOval = document.createElementNS("http://www.w3.org/2000/svg", "ellipse");
-          if (!this.activated) {
-            boundingOval.setAttribute("cx", "0");
-            boundingOval.setAttribute("cy", "0");
-            boundingOval.setAttribute("rx", `${this._width}`);
-            boundingOval.setAttribute("ry", `${this._height}`);
-            boundingOval.setAttribute("vector-effect", "none-scaling-stroke");
-            boundingOval.setAttribute("stroke-width", "2px");
-            boundingOval.setAttribute("fill", "none");
-            this._gElem.appendChild(boundingOval);
-            this.activated = true;
-          }
-          boundingOval.setAttribute("stroke", "white");
-        }
-        deactivate() {
-          this._gElem.innerHTML = "";
-          this.activated = false;
-        }
-        dispose() {
-          this.deactivate();
-        }
-        set width(width) {
-          this._width = width;
-        }
-        set height(height) {
-          this._height = height;
-        }
-      };
-    }
-  });
-
-  // src/TractorBeam.ts
-  var TractorBeam;
-  var init_TractorBeam = __esm({
-    "src/TractorBeam.ts"() {
-      "use strict";
-      init_library();
-      TractorBeam = class {
-        constructor() {
-          __publicField(this, "name", "tractorBeam");
-          __publicField(this, "target", { x: 0, y: 0 });
-          __publicField(this, "activated", false);
-          __publicField(this, "_gElem");
-          this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
-          this._gElem.setAttribute("id", "device");
-        }
-        activate(target) {
-          this.target = target;
-          const beam = document.createElementNS("http://www.w3.org/2000/svg", "line");
-          if (!this.activated) {
-            beam.setAttribute("id", "beam");
-            beam.setAttribute("x1", "0");
-            beam.setAttribute("y1", "0");
-            beam.setAttribute("vector-effect", "non-scaling-stroke");
-            this._gElem.appendChild(beam);
-            this.activated = true;
-          }
-          beam.setAttribute("x2", `${this.target.x}`);
-          beam.setAttribute("y2", `${this.target.y}`);
-          beam.setAttribute("stroke", `rgb(${Math.floor(Math.random() * 255)}, 
-                                        ${Math.floor(Math.random() * 255)}, 
-                                        ${Math.floor(Math.random() * 255)})`);
-          beam.setAttribute("stroke-width", `${100 / length(target)}`);
-        }
-        deactivate() {
-          this._gElem.innerHTML = "";
-          this.activated = false;
-        }
-        dispose() {
-          if (this._gElem && this._gElem.parentNode) {
-            this._gElem.innerHTML = "";
-            this._gElem.parentNode.removeChild(this._gElem);
-          }
-          this.activated = false;
-        }
-        setTarget(target) {
-          this.target = target;
-        }
-      };
-    }
-  });
-
-  // src/DeviceFactory.ts
-  var DeviceFactory;
-  var init_DeviceFactory = __esm({
-    "src/DeviceFactory.ts"() {
-      "use strict";
-      init_TriangularBeam();
-      init_OvalShield();
-      init_TractorBeam();
-      DeviceFactory = class {
-        static createDevice(type, ...args) {
-          const deviceCreator = this.deviceMap[type];
-          if (deviceCreator) {
-            return deviceCreator(...args);
-          } else {
-            return new TractorBeam();
-          }
-        }
-      };
-      __publicField(DeviceFactory, "deviceMap", {
-        "repulsorBeam": () => new TriangularBeam(),
-        "ovalShield": (...args) => new OvalShield(args[0], args[1]),
-        "tractorBeam": (...args) => new TractorBeam()
-      });
-    }
-  });
-
-  // src/Spacecraft.ts
-  var fontSize, Spacecraft;
-  var init_Spacecraft = __esm({
-    "src/Spacecraft.ts"() {
-      "use strict";
-      init_GameMenu();
-      init_GameMenu();
-      init_DeviceFactory();
-      init_library();
-      init_TractorBeam();
-      fontSize = window.innerHeight / 80;
-      console.log("window.innerWidth: " + window.innerWidth);
-      console.log("fontSize = window.innerHeight/80: " + window.innerHeight / 80);
-      console.log();
-      Spacecraft = class {
-        constructor() {
-          __publicField(this, "objectStatus", {
-            location: { x: 50, y: 50 },
-            impuls: { x: 0, y: 0 },
-            direction: -60,
-            rotation: 0,
-            mass: 10,
-            craftId: "spa\xDFcraft",
-            type: "rocket",
-            npc: false,
-            collidable: false
-          });
-          __publicField(this, "_shape");
-          __publicField(this, "_color");
-          __publicField(this, "_touchControlType");
-          __publicField(this, "easing", false);
-          __publicField(this, "_maneuverability", 7);
-          __publicField(this, "_directionCorrection", 90);
-          __publicField(this, "_device");
-          __publicField(this, "_lastUpdate", Date.now());
-          __publicField(this, "_scale", 1);
-          __publicField(this, "_label");
-          __publicField(this, "_labelBorder");
-          this.objectStatus.type = "rokket";
-          this._color = "fl\xFCn";
-          this.objectStatus.craftId = "spacecraft";
-          this._touchControlType = "spacecraft";
-          this._shape = { gElement: document.createElementNS("http://www.w3.org/2000/svg", "g") };
-        }
-        accelerate(thrust) {
-          let vector = polarVector(thrust, this.direction);
-          this.objectStatus.impuls = add(this.objectStatus.impuls, vector);
-        }
-        addDevice(type, args) {
-          this._device = DeviceFactory.createDevice(type, ...args);
-        }
-        operate() {
-          var _a, _b;
-          (_a = this._device) == null ? void 0 : _a.activate();
-          if ((_b = this._device) == null ? void 0 : _b._gElem) {
-            this._device._gElem.setAttribute("id", "device");
-            this._shape.gElement.appendChild(this._device._gElem);
-          }
-        }
-        applyLabel(svgElement) {
-          this._labelBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-          svgElement.appendChild(this._labelBorder);
-          this._labelBorder.setAttribute("x", `${this.scale * 6.7}`);
-          this._labelBorder.setAttribute("y", `${-fontSize}`);
-          this._labelBorder.setAttribute("stroke-width", "2px");
-          this._labelBorder.setAttribute("stroke", "grey");
-          this._labelBorder.setAttribute("vector-effect", "non-scaling-stroke");
-          this._labelBorder.setAttribute("fill", "lightgrey");
-          this._labelBorder.setAttribute("fill-opacity", ".8");
-          this._label = document.createElementNS("http://www.w3.org/2000/svg", "text");
-          svgElement.appendChild(this._label);
-          this._label.setAttribute("font-size", `${fontSize}px`);
-          console.log("fontSize: " + fontSize);
-          console.log("viewBoxWidth: " + viewBoxWidth);
-          this._label.innerHTML = `<tspan x="${this._scale * 7}">label text is yet to be written`;
-          setTimeout(() => {
-            if (this._labelBorder && this._label) {
-              this._labelBorder.style.width = (this._label.getBBox().width * 1.1).toString();
-              this._labelBorder.style.height = (this._label.getBBox().height * 1.1).toString();
-            }
-          });
-        }
-        setFontsize(newFontSize) {
-          fontSize = newFontSize;
-        }
-        brake(dampingFactor) {
-          const newLength = length(this.objectStatus.impuls) * (1 - dampingFactor);
-          this.objectStatus.impuls = polarVector(newLength, angle(this.objectStatus.impuls));
-          if (length(this.objectStatus.impuls) < 0.01) {
-            this.objectStatus.impuls.x = 0;
-            this.objectStatus.impuls.y = 0;
-          }
-        }
-        gradualBrake() {
-          return __async(this, null, function* () {
-            while (length(this.objectStatus.impuls) > 0.01) {
-              this.brake(0.1);
-              yield this.delay(100);
-            }
-            this.objectStatus.impuls.x = 0;
-            this.objectStatus.impuls.y = 0;
-          });
-        }
-        delay(ms) {
-          return new Promise((resolve) => setTimeout(resolve, ms));
-        }
-        handleKeyboardInput(keysPressed) {
-          if (keysPressed["ArrowLeft"]) {
-            this.rotate(-this._maneuverability);
-          }
-          if (keysPressed["ArrowRight"]) {
-            this.rotate(this._maneuverability);
-          }
-          if (keysPressed["ArrowUp"]) {
-            this.accelerate(this._maneuverability / 50);
-          }
-          if (keysPressed["ArrowDown"]) {
-            this.brake(this._maneuverability / 50);
-          }
-          if (keysPressed[" "] && !(this.device instanceof TractorBeam)) {
-            this.operate();
-          }
-        }
-        onKeyUp(key) {
-          switch (key) {
-            case " ":
-              if (this.device)
-                this.device.dispose();
-          }
-        }
-        handleTouchControl(vector) {
-          let deltaAngle = this.objectStatus.direction - angle(vector);
-          switch (this.objectStatus.type) {
-            case `rokket`:
-              this.objectStatus.impuls = add(this.objectStatus.impuls, vector);
-              this.objectStatus.direction = angle(vector);
-              break;
-            case `rainbowRocket`:
-              this.objectStatus.impuls = add(this.objectStatus.impuls, vector);
-              if (deltaAngle > 0 && deltaAngle < 180 || deltaAngle < -180) {
-                this.rotate(-5);
-              } else if (deltaAngle < 0 || deltaAngle > 180) {
-                this.rotate(5);
-              }
-              break;
-            case `../resources/bromber.svg`:
-              this.objectStatus.impuls = add(this.objectStatus.impuls, vector);
-              if (deltaAngle < -180)
-                deltaAngle += 360;
-              if (deltaAngle > 180)
-                deltaAngle -= 360;
-              if (Math.abs(deltaAngle) > 8) {
-                this.rotate(-180 / deltaAngle);
-              }
-              break;
-            case `../resources/blizzer.png`:
-              this.objectStatus.impuls = add(this.objectStatus.impuls, vector);
-              if (!this.easing) {
-                this.easing = true;
-                const startDirection = this.objectStatus.direction;
-                this.ease(startDirection, angle(vector));
-              }
-              break;
-            case `../resources/eye.svg`:
-              const horizontalValue = vector.x;
-              const verticalValue = vector.y;
-              this.accelerate(-verticalValue);
-              this.rotate(horizontalValue * this._maneuverability * 50);
-              break;
-            default:
-              this.objectStatus.impuls = add(this.objectStatus.impuls, vector);
-              this.objectStatus.direction = angle(vector);
-          }
-        }
-        ease(oldDirection, target) {
-          return __async(this, null, function* () {
-            const deltaAngle = target - this.objectStatus.direction;
-            let easeValue;
-            const steps = Math.ceil(Math.abs(deltaAngle));
-            for (let i = 1; i <= steps; i++) {
-              easeValue = this.easeInOutBack(i / steps);
-              this.objectStatus.direction = oldDirection + easeValue * deltaAngle;
-              yield new Promise((resolve) => setTimeout(resolve, 10));
-            }
-            this.easing = false;
-          });
-        }
-        easeInOutBack(x) {
-          const c1 = 1.70158;
-          const c2 = c1 * 1.525;
-          return x < 0.5 ? Math.pow(2 * x, 2) * ((c2 + 1) * 2 * x - c2) / 2 : (Math.pow(2 * x - 2, 2) * ((c2 + 1) * (x * 2 - 2) + c2) + 2) / 2;
-        }
-        pseudoOrbit(vector) {
-          const distance = distanceBetween(vector, this.objectStatus.location);
-          if (distance < viewBoxWidth / 2)
-            this._scale = Math.cos(distance / (viewBoxWidth / 4) * Math.PI / 4);
-          if (distance > viewBoxWidth / 2) {
-            inverse(this.objectStatus.impuls);
-          }
-        }
-        rotate(angle2) {
-          this.objectStatus.direction += angle2;
-          if (this.objectStatus.direction > 180) {
-            this.objectStatus.direction -= 360;
-          } else if (this.objectStatus.direction < -180) {
-            this.objectStatus.direction += 360;
-          }
-        }
-        get shape() {
-          return this._shape;
-        }
-        set shape(shape) {
-          this._shape = shape;
-        }
-        set collidable(coll) {
-          this.objectStatus.collidable = coll;
-        }
-        get collidable() {
-          return this.objectStatus.collidable;
-        }
-        get collider() {
-          if (this.shape.collider)
-            return this.shape.collider;
-          else return void 0;
-        }
-        set collider(collider) {
-          this.shape.collider = collider;
-        }
-        get direction() {
-          return this.objectStatus.direction;
-        }
-        get directionCorrection() {
-          return this._directionCorrection;
-        }
-        set direction(x) {
-          this.objectStatus.direction = x;
-        }
-        get device() {
-          if (this._device) return this._device;
-          else return void 0;
-        }
-        get label() {
-          return this._label;
-        }
-        get labelBorder() {
-          return this._labelBorder;
-        }
-        get lastUpdate() {
-          return this._lastUpdate;
-        }
-        get location() {
-          return this.objectStatus.location;
-        }
-        get npc() {
-          return this.objectStatus.npc;
-        }
-        set location(location) {
-          this.objectStatus.location = location;
-        }
-        get scale() {
-          return this._scale;
-        }
-        /*
-            get spacecraftShape(): SpacecraftShape | undefined{
-                if(this._spacecraftShape)
-                    return this._spacecraftShape
-            }
-        
-            set spacecraftShape(sp: SpacecraftShape){
-                this._spacecraftShape = sp
-                this.gElement = sp.gElement
-            }
-        */
-        get type() {
-          return this.objectStatus.type;
-        }
-        set type(type) {
-          this.objectStatus.type = type;
-        }
-        get color() {
-          return this._color;
-        }
-        set color(color2) {
-          this._color = color2;
-        }
-        get id() {
-          return this.objectStatus.craftId;
-        }
-        set id(id) {
-          this.objectStatus.craftId = id;
-        }
-        get gElement() {
-          return this.shape.gElement;
-        }
-        set gElement(g) {
-          this.shape.gElement = g;
-        }
-        set directionCorrection(n) {
-          this._directionCorrection = n;
-        }
-        set scale(scale) {
-          this._scale = scale;
-        }
-        set touchControlType(newType) {
-          if (newType === "rokket" || newType === "rainbowRocket")
-            this._touchControlType = "spacecraft";
-          else this._touchControlType = "butterfly";
-        }
-        setLabelText(text) {
-          if (this._label) {
-            this._label.setAttribute("font-family", "Arial");
-            this._label.setAttribute("stroke-width", ".05");
-            this._label.setAttribute("stroke", `${color}`);
-            this._label.innerHTML = text;
-          }
-          if (this._labelBorder && this._label) {
-            this._labelBorder.style.width = (this._label.getBBox().width * 1.1).toString();
-            this._labelBorder.style.height = (this._label.getBBox().height * 1.1).toString();
-          }
-        }
-        update() {
-          if (!this.npc) {
-            this.objectStatus.location = add(this.objectStatus.impuls, this.objectStatus.location);
-            this.direction += this.objectStatus.rotation;
-          }
-        }
-        vanish() {
-          console.log("vanish called");
-          const animate = () => {
-            var _a, _b, _c, _d;
-            if (this._scale > 0.1) {
-              this._scale -= this._scale / 100;
-              this.update();
-              requestAnimationFrame(animate);
-            } else {
-              (_a = this.gElement.parentNode) == null ? void 0 : _a.removeChild(this.gElement);
-              if (this._label) {
-                (_b = this._label.parentNode) == null ? void 0 : _b.removeChild(this._label);
-                (_d = (_c = this._labelBorder) == null ? void 0 : _c.parentNode) == null ? void 0 : _d.removeChild(this._labelBorder);
-              }
-            }
-          };
-          animate();
-        }
-      };
-    }
-  });
-
-  // src/GameEnvironment.ts
-  var torusWidth, torusHeight, GameEnvironment;
-  var init_GameEnvironment = __esm({
-    "src/GameEnvironment.ts"() {
-      "use strict";
-      init_Joystick();
-      init_GameMenu();
-      init_library();
-      torusWidth = 1e3;
-      torusHeight = 1e3;
-      GameEnvironment = class {
-        constructor() {
-          __publicField(this, "screenAspectRatio");
-          __publicField(this, "viewBoxToScreenRatio");
-          __publicField(this, "viewBoxWidth");
-          __publicField(this, "viewBoxHeight");
-          __publicField(this, "viewBoxLeft");
-          __publicField(this, "viewBoxTop");
-          __publicField(this, "label", document.createElement("HTMLLabelElement"));
-          __publicField(this, "_svgElement");
-          //private _viewBoxBorder: SVGRectElement;
-          __publicField(this, "_joystick", new Joystick());
-          if (gameFrame.offsetHeight != 0) {
-            this.screenAspectRatio = gameFrame.offsetWidth / gameFrame.offsetHeight;
-            console.log("gameFrame.offsetWidth: " + gameFrame.offsetWidth);
-            console.log("gameFrame.clientWidth: " + gameFrame.clientWidth);
-            console.log("window.innerWidth: " + window.innerWidth);
-            console.log("this.screenAspectRatio: " + this.screenAspectRatio);
-          } else {
-            console.log("gameFrame not properly sized");
-            this.screenAspectRatio = 0.8;
-          }
-          this.viewBoxWidth = 300;
-          this.viewBoxToScreenRatio = this.viewBoxWidth / window.innerWidth;
-          this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio;
-          this.viewBoxLeft = -this.viewBoxWidth / 2;
-          this.viewBoxTop = -this.viewBoxHeight / 2;
-          this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-          this.insertBackgroundImage();
-          this._svgElement.style.position = "absolute";
-          this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
-          this._svgElement.setAttribute("tabindex", "0");
-          gameFrame.appendChild(this._svgElement);
-          gameFrame.style.height = `${window.innerHeight}px`;
-          gameFrame.appendChild(this._joystick.htmlElement);
-          gameFrame.appendChild(this._joystick.fireButton);
-          this.joystick.htmlElement.style.display = "none";
-          this.joystick.fireButton.style.display = "none";
-        }
-        displayTouchControl() {
-          this.joystick.htmlElement.style.display = "block";
-          this.joystick.fireButton.style.display = "block";
-        }
-        get joystick() {
-          return this._joystick;
-        }
-        get svgElement() {
-          return this._svgElement;
-        }
-        handleResize() {
-          this.updateLabel();
-          gameFrame.style.width = `${window.innerWidth}px`;
-          gameFrame.style.height = `${window.innerHeight}px`;
-          this._svgElement.style.width = `${window.innerWidth}px`;
-          this._svgElement.style.height = `${window.innerHeight}px`;
-          this.viewBoxWidth = window.innerWidth * this.viewBoxToScreenRatio;
-          this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio;
-          this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
-        }
-        updateLabel() {
-          this.label.innerHTML = `gameFrame.clientWidth doesnt change: ${gameFrame.clientWidth}, gameFrame.clientHeight: ${gameFrame.clientHeight}<br>
-                                    window.innerWidth is dynamic: ${window.innerWidth}, window.innerHeight: ${window.innerHeight}<br>
-                                    this.viewBoxWidth: ${this.viewBoxWidth}, this.viewBoxHeight: ${this.viewBoxHeight}<br>
-                                    this._svgElement.getAttribute("viewBox"): ${this._svgElement.getAttribute("viewBox")}`;
-        }
-        setLabel(text) {
-          this.label.innerHTML = text;
-        }
-        handleSpacecraft(spacecraft, option) {
-          switch (option) {
-            case "pseudoOrbit":
-              spacecraft.pseudoOrbit({ x: 0, y: 0 });
-              break;
-            case "staticTorus":
-              if (spacecraft.location.x < this.viewBoxLeft)
-                spacecraft.location.x = this.viewBoxLeft + this.viewBoxWidth;
-              else if (spacecraft.location.x > this.viewBoxLeft + this.viewBoxWidth)
-                spacecraft.location.x = this.viewBoxLeft;
-              if (spacecraft.location.y < this.viewBoxTop)
-                spacecraft.location.y = this.viewBoxTop + this.viewBoxHeight;
-              else if (spacecraft.location.y > this.viewBoxTop + this.viewBoxHeight)
-                spacecraft.location.y = this.viewBoxTop;
-              break;
-            case "scroll":
-              this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth / 2;
-              this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2;
-              this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
-              break;
-            case "pseudoTorus":
-              this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth / 2;
-              this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2;
-              this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
-              if (spacecraft.location.x > torusWidth / 2) {
-                spacecraft.location.x = -torusWidth / 2;
-              } else if (spacecraft.location.x < -torusWidth / 2) {
-                spacecraft.location.x = torusWidth / 2;
-              }
-              if (spacecraft.location.y > torusHeight / 2) {
-                spacecraft.location.y = -torusHeight / 2;
-              } else if (spacecraft.location.y < -torusHeight / 2) {
-                spacecraft.location.y = torusHeight / 2;
-              }
-              break;
-          }
-          if (Math.abs(spacecraft.location.x) > torusWidth / 2 || Math.abs(spacecraft.location.y) > torusHeight / 2) {
-            spacecraft.objectStatus.impuls = polarVector(length(spacecraft.objectStatus.impuls) * 0.5, angle(spacecraft.objectStatus.impuls));
-          }
-        }
-        insertBackgroundImage() {
-          const bgImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
-          const bgImagWidth = torusWidth * 2;
-          const bgImageHeight = torusHeight * 2;
-          this._svgElement.appendChild(bgImage);
-          bgImage.href.baseVal = "../resources/background10.jpg";
-          bgImage.onload = () => {
-            const imageWidth = bgImage.getBBox().width;
-            const imageHeight = bgImage.getBBox().height;
-            bgImage.style.width = bgImagWidth.toString();
-            bgImage.style.x = `${-bgImagWidth / 2}`;
-            bgImage.style.y = `${-bgImageHeight / 2}`;
-            bgImage.style.zIndex = "-1";
-          };
-        }
-      };
-    }
-  });
-
-  // node_modules/sat/SAT.js
-  var require_SAT = __commonJS({
-    "node_modules/sat/SAT.js"(exports, module) {
-      (function(root, factory) {
-        "use strict";
-        if (typeof define === "function" && define["amd"]) {
-          define(factory);
-        } else if (typeof exports === "object") {
-          module["exports"] = factory();
-        } else {
-          root["SAT"] = factory();
-        }
-      })(exports, function() {
-        "use strict";
-        var SAT2 = {};
-        function Vector2(x, y) {
-          this["x"] = x || 0;
-          this["y"] = y || 0;
-        }
-        SAT2["Vector"] = Vector2;
-        SAT2["V"] = Vector2;
-        Vector2.prototype["copy"] = Vector2.prototype.copy = function(other) {
-          this["x"] = other["x"];
-          this["y"] = other["y"];
-          return this;
-        };
-        Vector2.prototype["clone"] = Vector2.prototype.clone = function() {
-          return new Vector2(this["x"], this["y"]);
-        };
-        Vector2.prototype["perp"] = Vector2.prototype.perp = function() {
-          var x = this["x"];
-          this["x"] = this["y"];
-          this["y"] = -x;
-          return this;
-        };
-        Vector2.prototype["rotate"] = Vector2.prototype.rotate = function(angle2) {
-          var x = this["x"];
-          var y = this["y"];
-          this["x"] = x * Math.cos(angle2) - y * Math.sin(angle2);
-          this["y"] = x * Math.sin(angle2) + y * Math.cos(angle2);
-          return this;
-        };
-        Vector2.prototype["reverse"] = Vector2.prototype.reverse = function() {
-          this["x"] = -this["x"];
-          this["y"] = -this["y"];
-          return this;
-        };
-        Vector2.prototype["normalize"] = Vector2.prototype.normalize = function() {
-          var d = this.len();
-          if (d > 0) {
-            this["x"] = this["x"] / d;
-            this["y"] = this["y"] / d;
-          }
-          return this;
-        };
-        Vector2.prototype["add"] = Vector2.prototype.add = function(other) {
-          this["x"] += other["x"];
-          this["y"] += other["y"];
-          return this;
-        };
-        Vector2.prototype["sub"] = Vector2.prototype.sub = function(other) {
-          this["x"] -= other["x"];
-          this["y"] -= other["y"];
-          return this;
-        };
-        Vector2.prototype["scale"] = Vector2.prototype.scale = function(x, y) {
-          this["x"] *= x;
-          this["y"] *= typeof y != "undefined" ? y : x;
-          return this;
-        };
-        Vector2.prototype["project"] = Vector2.prototype.project = function(other) {
-          var amt = this.dot(other) / other.len2();
-          this["x"] = amt * other["x"];
-          this["y"] = amt * other["y"];
-          return this;
-        };
-        Vector2.prototype["projectN"] = Vector2.prototype.projectN = function(other) {
-          var amt = this.dot(other);
-          this["x"] = amt * other["x"];
-          this["y"] = amt * other["y"];
-          return this;
-        };
-        Vector2.prototype["reflect"] = Vector2.prototype.reflect = function(axis) {
-          var x = this["x"];
-          var y = this["y"];
-          this.project(axis).scale(2);
-          this["x"] -= x;
-          this["y"] -= y;
-          return this;
-        };
-        Vector2.prototype["reflectN"] = Vector2.prototype.reflectN = function(axis) {
-          var x = this["x"];
-          var y = this["y"];
-          this.projectN(axis).scale(2);
-          this["x"] -= x;
-          this["y"] -= y;
-          return this;
-        };
-        Vector2.prototype["dot"] = Vector2.prototype.dot = function(other) {
-          return this["x"] * other["x"] + this["y"] * other["y"];
-        };
-        Vector2.prototype["len2"] = Vector2.prototype.len2 = function() {
-          return this.dot(this);
-        };
-        Vector2.prototype["len"] = Vector2.prototype.len = function() {
-          return Math.sqrt(this.len2());
-        };
-        function Circle(pos, r) {
-          this["pos"] = pos || new Vector2();
-          this["r"] = r || 0;
-        }
-        SAT2["Circle"] = Circle;
-        Circle.prototype["getAABB"] = Circle.prototype.getAABB = function() {
-          var r = this["r"];
-          var corner = this["pos"].clone().sub(new Vector2(r, r));
-          return new Box(corner, r * 2, r * 2).toPolygon();
-        };
-        function Polygon2(pos, points) {
-          this["pos"] = pos || new Vector2();
-          this["angle"] = 0;
-          this["offset"] = new Vector2();
-          this.setPoints(points || []);
-        }
-        SAT2["Polygon"] = Polygon2;
-        Polygon2.prototype["setPoints"] = Polygon2.prototype.setPoints = function(points) {
-          var lengthChanged = !this["points"] || this["points"].length !== points.length;
-          if (lengthChanged) {
-            var i2;
-            var calcPoints = this["calcPoints"] = [];
-            var edges = this["edges"] = [];
-            var normals = this["normals"] = [];
-            for (i2 = 0; i2 < points.length; i2++) {
-              calcPoints.push(new Vector2());
-              edges.push(new Vector2());
-              normals.push(new Vector2());
-            }
-          }
-          this["points"] = points;
-          this._recalc();
-          return this;
-        };
-        Polygon2.prototype["setAngle"] = Polygon2.prototype.setAngle = function(angle2) {
-          this["angle"] = angle2;
-          this._recalc();
-          return this;
-        };
-        Polygon2.prototype["setOffset"] = Polygon2.prototype.setOffset = function(offset) {
-          this["offset"] = offset;
-          this._recalc();
-          return this;
-        };
-        Polygon2.prototype["rotate"] = Polygon2.prototype.rotate = function(angle2) {
-          var points = this["points"];
-          var len = points.length;
-          for (var i2 = 0; i2 < len; i2++) {
-            points[i2].rotate(angle2);
-          }
-          this._recalc();
-          return this;
-        };
-        Polygon2.prototype["translate"] = Polygon2.prototype.translate = function(x, y) {
-          var points = this["points"];
-          var len = points.length;
-          for (var i2 = 0; i2 < len; i2++) {
-            points[i2]["x"] += x;
-            points[i2]["y"] += y;
-          }
-          this._recalc();
-          return this;
-        };
-        Polygon2.prototype._recalc = function() {
-          var calcPoints = this["calcPoints"];
-          var edges = this["edges"];
-          var normals = this["normals"];
-          var points = this["points"];
-          var offset = this["offset"];
-          var angle2 = this["angle"];
-          var len = points.length;
-          var i2;
-          for (i2 = 0; i2 < len; i2++) {
-            var calcPoint = calcPoints[i2].copy(points[i2]);
-            calcPoint["x"] += offset["x"];
-            calcPoint["y"] += offset["y"];
-            if (angle2 !== 0) {
-              calcPoint.rotate(angle2);
-            }
-          }
-          for (i2 = 0; i2 < len; i2++) {
-            var p1 = calcPoints[i2];
-            var p2 = i2 < len - 1 ? calcPoints[i2 + 1] : calcPoints[0];
-            var e = edges[i2].copy(p2).sub(p1);
-            normals[i2].copy(e).perp().normalize();
-          }
-          return this;
-        };
-        Polygon2.prototype["getAABB"] = Polygon2.prototype.getAABB = function() {
-          var points = this["calcPoints"];
-          var len = points.length;
-          var xMin = points[0]["x"];
-          var yMin = points[0]["y"];
-          var xMax = points[0]["x"];
-          var yMax = points[0]["y"];
-          for (var i2 = 1; i2 < len; i2++) {
-            var point = points[i2];
-            if (point["x"] < xMin) {
-              xMin = point["x"];
-            } else if (point["x"] > xMax) {
-              xMax = point["x"];
-            }
-            if (point["y"] < yMin) {
-              yMin = point["y"];
-            } else if (point["y"] > yMax) {
-              yMax = point["y"];
-            }
-          }
-          return new Box(this["pos"].clone().add(new Vector2(xMin, yMin)), xMax - xMin, yMax - yMin).toPolygon();
-        };
-        Polygon2.prototype["getCentroid"] = Polygon2.prototype.getCentroid = function() {
-          var points = this["calcPoints"];
-          var len = points.length;
-          var cx = 0;
-          var cy = 0;
-          var ar = 0;
-          for (var i2 = 0; i2 < len; i2++) {
-            var p1 = points[i2];
-            var p2 = i2 === len - 1 ? points[0] : points[i2 + 1];
-            var a = p1["x"] * p2["y"] - p2["x"] * p1["y"];
-            cx += (p1["x"] + p2["x"]) * a;
-            cy += (p1["y"] + p2["y"]) * a;
-            ar += a;
-          }
-          ar = ar * 3;
-          cx = cx / ar;
-          cy = cy / ar;
-          return new Vector2(cx, cy);
-        };
-        function Box(pos, w, h) {
-          this["pos"] = pos || new Vector2();
-          this["w"] = w || 0;
-          this["h"] = h || 0;
-        }
-        SAT2["Box"] = Box;
-        Box.prototype["toPolygon"] = Box.prototype.toPolygon = function() {
-          var pos = this["pos"];
-          var w = this["w"];
-          var h = this["h"];
-          return new Polygon2(new Vector2(pos["x"], pos["y"]), [
-            new Vector2(),
-            new Vector2(w, 0),
-            new Vector2(w, h),
-            new Vector2(0, h)
-          ]);
-        };
-        function Response() {
-          this["a"] = null;
-          this["b"] = null;
-          this["overlapN"] = new Vector2();
-          this["overlapV"] = new Vector2();
-          this.clear();
-        }
-        SAT2["Response"] = Response;
-        Response.prototype["clear"] = Response.prototype.clear = function() {
-          this["aInB"] = true;
-          this["bInA"] = true;
-          this["overlap"] = Number.MAX_VALUE;
-          return this;
-        };
-        var T_VECTORS = [];
-        for (var i = 0; i < 10; i++) {
-          T_VECTORS.push(new Vector2());
-        }
-        var T_ARRAYS = [];
-        for (var i = 0; i < 5; i++) {
-          T_ARRAYS.push([]);
-        }
-        var T_RESPONSE = new Response();
-        var TEST_POINT = new Box(new Vector2(), 1e-6, 1e-6).toPolygon();
-        function flattenPointsOn(points, normal, result) {
-          var min = Number.MAX_VALUE;
-          var max = -Number.MAX_VALUE;
-          var len = points.length;
-          for (var i2 = 0; i2 < len; i2++) {
-            var dot = points[i2].dot(normal);
-            if (dot < min) {
-              min = dot;
-            }
-            if (dot > max) {
-              max = dot;
-            }
-          }
-          result[0] = min;
-          result[1] = max;
-        }
-        function isSeparatingAxis(aPos, bPos, aPoints, bPoints, axis, response) {
-          var rangeA = T_ARRAYS.pop();
-          var rangeB = T_ARRAYS.pop();
-          var offsetV = T_VECTORS.pop().copy(bPos).sub(aPos);
-          var projectedOffset = offsetV.dot(axis);
-          flattenPointsOn(aPoints, axis, rangeA);
-          flattenPointsOn(bPoints, axis, rangeB);
-          rangeB[0] += projectedOffset;
-          rangeB[1] += projectedOffset;
-          if (rangeA[0] > rangeB[1] || rangeB[0] > rangeA[1]) {
-            T_VECTORS.push(offsetV);
-            T_ARRAYS.push(rangeA);
-            T_ARRAYS.push(rangeB);
-            return true;
-          }
-          if (response) {
-            var overlap = 0;
-            if (rangeA[0] < rangeB[0]) {
-              response["aInB"] = false;
-              if (rangeA[1] < rangeB[1]) {
-                overlap = rangeA[1] - rangeB[0];
-                response["bInA"] = false;
-              } else {
-                var option1 = rangeA[1] - rangeB[0];
-                var option2 = rangeB[1] - rangeA[0];
-                overlap = option1 < option2 ? option1 : -option2;
-              }
-            } else {
-              response["bInA"] = false;
-              if (rangeA[1] > rangeB[1]) {
-                overlap = rangeA[0] - rangeB[1];
-                response["aInB"] = false;
-              } else {
-                var option1 = rangeA[1] - rangeB[0];
-                var option2 = rangeB[1] - rangeA[0];
-                overlap = option1 < option2 ? option1 : -option2;
-              }
-            }
-            var absOverlap = Math.abs(overlap);
-            if (absOverlap < response["overlap"]) {
-              response["overlap"] = absOverlap;
-              response["overlapN"].copy(axis);
-              if (overlap < 0) {
-                response["overlapN"].reverse();
-              }
-            }
-          }
-          T_VECTORS.push(offsetV);
-          T_ARRAYS.push(rangeA);
-          T_ARRAYS.push(rangeB);
-          return false;
-        }
-        SAT2["isSeparatingAxis"] = isSeparatingAxis;
-        function voronoiRegion(line, point) {
-          var len2 = line.len2();
-          var dp = point.dot(line);
-          if (dp < 0) {
-            return LEFT_VORONOI_REGION;
-          } else if (dp > len2) {
-            return RIGHT_VORONOI_REGION;
-          } else {
-            return MIDDLE_VORONOI_REGION;
-          }
-        }
-        var LEFT_VORONOI_REGION = -1;
-        var MIDDLE_VORONOI_REGION = 0;
-        var RIGHT_VORONOI_REGION = 1;
-        function pointInCircle(p, c) {
-          var differenceV = T_VECTORS.pop().copy(p).sub(c["pos"]);
-          var radiusSq = c["r"] * c["r"];
-          var distanceSq = differenceV.len2();
-          T_VECTORS.push(differenceV);
-          return distanceSq <= radiusSq;
-        }
-        SAT2["pointInCircle"] = pointInCircle;
-        function pointInPolygon(p, poly) {
-          TEST_POINT["pos"].copy(p);
-          T_RESPONSE.clear();
-          var result = testPolygonPolygon2(TEST_POINT, poly, T_RESPONSE);
-          if (result) {
-            result = T_RESPONSE["aInB"];
-          }
-          return result;
-        }
-        SAT2["pointInPolygon"] = pointInPolygon;
-        function testCircleCircle(a, b, response) {
-          var differenceV = T_VECTORS.pop().copy(b["pos"]).sub(a["pos"]);
-          var totalRadius = a["r"] + b["r"];
-          var totalRadiusSq = totalRadius * totalRadius;
-          var distanceSq = differenceV.len2();
-          if (distanceSq > totalRadiusSq) {
-            T_VECTORS.push(differenceV);
-            return false;
-          }
-          if (response) {
-            var dist = Math.sqrt(distanceSq);
-            response["a"] = a;
-            response["b"] = b;
-            response["overlap"] = totalRadius - dist;
-            response["overlapN"].copy(differenceV.normalize());
-            response["overlapV"].copy(differenceV).scale(response["overlap"]);
-            response["aInB"] = a["r"] <= b["r"] && dist <= b["r"] - a["r"];
-            response["bInA"] = b["r"] <= a["r"] && dist <= a["r"] - b["r"];
-          }
-          T_VECTORS.push(differenceV);
-          return true;
-        }
-        SAT2["testCircleCircle"] = testCircleCircle;
-        function testPolygonCircle(polygon, circle, response) {
-          var circlePos = T_VECTORS.pop().copy(circle["pos"]).sub(polygon["pos"]);
-          var radius = circle["r"];
-          var radius2 = radius * radius;
-          var points = polygon["calcPoints"];
-          var len = points.length;
-          var edge = T_VECTORS.pop();
-          var point = T_VECTORS.pop();
-          for (var i2 = 0; i2 < len; i2++) {
-            var next = i2 === len - 1 ? 0 : i2 + 1;
-            var prev = i2 === 0 ? len - 1 : i2 - 1;
-            var overlap = 0;
-            var overlapN = null;
-            edge.copy(polygon["edges"][i2]);
-            point.copy(circlePos).sub(points[i2]);
-            if (response && point.len2() > radius2) {
-              response["aInB"] = false;
-            }
-            var region = voronoiRegion(edge, point);
-            if (region === LEFT_VORONOI_REGION) {
-              edge.copy(polygon["edges"][prev]);
-              var point2 = T_VECTORS.pop().copy(circlePos).sub(points[prev]);
-              region = voronoiRegion(edge, point2);
-              if (region === RIGHT_VORONOI_REGION) {
-                var dist = point.len();
-                if (dist > radius) {
-                  T_VECTORS.push(circlePos);
-                  T_VECTORS.push(edge);
-                  T_VECTORS.push(point);
-                  T_VECTORS.push(point2);
-                  return false;
-                } else if (response) {
-                  response["bInA"] = false;
-                  overlapN = point.normalize();
-                  overlap = radius - dist;
-                }
-              }
-              T_VECTORS.push(point2);
-            } else if (region === RIGHT_VORONOI_REGION) {
-              edge.copy(polygon["edges"][next]);
-              point.copy(circlePos).sub(points[next]);
-              region = voronoiRegion(edge, point);
-              if (region === LEFT_VORONOI_REGION) {
-                var dist = point.len();
-                if (dist > radius) {
-                  T_VECTORS.push(circlePos);
-                  T_VECTORS.push(edge);
-                  T_VECTORS.push(point);
-                  return false;
-                } else if (response) {
-                  response["bInA"] = false;
-                  overlapN = point.normalize();
-                  overlap = radius - dist;
-                }
-              }
-            } else {
-              var normal = edge.perp().normalize();
-              var dist = point.dot(normal);
-              var distAbs = Math.abs(dist);
-              if (dist > 0 && distAbs > radius) {
-                T_VECTORS.push(circlePos);
-                T_VECTORS.push(normal);
-                T_VECTORS.push(point);
-                return false;
-              } else if (response) {
-                overlapN = normal;
-                overlap = radius - dist;
-                if (dist >= 0 || overlap < 2 * radius) {
-                  response["bInA"] = false;
-                }
-              }
-            }
-            if (overlapN && response && Math.abs(overlap) < Math.abs(response["overlap"])) {
-              response["overlap"] = overlap;
-              response["overlapN"].copy(overlapN);
-            }
-          }
-          if (response) {
-            response["a"] = polygon;
-            response["b"] = circle;
-            response["overlapV"].copy(response["overlapN"]).scale(response["overlap"]);
-          }
-          T_VECTORS.push(circlePos);
-          T_VECTORS.push(edge);
-          T_VECTORS.push(point);
-          return true;
-        }
-        SAT2["testPolygonCircle"] = testPolygonCircle;
-        function testCirclePolygon(circle, polygon, response) {
-          var result = testPolygonCircle(polygon, circle, response);
-          if (result && response) {
-            var a = response["a"];
-            var aInB = response["aInB"];
-            response["overlapN"].reverse();
-            response["overlapV"].reverse();
-            response["a"] = response["b"];
-            response["b"] = a;
-            response["aInB"] = response["bInA"];
-            response["bInA"] = aInB;
-          }
-          return result;
-        }
-        SAT2["testCirclePolygon"] = testCirclePolygon;
-        function testPolygonPolygon2(a, b, response) {
-          var aPoints = a["calcPoints"];
-          var aLen = aPoints.length;
-          var bPoints = b["calcPoints"];
-          var bLen = bPoints.length;
-          for (var i2 = 0; i2 < aLen; i2++) {
-            if (isSeparatingAxis(a["pos"], b["pos"], aPoints, bPoints, a["normals"][i2], response)) {
-              return false;
-            }
-          }
-          for (var i2 = 0; i2 < bLen; i2++) {
-            if (isSeparatingAxis(a["pos"], b["pos"], aPoints, bPoints, b["normals"][i2], response)) {
-              return false;
-            }
-          }
-          if (response) {
-            response["a"] = a;
-            response["b"] = b;
-            response["overlapV"].copy(response["overlapN"]).scale(response["overlap"]);
-          }
-          return true;
-        }
-        SAT2["testPolygonPolygon"] = testPolygonPolygon2;
-        return SAT2;
-      });
-    }
-  });
-
-  // src/svg-path-collider/svg-path-collider.ts
-  var SAT, SVGPathCollider;
-  var init_svg_path_collider = __esm({
-    "src/svg-path-collider/svg-path-collider.ts"() {
-      "use strict";
-      SAT = __toESM(require_SAT(), 1);
-      SVGPathCollider = class {
-        constructor(path, separationNum = 16, isConcave = false) {
-          this.path = path;
-          this.separationNum = separationNum;
-          this.isConcave = isConcave;
-          __publicField(this, "shouldBeUpdatingBoundingBox", true);
-          __publicField(this, "boundingBox", new SAT.Polygon());
-          __publicField(this, "shouldBeUpdatingCollisionArea", true);
-          __publicField(this, "collisionArea");
-          __publicField(this, "concaveCollisionAreas");
-          __publicField(this, "boundingPoints");
-          __publicField(this, "isShowingCollision", false);
-          __publicField(this, "boundingBoxSvg", null);
-          __publicField(this, "collisionAreaSvg", null);
-          __publicField(this, "isBoundingBoxColliding", false);
-          this.boundingBox = new SAT.Polygon(
-            new SAT.Vector(),
-            this.times(4, () => new SAT.Vector())
-          );
-          this.collisionArea = new SAT.Polygon(
-            new SAT.Vector(),
-            this.times(separationNum, () => new SAT.Vector())
-          );
-          var ose = path.ownerSVGElement;
-          this.boundingPoints = this.times(4, () => ose.createSVGPoint());
-          if (isConcave) {
-            this.concaveCollisionAreas = this.times(
-              separationNum,
-              () => new SAT.Polygon(
-                new SAT.Vector(),
-                this.times(3, () => new SAT.Vector())
-              )
-            );
-          }
-        }
-        update() {
-          this.shouldBeUpdatingBoundingBox = true;
-          this.shouldBeUpdatingCollisionArea = true;
-          if (this.isShowingCollision) {
-            var visibility = this.isBoundingBoxColliding ? "visible" : "hidden";
-            this.collisionAreaSvg.setAttribute("visibility", visibility);
-          }
-          this.isBoundingBoxColliding = false;
-        }
-        test(other) {
-          this.updateBoundingBox();
-          other.updateBoundingBox();
-          if (!SAT.testPolygonPolygon(this.boundingBox, other.boundingBox)) {
-            return false;
-          }
-          this.isBoundingBoxColliding = true;
-          other.isBoundingBoxColliding = true;
-          this.updateCollisionArea();
-          other.updateCollisionArea();
-          if (this.isConcave) {
-            return this.concaveCollisionAreas.some((cca) => other.testToPolygon(cca));
-          } else {
-            return other.testToPolygon(this.collisionArea);
-          }
-        }
-        showCollision(isShowingCollision = true) {
-          this.isShowingCollision = isShowingCollision;
-          var ose = this.path.ownerSVGElement;
-          if (this.boundingBoxSvg != null) {
-            ose.removeChild(this.boundingBoxSvg);
-            this.boundingBoxSvg = null;
-          }
-          if (this.collisionAreaSvg != null) {
-            ose.removeChild(this.collisionAreaSvg);
-            this.collisionAreaSvg = null;
-          }
-          if (this.isShowingCollision) {
-            this.boundingBoxSvg = this.createPath();
-            ose.appendChild(this.boundingBoxSvg);
-            this.collisionAreaSvg = this.createPath(2, 5);
-            ose.appendChild(this.collisionAreaSvg);
-          }
-        }
-        updateBoundingBox() {
-          if (!this.shouldBeUpdatingBoundingBox) {
-            return;
-          }
-          this.shouldBeUpdatingBoundingBox = false;
-          this.pathToBoundingBox(this.path, this.boundingBox.points);
-          this.boundingBox.setAngle(0);
-          if (this.isShowingCollision) {
-            this.boundingBoxSvg.setAttribute(
-              "d",
-              this.satPolygonToPathStr(this.boundingBox)
-            );
-          }
-        }
-        updateCollisionArea() {
-          if (!this.shouldBeUpdatingCollisionArea) {
-            return;
-          }
-          this.shouldBeUpdatingCollisionArea = false;
-          this.pathToCollisionArea(this.path, this.collisionArea.points);
-          if (this.isShowingCollision) {
-            this.collisionAreaSvg.setAttribute(
-              "d",
-              this.satPolygonToPathStr(this.collisionArea)
-            );
-          }
-          if (this.isConcave) {
-            var centerPos = new SAT.Vector();
-            this.collisionArea.points.forEach((pt) => {
-              centerPos.x += pt.x;
-              centerPos.y += pt.y;
-            });
-            var pl = this.separationNum;
-            centerPos.x /= pl;
-            centerPos.y /= pl;
-            this.times(pl, (i) => {
-              var p1 = this.collisionArea.points[i];
-              var p2 = this.collisionArea.points[(i + 1) % pl];
-              var cca = this.concaveCollisionAreas[i];
-              var pts = cca.points;
-              pts[0].x = p1.x;
-              pts[0].y = p1.y;
-              pts[1].x = p2.x;
-              pts[1].y = p2.y;
-              pts[2].x = centerPos.x;
-              pts[2].y = centerPos.y;
-              cca.setAngle(0);
-            });
-          } else {
-            this.collisionArea.setAngle(0);
-          }
-        }
-        testToPolygon(polygon) {
-          if (this.isConcave) {
-            return this.concaveCollisionAreas.some(
-              (cca) => SAT.testPolygonPolygon(cca, polygon)
-            );
-          } else {
-            return SAT.testPolygonPolygon(this.collisionArea, polygon);
-          }
-        }
-        pathToBoundingBox(path, points) {
-          const bbox = path.getBBox();
-          const ctm = path.getCTM();
-          this.boundingPoints[0].x = bbox.x;
-          this.boundingPoints[0].y = bbox.y;
-          this.boundingPoints[1].x = bbox.x + bbox.width;
-          this.boundingPoints[1].y = bbox.y;
-          this.boundingPoints[2].x = bbox.x + bbox.width;
-          this.boundingPoints[2].y = bbox.y + bbox.height;
-          this.boundingPoints[3].x = bbox.x;
-          this.boundingPoints[3].y = bbox.y + bbox.height;
-          this.boundingPoints.forEach((bp, i) => {
-            bp = bp.matrixTransform(ctm);
-            var pt = points[i];
-            pt.x = bp.x;
-            pt.y = bp.y;
-          });
-        }
-        pathToCollisionArea(path, points) {
-          const ctm = path.getCTM();
-          const tl = path.getTotalLength();
-          let l = 0;
-          points.forEach((pt) => {
-            var pal = path.getPointAtLength(l).matrixTransform(ctm);
-            pt.x = pal.x;
-            pt.y = pal.y;
-            l += tl / this.separationNum;
-          });
-        }
-        satPolygonToPathStr(polygon) {
-          let str = "M";
-          polygon.points.forEach((pt, i) => {
-            str += `${pt.x},${pt.y} `;
-          });
-          str += "z";
-          return str;
-        }
-        createPath(width = 1, dasharray = 10) {
-          const svg = document.createElementNS(
-            "http://www.w3.org/2000/svg",
-            "path"
-          );
-          svg.setAttribute("stroke", "#777");
-          svg.setAttribute("stroke-width", `${width}`);
-          svg.setAttribute("fill", "none");
-          svg.setAttribute("stroke-dasharray", `${dasharray}`);
-          return svg;
-        }
-        times(count, func) {
-          let result = [];
-          for (let i = 0; i < count; i++) {
-            result.push(func(i));
-          }
-          return result;
-        }
-      };
-    }
-  });
-
-  // src/Vector2D.ts
-  var Vector2D;
-  var init_Vector2D = __esm({
-    "src/Vector2D.ts"() {
-      "use strict";
-      Vector2D = class _Vector2D {
-        constructor(x = 0, y = 0) {
-          __publicField(this, "_x");
-          __publicField(this, "_y");
-          this._x = x;
-          this._y = y;
-        }
-        static fromLengthAndAngle(length2, angle2) {
-          if (angle2 >= 360 || angle2 < 0) {
-            angle2 = (angle2 % 360 + 360) % 360;
-          }
-          angle2 = angle2 / 180 * Math.PI;
-          const x = Math.cos(angle2) * length2;
-          const y = Math.sin(angle2) * length2;
-          return new _Vector2D(x, y);
-        }
-        add(vector) {
-          this._x += vector.x;
-          this._y += vector.y;
-        }
-        distanceTo(destination) {
-          let distanceVector2 = new _Vector2D(destination.x - this._x, destination.y - this._y);
-          return distanceVector2.length;
-        }
-        inverse() {
-          this._x = -this._x;
-          this._y = -this._y;
-        }
-        get length() {
-          return Math.sqrt(Math.pow(this._x, 2) + Math.pow(this._y, 2));
-        }
-        get angle() {
-          const angle2 = Math.atan2(this._y, this._x) / Math.PI * 180;
-          return angle2 % 360;
-        }
-        get x() {
-          return this._x;
-        }
-        get y() {
-          return this._y;
-        }
-        set x(x) {
-          this._x = x;
-        }
-        set y(y) {
-          this._y = y;
-        }
-        // Create a Vector2D object from a JSON representation
-        static fromJSON(json) {
-          return new _Vector2D(json.x, json.y);
-        }
-        // Convert Vector2D object to JSON representation
-        toJSON() {
-          return {
-            x: this._x,
-            y: this._y
-          };
-        }
-      };
-    }
-  });
-
-  // src/SpaceGame.ts
-  var SpaceGame, B;
-  var init_SpaceGame = __esm({
-    "src/SpaceGame.ts"() {
-      "use strict";
-      init_Spacecraft();
-      init_GameEnvironment();
-      init_SpacecraftShape();
-      init_GameMenu();
-      init_TractorBeam();
-      init_library();
-      init_OvalShield();
-      init_svg_path_collider();
-      init_Vector2D();
-      SpaceGame = class {
-        constructor() {
-          __publicField(this, "audioBuffer");
-          __publicField(this, "playingSound", false);
-          __publicField(this, "spacecraft");
-          __publicField(this, "spaceObjects", []);
-          __publicField(this, "gameEnvironment");
-          __publicField(this, "touchControl", false);
-          __publicField(this, "textArea", document.createElement("textArea"));
-          this.spacecraft = new Spacecraft();
-          this.gameEnvironment = new GameEnvironment();
-          this.textArea.style.position = "absolute";
-          this.textArea.style.color = "darkgrey";
-          this.textArea.style.backgroundColor = "black";
-          this.textArea.innerHTML = "this label\xB4s text is yet to be written";
-          this.textArea.setAttribute("rows", "14");
-          gameFrame.appendChild(this.textArea);
-          if (this.touchControl) {
-            this.gameEnvironment.displayTouchControl();
-            this.gameEnvironment.joystick.addObserver(() => this.handleTouchEndEvent());
-          }
-          this.setupKeyUpListener();
-          gameFrame.focus();
-        }
-        init(type, color2, id) {
-          this.spacecraft.type = type;
-          this.spacecraft.color = color2;
-          if (id) this.spacecraft.id = id;
-          this.spacecraft.gElement = createGElement(type);
-          if (this.spacecraft.type == "../resources/rocket.svg")
-            this.spacecraft.directionCorrection = 45;
-          this.spacecraft.gElement.setAttribute("id", `${this.spacecraft.id}`);
-          this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement);
-          console.log("device: " + device);
-          this.spacecraft.addDevice(`${device}`, [
-            this.spacecraft.gElement.getBBox().width / 3,
-            this.spacecraft.gElement.getBBox().height / 3
-          ]);
-          this.spacecraft.touchControlType = this.spacecraft.type;
-          this.gameLoop();
-        }
-        syncReality(reality) {
-          reality.forEach((response) => __async(this, null, function* () {
-            const renderDeterminant = this.defineRenderDeterminants(response.location);
-            const renderLocation = new Vector2D(
-              response.location.x + renderDeterminant.x * torusWidth,
-              response.location.y + renderDeterminant.y * torusHeight
-            );
-            const index = this.spaceObjects.findIndex((spacecraft) => spacecraft.id === response.craftId);
-            if (index !== -1) {
-              this.spaceObjects[index].objectStatus.location = renderLocation;
-              this.spaceObjects[index].objectStatus.impuls = response.impuls;
-              this.spaceObjects[index].objectStatus.direction = response.direction;
-              this.spaceObjects[index].objectStatus.mass = response.mass;
-            } else if (index === -1) {
-              const spacecraft = new Spacecraft();
-              spacecraft.objectStatus = response;
-              this.spaceObjects.push(spacecraft);
-              if (spacecraft.type === "station02" || spacecraft.type === "station01") {
-                if (spacecraft.type === "station02") {
-                  console.log("path element for " + spacecraft.type + " will be created");
-                }
-                spacecraft.objectStatus.collidable = true;
-                let pathElement = yield collidablePathElement(spacecraft.type);
-                console.log("path is ready");
-                spacecraft.shape.pathElement = pathElement;
-                spacecraft.gElement.appendChild(pathElement);
-              } else
-                spacecraft.gElement = createGElement(spacecraft.type);
-              spacecraft.gElement.setAttribute("id", `${spacecraft.id}`);
-              this.gameEnvironment.svgElement.insertBefore(spacecraft.gElement, this.spacecraft.gElement);
-              if (spacecraft.collidable && spacecraft.shape.pathElement) {
-                spacecraft.collider = new SVGPathCollider(spacecraft.shape.pathElement);
-                spacecraft.collider.update();
-              }
-            }
-          }));
-          this.spaceObjects = this.spaceObjects.filter((element) => {
-            const index = reality.findIndex((response) => response.craftId === element.id);
-            if (index === -1) {
-              element.vanish();
-              return false;
-            }
-            return true;
-          });
-        }
-        handleTouchEndEvent() {
-          return __async(this, null, function* () {
-            this.spacecraft.gradualBrake();
-          });
-        }
-        gameLoop() {
-          var _a;
-          requestAnimationFrame(() => {
-            this.gameLoop();
-          });
-          for (let i = 0; i < this.spaceObjects.length; i++) {
-            const spaceObject1 = this.spaceObjects[i];
-            if (spaceObject1.collider) {
-              spaceObject1.collider.update();
-              for (let j = i + 1; j < this.spaceObjects.length; j++) {
-                const spaceObject2 = this.spaceObjects[j];
-                if (spaceObject2.collider) {
-                  spaceObject2.collider.update();
-                  console.log(spaceObject1.collider.test(spaceObject2.collider));
-                }
-              }
-            }
-          }
-          const request = {};
-          request.spaceObject = this.spacecraft.objectStatus;
-          const device2 = this.spacecraft.device;
-          device2 == null ? void 0 : device2.deactivate();
-          if (this.touchControl) {
-            if (this.gameEnvironment.joystick.isTouched) {
-              this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value);
-            }
-            if (this.gameEnvironment.joystick.fires) {
-              if (device2 instanceof TractorBeam && this.spaceObjects[1]) {
-                const target = rotatedVector({
-                  x: this.spaceObjects[1].location.x + this.spacecraft.location.x,
-                  y: this.spaceObjects[1].location.y + this.spacecraft.location.y
-                }, -90);
-                device2.activate(target);
-                const gElem = device2._gElem;
-                if (gElem) {
-                  this.spacecraft.gElement.appendChild(gElem);
-                }
-              } else this.spacecraft.operate();
-            } else if ((_a = this.spacecraft.device) == null ? void 0 : _a.activated) {
-              this.spacecraft.device.deactivate();
-            }
-          }
-          if (keyboardController.isKeyPressed("w")) {
-            this.gameEnvironment.viewBoxWidth += this.gameEnvironment.viewBoxWidth / 100;
-            this.gameEnvironment.viewBoxHeight += this.gameEnvironment.viewBoxHeight / 100;
-          }
-          if (keyboardController.isKeyPressed("s")) {
-            this.gameEnvironment.viewBoxWidth -= this.gameEnvironment.viewBoxWidth / 100;
-            this.gameEnvironment.viewBoxHeight -= this.gameEnvironment.viewBoxHeight / 100;
-          }
-          if (device2 instanceof TractorBeam && keyboardController.isKeyPressed(" ")) {
-            const targetObject = this.spaceObjects.find((element) => element.id === "planet");
-            request.tractor = true;
-            if (targetObject) {
-              request.targetId = targetObject.id;
-              const targetVector = rotatedVector(
-                distanceVector(this.spacecraft.location, targetObject.location),
-                -(this.spacecraft.direction + 90)
-              );
-              device2.activate(targetVector);
-            }
-            const gElem = device2._gElem;
-            if (gElem) {
-              this.spacecraft.gElement.appendChild(gElem);
-            }
-          }
-          if (device2 instanceof OvalShield && keyboardController.isKeyPressed(" ")) {
-            if (audioContext)
-              this.playSound();
-            const device3 = this.spacecraft.device;
-            const nuggetList = this.spaceObjects.filter((element) => element.type === "nugget");
-            let shortestDistance = torusHeight + torusWidth;
-            nuggetList.forEach((element) => {
-              const distance = distanceBetween(element.location, this.spacecraft.location);
-              if (distance < shortestDistance) {
-                shortestDistance = distance;
-              }
-            });
-            device3.width = shortestDistance;
-            device3.height = shortestDistance;
-            request.repulsor = true;
-          }
-          this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
-          const planet = this.spaceObjects.find((obj) => obj.id === "planet");
-          const station = this.spaceObjects.find((obj) => obj.id === "station");
-          if (planet && station) {
-            this.textArea.innerHTML = `spacecraft location: ${this.spacecraft.location.x.toFixed(1)}, ${this.spacecraft.location.y.toFixed(1)}
-                                        planet location: ${planet.location.x.toFixed(1)}, ${planet.location.y.toFixed(1)}
-                                        station location: ${station.location.x.toFixed(1)}, ${station.location.y.toFixed(1)}
-                                        distance to planet: ${distanceBetween(this.spacecraft.location, planet.location).toFixed(1)}
-                                        number of spaceObjects: ${this.spaceObjects.length}`;
-          }
-          evaluate(spacePatrolRequest, request).then((response) => {
-            this.syncReality(response);
-          }).catch((error) => {
-            console.error("Failed to update spaceObjects:", error);
-          });
-          this.updateElements();
-        }
-        setupKeyUpListener() {
-          keyboardController.onKeyUp((key) => {
-            this.spacecraft.onKeyUp(key);
-          });
-        }
-        updateElements() {
-          this.spacecraft.update();
-          this.gameEnvironment.handleSpacecraft(this.spacecraft, "pseudoTorus");
-          if (this.spacecraft)
-            this.render(this.spacecraft);
-          if (this.spaceObjects.length > 0) {
-            this.spaceObjects.forEach((spaceObject) => {
-              this.render(spaceObject);
-            });
-          }
-        }
-        defineRenderDeterminants(location) {
-          let xDeterminant = 0;
-          let yDeterminant = 0;
-          if (location.x - this.spacecraft.location.x < -torusWidth / 2) {
-            xDeterminant = 1;
-          } else if (location.x - this.spacecraft.location.x > torusWidth / 2) {
-            xDeterminant = -1;
-          } else {
-            xDeterminant = 0;
-          }
-          if (location.y - this.spacecraft.location.y < -torusHeight / 2) {
-            yDeterminant = 1;
-          } else if (location.y - this.spacecraft.location.y > torusHeight / 2) {
-            yDeterminant = -1;
-          } else {
-            yDeterminant = 0;
-          }
-          return { x: xDeterminant, y: yDeterminant };
-        }
-        render(spacecraft) {
-          spacecraft.gElement.setAttribute("transform", `translate (${spacecraft.location.x} 
-                                                                    ${spacecraft.location.y}) 
-                                                        scale (${spacecraft.scale}) 
-                                                        rotate (${spacecraft.direction + spacecraft.directionCorrection})`);
-          if (spacecraft.label && spacecraft.labelBorder) {
-            console.log("renderDeterminants not set yet!");
-            spacecraft.label.setAttribute("transform", `translate(${spacecraft.objectStatus.location.x} 
-                                                                ${spacecraft.objectStatus.location.y})`);
-            spacecraft.labelBorder.setAttribute("transform", `translate(${spacecraft.objectStatus.location.x - 7.5 + spacecraft.scale * 7}, 
-                                            ${spacecraft.objectStatus.location.y})`);
-          }
-        }
-        playSound() {
-          if (!this.playingSound) {
-            console.log("beginning sound");
-            this.playingSound = true;
-            fetch("../resources/Taro03.mp3").then((response) => response.arrayBuffer()).then((buffer) => {
-              if (audioContext) {
-                return audioContext.decodeAudioData(buffer);
-              }
-            }).then((decodedBuffer) => {
-              if (decodedBuffer) {
-                this.audioBuffer = decodedBuffer;
-              }
-            }).catch((error) => {
-              console.error("Error loading audio file:", error);
-            });
-            const source = audioContext.createBufferSource();
-            if (this.audioBuffer)
-              source.buffer = this.audioBuffer;
-            source.connect(audioContext.destination);
-            source.start(0);
-          }
-        }
-        stopSound() {
-        }
-      };
-      ((B2) => {
-        function create2() {
-          return {};
-        }
-        B2.create = create2;
-      })(B || (B = {}));
-      B.create;
-    }
-  });
-
-  // src/library.ts
-  var library_exports = {};
-  __export(library_exports, {
-    RequestDefinition: () => RequestDefinition2,
-    add: () => add,
-    angle: () => angle,
-    create: () => create,
-    distanceBetween: () => distanceBetween,
-    distanceVector: () => distanceVector,
-    evaluate: () => evaluate,
-    initGame: () => initGame,
-    inverse: () => inverse,
-    length: () => length,
-    manipulate: () => manipulate2,
-    polarVector: () => polarVector,
-    rotatedVector: () => rotatedVector,
-    spacePatrolRequest: () => spacePatrolRequest
-  });
-  function add(v1, v2) {
-    return create({ x: v1.x + v2.x, y: v1.y + v2.y });
-  }
-  function angle(v) {
-    return Math.atan2(v.y, v.x) / Math.PI * 180;
-  }
-  function distanceBetween(start2, destination) {
-    let distanceVector2 = { x: destination.x - start2.x, y: destination.y - start2.y };
-    return length(distanceVector2);
-  }
-  function distanceVector(v1, v2) {
-    return create({ x: v2.x - v1.x, y: v2.y - v1.y });
-  }
-  function inverse(v) {
-    return { x: -v.x, y: -v.y };
-  }
-  function length(v) {
-    return Math.sqrt(v.x * v.x + v.y * v.y);
-  }
-  function polarVector(length2, angle2) {
-    const radAngle = angle2 / 180 * Math.PI;
-    return create({ x: Math.cos(radAngle) * length2, y: Math.sin(radAngle) * length2 });
-  }
-  function rotatedVector(v, n) {
-    return polarVector(length(v), angle(v) + n);
-  }
-  function evaluate(def, request) {
-    const payload = JSON.stringify(request);
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", `/api/main/${def.path}`, true);
-      xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              const response = JSON.parse(xhr.responseText);
-              resolve(response);
-            } catch (error) {
-              reject(new Error("Failed to parse response: " + xhr.responseText));
-            }
-          } else {
-            reject(new Error("Request failed with status: " + xhr.status));
-          }
-        }
-      };
-      xhr.onerror = () => {
-        reject(new Error("Network error"));
-      };
-      xhr.send(JSON.stringify(request));
-    });
-  }
-  function manipulate2(def, request) {
-    const payload = JSON.stringify(request);
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", `/api/main/${def.path}`, true);
-      xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-      xhr.onreadystatechange = () => {
-        if (xhr.readyState === XMLHttpRequest.DONE) {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              const response = JSON.parse(xhr.responseText);
-              resolve(response);
-            } catch (error) {
-              reject(new Error("Failed to parse response: " + xhr.responseText));
-            }
-          } else {
-            reject(new Error("Request failed with status: " + xhr.status));
-          }
-        }
-      };
-      xhr.onerror = () => {
-        reject(new Error("Network error"));
-      };
-      xhr.send(JSON.stringify(request));
-    });
-  }
-  function create(properties) {
-    const e = {};
-    if (properties) {
-      Object.assign(e, properties);
-    }
-    return e;
-  }
-  function initGame(gameFrame2, type, color2, id) {
-    console.log("spaceGame loads");
-    const game = new SpaceGame();
-    game.init(type, color2, id);
-  }
-  var RequestDefinition2, spacePatrolRequest;
-  var init_library = __esm({
-    "src/library.ts"() {
-      "use strict";
-      init_SpaceGame();
-      RequestDefinition2 = class {
-        constructor(path) {
-          __publicField(this, "path");
-          this.path = path;
-        }
-      };
-      spacePatrolRequest = new RequestDefinition2("SpacePatrolRequest");
-    }
-  });
-
   // src/GameMenu.ts
   var import_midi, gameFrame, keyboardController, color, device, viewBoxWidth, audioContext, GameMenu;
   var init_GameMenu = __esm({
@@ -30214,6 +30128,9 @@
 })();
 /*! Bundled license information:
 
+sat/SAT.js:
+  (** @preserve SAT.js - Version 0.7.1 - Copyright 2012 - 2018 - Jim Riecken <jimr@jimr.ca> - released under the MIT License. https://github.com/jriecken/sat-js *)
+
 tone/build/esm/core/Tone.js:
   (**
    * Tone.js
@@ -30221,8 +30138,5 @@ tone/build/esm/core/Tone.js:
    * @license http://opensource.org/licenses/MIT MIT License
    * @copyright 2014-2024 Yotam Mann
    *)
-
-sat/SAT.js:
-  (** @preserve SAT.js - Version 0.7.1 - Copyright 2012 - 2018 - Jim Riecken <jimr@jimr.ca> - released under the MIT License. https://github.com/jriecken/sat-js *)
 */
 //# sourceMappingURL=index.js.map

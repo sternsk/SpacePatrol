@@ -1,7 +1,7 @@
 import { Device } from "./Device";
 
-export class OvalShield implements Device{
-    name = "ovalShield";
+export class RepulsorShield implements Device{
+    name = "repulsorShield";
     _width: number;
     _height: number; 
     _gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
@@ -20,15 +20,17 @@ export class OvalShield implements Device{
         if(!this.activated){
             boundingOval.setAttribute("cx", "0")
             boundingOval.setAttribute("cy", "0")
-            boundingOval.setAttribute("rx", `${this._width}`)
-            boundingOval.setAttribute("ry", `${this._height}`)
             boundingOval.setAttribute("vector-effect", "none-scaling-stroke")
             boundingOval.setAttribute("stroke-width", "2px")
+            boundingOval.setAttribute("stroke", "white")
             boundingOval.setAttribute("fill", "none")
             this._gElem.appendChild(boundingOval)
             this.activated = true
         }
-        boundingOval.setAttribute("stroke", "white")//`rgb(${this.cycleCount}, ${Math.floor(this.cycleCount/2)}, ${Math.floor(this.cycleCount/3)})`)
+        boundingOval.setAttribute("rx", `${this._width}`)
+        boundingOval.setAttribute("ry", `${this._height}`)
+            
+        //`rgb(${this.cycleCount}, ${Math.floor(this.cycleCount/2)}, ${Math.floor(this.cycleCount/3)})`)
         //this.cycleCount++
         
     }

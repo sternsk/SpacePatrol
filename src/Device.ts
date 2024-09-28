@@ -1,4 +1,4 @@
-import { Vector2d } from "./library";
+import { Vector2d } from "./space-patrol-model";
 
 export interface Device {
     name: string;

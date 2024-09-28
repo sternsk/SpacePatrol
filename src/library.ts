@@ -75,36 +75,6 @@ export function evaluate<R, Res>(def: RequestDefinition<R, Res>, request: R): Pr
     });
 }
 
-export function manipulate<R, Res>(def: RequestDefinition<R, Res>, request: R): Promise<Res>{
-    const payload = JSON.stringify(request);
-    return new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("POST", `/api/main/${def.path}`, true);
-        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-        
-        xhr.onreadystatechange = () => {
-            if (xhr.readyState === XMLHttpRequest.DONE) {
-                if (xhr.status >= 200 && xhr.status < 300) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        resolve(response);
-                    } catch (error) {
-                        reject(new Error("Failed to parse response: " + xhr.responseText));
-                    }
-                } else {
-                    reject(new Error("Request failed with status: " + xhr.status));
-                }
-            }
-        };
-
-        xhr.onerror = () => {
-            reject(new Error("Network error"));
-        };
-        
-        xhr.send(JSON.stringify(request));
-    });
-}
-
 export type PartialProperties<T> = Partial<
   Pick<T, { [K in keyof T]: T[K] extends Function ? never : K }[keyof T]>
 >;

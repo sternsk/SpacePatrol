@@ -3,12 +3,12 @@ import { GameEnvironment, torusWidth, torusHeight } from "./GameEnvironment.js";
 import { createGElement, collidablePathElement } from "./SpacecraftShape.js";
 import { keyboardController, device, gameFrame, viewBoxWidth, audioContext } from "./GameMenu.js";
 import { TractorBeam } from "./TractorBeam.js";
-import { evaluate, RequestDefinition, rotatedVector, distanceBetween, distanceVector, manipulate, spacePatrolRequest} from "./library.js";
+import { evaluate, RequestDefinition, rotatedVector, distanceBetween, distanceVector, spacePatrolRequest} from "./library.js";
 import { SpaceObjectStatus, SpacePatrolRequest, Vector2d} from "./space-patrol-model.js";
-import { OvalShield } from "./OvalShield.js";
+import { RepulsorShield } from "./RepulsorShield.js";
 import SVGPathCollider from "./svg-path-collider/svg-path-collider.js";
 import SAT from "sat";
-import { Vector2D } from "./Vector2D.js";
+import { create } from "./library.js";
 
 
 export class SpaceGame {
@@ -51,8 +51,6 @@ export class SpaceGame {
         this.spacecraft.color = color
         if(id) this.spacecraft.id = id
         this.spacecraft.gElement = createGElement(type)
-
-
         
         if(this.spacecraft.type == "../resources/rocket.svg")
             this.spacecraft.directionCorrection = 45
@@ -63,6 +61,7 @@ export class SpaceGame {
         this.spacecraft.addDevice(`${device}`, [this.spacecraft.gElement.getBBox().width/3, 
                                                 this.spacecraft.gElement.getBBox().height/3,
                                                 ])
+
         this.spacecraft.touchControlType = this.spacecraft.type
         //this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
         this.gameLoop();
@@ -87,9 +86,9 @@ export class SpaceGame {
         
         reality.forEach(async response => {
             const renderDeterminant = this.defineRenderDeterminants(response.location)
-            const renderLocation = new Vector2D(response.location.x + renderDeterminant.x * torusWidth, 
-                                                response.location.y + renderDeterminant.y * torusHeight
-            )
+            const renderLocation: Vector2d = create({x: response.location.x + renderDeterminant.x * torusWidth, 
+                                               y: response.location.y + renderDeterminant.y * torusHeight })
+            
 
             // check if element of receivedData is already in spaceObjects-Array
             const index = this.spaceObjects.findIndex(spacecraft => spacecraft.id === response.craftId)
@@ -109,13 +108,8 @@ export class SpaceGame {
                 this.spaceObjects.push(spacecraft)
                 // define collidable objects
                 if (spacecraft.type === "station02" || spacecraft.type === "station01" ){
-                    
-                    if(spacecraft.type === "station02"){
-                        console.log("path element for "+spacecraft.type+ " will be created")
-                    }
                     spacecraft.objectStatus.collidable = true; 
                     let pathElement = await collidablePathElement(spacecraft.type)
-                        console.log("path is ready")
                         spacecraft.shape.pathElement = pathElement
                         spacecraft.gElement.appendChild(pathElement)
                 }
@@ -166,7 +160,8 @@ export class SpaceGame {
                     const spaceObject2 = this.spaceObjects[j];
                     if (spaceObject2.collider){
                         spaceObject2.collider.update()
-                        console.log(spaceObject1.collider.test(spaceObject2.collider))
+                        if (spaceObject1.collider.test(spaceObject2.collider))
+                        console.log("collision detected")
                     }
                 }
             
@@ -202,14 +197,25 @@ export class SpaceGame {
             }
             }
         }
-*/
-        //define the request in scope of gameLoop
-        const request = {} as SpacePatrolRequest
-        request.spaceObject = this.spacecraft.objectStatus
+        */
         
         const device = this.spacecraft.device
         device?.deactivate()
-                
+        //define the request in scope of gameLoop
+        /* should transport following properties: */
+        //  to avoid java.lang.NullPointerException: Cannot invoke "java.lang.Boolean.booleanValue()" because the return value of "net.sternski.spacepatrol.space_patrol.model.api.SpacePatrolRequest.getTractor()" is null
+	//      at net.sternski.spacepatrol.space_patrol.processing.SpacePatrolProcessor.manipulateSpaceObject(SpacePatrolProcessor.java:51)
+        const request: SpacePatrolRequest = create({
+            chissel: false, 
+            spaceObject: this.spacecraft.objectStatus, 
+            
+            collides: "",
+            message: "",
+            repulsor: false,
+            targetId: "", 
+            tractor: false
+        })
+
         if(this.touchControl){
             if(this.gameEnvironment.joystick.isTouched){
                 this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
@@ -272,13 +278,14 @@ export class SpaceGame {
          
         }
 
-        if(device instanceof OvalShield && keyboardController.isKeyPressed(" ")){
+        if(device instanceof RepulsorShield && keyboardController.isKeyPressed(" ")){
             if(audioContext)
                 this.playSound()
             // get the device to apply a certain radius to it
-            const device = this.spacecraft.device as OvalShield
+            request.repulsor = true
+            //const device = this.spacecraft.device as RepulsorShield
             // get the closest nugget
-            const nuggetList = this.spaceObjects.filter(element => element.type ==="nugget")
+            const nuggetList = this.spaceObjects.filter(element => element.type ==="nugget01")
 
             //first set shortestDistance to the maxAvailableDistance
             let shortestDistance = torusHeight+torusWidth
@@ -295,8 +302,10 @@ export class SpaceGame {
             //draw the shield in a circle with radius shortestDistance
             device.width = shortestDistance
             device.height = shortestDistance
-
-            request.repulsor = true
+            const gElem = device._gElem
+            if(gElem){
+                this.spacecraft.gElement.appendChild(gElem)
+            }
         }
 
         this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
@@ -319,7 +328,6 @@ export class SpaceGame {
             ${this.spacecraft.location.y.toFixed(1)}`
         }
         */
-
         evaluate(spacePatrolRequest, request)
         .then(response => {
             this.syncReality(response)

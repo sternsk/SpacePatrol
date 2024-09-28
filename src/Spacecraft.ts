@@ -4,11 +4,12 @@ import { color } from "./GameMenu.js"
 import { Device } from "./Device.js"
 import { DeviceFactory } from "./DeviceFactory.js"
 import { polarVector, add, length, angle, distanceBetween, inverse } from "./library.js"
-import { SpaceObjectStatus, Vector2d } from "./ReflectionLab.js"
+import { SpaceObjectStatus, Vector2d } from "./space-patrol-model.js" 
 import { TractorBeam } from "./TractorBeam.js"
+import { create } from "./library.js"
 
 import SAT from "sat";
-import SVGPathCollider from "SVGPathCollider.js"
+import SVGPathCollider from "./svg-path-collider/svg-path-collider.js"
 import { SpaceObjectShape } from "./SpacecraftShape.js"
 
 // fontsize should seems to depend on svg-Size
@@ -19,7 +20,7 @@ console.log()
 
 export class Spacecraft{
 
-    objectStatus: SpaceObjectStatus = { location: {x:50, y:50} as Vector2d,
+    objectStatus: SpaceObjectStatus = create({ location: {x:50, y:50} as Vector2d,
                                         impuls: {x:0, y:0} as Vector2d,
                                         direction: -60,
                                         rotation:0,
@@ -28,7 +29,7 @@ export class Spacecraft{
                                         type: "rocket",
                                         npc: false,
                                         collidable: false
-                                        } 
+                                        } )
 
     private _shape: SpaceObjectShape
 

@@ -1,5 +1,6 @@
 import { Device } from "./Device";
-import { Vector2d, length } from "./library";
+import { length } from "./library";
+import { Vector2d } from "./space-patrol-model";
 
 
 export class TractorBeam implements Device{

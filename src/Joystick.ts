@@ -1,4 +1,5 @@
-import { Vector2d, length, angle } from "./library.js";
+import { create, length, angle } from "./library.js";
+import { Vector2d } from "./space-patrol-model.js";
 
 export class Joystick {
     private _htmlElement: HTMLElement;
@@ -151,7 +152,7 @@ export class Joystick {
             this._knobElement.style.left = `${x}px`;
             this._knobElement.style.top = `${y}px`;
         }
-        this._value = {x: Math.cos(angle) * relativDistance / 10, y: Math.sin(angle) * relativDistance / 10}
+        this._value = create({x: Math.cos(angle) * relativDistance / 10, y: Math.sin(angle) * relativDistance / 10})
     }
 
     private onTouchEnd(event: TouchEvent) {
@@ -162,7 +163,7 @@ export class Joystick {
         this._knobElement.style.left = '50%';
         this._knobElement.style.top = '50%';
         
-        this._value = {x:0, y:0}
+        this._value = create({x:0, y:0})
 
         // Benachrichtige alle Beobachter über das touchend-Ereignis
         this.touchEndObservers.forEach(observer => observer());

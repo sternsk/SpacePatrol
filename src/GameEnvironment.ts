@@ -1,7 +1,7 @@
 import { Spacecraft } from "./Spacecraft.js";
 import { Joystick } from "./Joystick.js";
 import { gameFrame } from "./GameMenu.js";
-import { polarVector, length, angle } from "./library.js";
+import { polarVector, length, angle, create } from "./library.js";
 
 export const torusWidth = 1000;
 export const torusHeight = 1000;
@@ -143,7 +143,7 @@ export class GameEnvironment{
     handleSpacecraft(spacecraft: Spacecraft, option: string){
         switch (option){
             case "pseudoOrbit":
-                spacecraft.pseudoOrbit({x:0, y:0})
+                spacecraft.pseudoOrbit(create({x:0, y:0}))
                 break;
  
             case "staticTorus":

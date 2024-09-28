@@ -1,7 +1,7 @@
 import { color } from "./GameMenu.js";
 import SAT, { Polygon } from "sat";
 import SVGPathCommander from "svg-path-commander";
-import SVGPathCollider from "SVGPathCollider.js";
+import SVGPathCollider from "./svg-path-collider/svg-path-collider.js";
 
 var getImageOutline = require('image-outline');
 
@@ -138,7 +138,6 @@ export function createGElement(type: string): SVGGElement{
             return(gElement)
         
         case "rainbowRocket":
-            console.log("rainbow requested")
             gElement.setAttribute("fill", "grey");
             gElement.setAttribute("stroke-width", ".5")
             gElement.setAttribute("stroke", `${color}`)
