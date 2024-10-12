@@ -11,6 +11,7 @@ import { create } from "./library.js"
 import SAT from "sat";
 import SVGPathCollider from "./svg-path-collider/svg-path-collider.js"
 import { SpaceObjectShape } from "./SpacecraftShape.js"
+import { Chissel } from "./Chissel.js"
 
 // fontsize should seems to depend on svg-Size
 export let fontSize = window.innerHeight/80
@@ -153,7 +154,7 @@ export class Spacecraft{
         if (keysPressed['ArrowDown']) {
             this.brake(this._maneuverability/50);
         }
-        if (keysPressed[' '] && !(this.device instanceof TractorBeam)) {
+        if (keysPressed[' '] && !(this.device instanceof TractorBeam) && !(this.device instanceof Chissel)) {
             this.operate()
         }
         

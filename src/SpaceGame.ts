@@ -9,6 +9,7 @@ import { RepulsorShield } from "./RepulsorShield.js";
 import SVGPathCollider from "./svg-path-collider/svg-path-collider.js";
 import SAT from "sat";
 import { create } from "./library.js";
+import { Chissel } from "./Chissel.js";
 
 
 export class SpaceGame {
@@ -58,9 +59,13 @@ export class SpaceGame {
         this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement)
         
         console.log("device: "+device)
-        this.spacecraft.addDevice(`${device}`, [this.spacecraft.gElement.getBBox().width/3, 
+        if (device == "chissel"){
+            this.spacecraft.addDevice("chissel", [this.spacecraft.gElement])
+        }else{
+            this.spacecraft.addDevice(`${device}`, [this.spacecraft.gElement.getBBox().width/3, 
                                                 this.spacecraft.gElement.getBBox().height/3,
                                                 ])
+        }
 
         this.spacecraft.touchControlType = this.spacecraft.type
         //this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
@@ -302,6 +307,14 @@ export class SpaceGame {
             //draw the shield in a circle with radius shortestDistance
             device.width = shortestDistance
             device.height = shortestDistance
+            const gElem = device._gElem
+            if(gElem){
+                this.spacecraft.gElement.appendChild(gElem)
+            }
+        }
+
+        if(device instanceof Chissel && keyboardController.isKeyPressed(" ")){
+            device.activate()
             const gElem = device._gElem
             if(gElem){
                 this.spacecraft.gElement.appendChild(gElem)

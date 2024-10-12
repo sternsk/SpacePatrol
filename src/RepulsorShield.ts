@@ -29,7 +29,7 @@ export class RepulsorShield implements Device{
         }
         boundingOval.setAttribute("rx", `${this._width}`)
         boundingOval.setAttribute("ry", `${this._height}`)
-            
+
         //`rgb(${this.cycleCount}, ${Math.floor(this.cycleCount/2)}, ${Math.floor(this.cycleCount/3)})`)
         //this.cycleCount++
         

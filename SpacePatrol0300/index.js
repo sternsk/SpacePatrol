@@ -990,6 +990,75 @@
     }
   });
 
+  // src/Chissel.ts
+  var Chissel;
+  var init_Chissel = __esm({
+    "src/Chissel.ts"() {
+      "use strict";
+      Chissel = class {
+        constructor(gElem) {
+          __publicField(this, "name", "chissel");
+          __publicField(this, "baseGElem");
+          __publicField(this, "_gElem");
+          __publicField(this, "activated", false);
+          __publicField(this, "cycleCount", 0);
+          __publicField(this, "blurElements", []);
+          this.baseGElem = gElem;
+          this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
+        }
+        activate() {
+          const blurAmount = 100;
+          requestAnimationFrame(() => {
+            if (this.cycleCount < blurAmount) {
+              const newElement = {
+                element: this.baseGElem.cloneNode(true),
+                // Clone base element
+                opacityValue: 1
+                // Start with full opacity
+              };
+              this.blurElements.push(newElement);
+              this.blurElements.forEach((blurElem) => {
+                blurElem.opacityValue -= 0.01;
+                blurElem.element.style.opacity = blurElem.opacityValue.toString();
+              });
+            } else {
+              if (this.blurElements.length > 0) {
+                this.blurElements.shift();
+              }
+              const newElement = {
+                element: this.baseGElem.cloneNode(true),
+                opacityValue: 1
+                // Start with full opacity
+              };
+              this.blurElements.push(newElement);
+              this.blurElements.forEach((blurElem) => {
+                blurElem.opacityValue -= 0.01;
+                blurElem.element.style.opacity = blurElem.opacityValue.toString();
+              });
+            }
+            this.cycleCount++;
+            this.blurElements.forEach((blurElem) => {
+              if (!this._gElem.contains(blurElem.element)) {
+                this._gElem.appendChild(blurElem.element);
+              }
+            });
+            if (this.cycleCount <= blurAmount || this.blurElements.length > 0) {
+              this.activate();
+            }
+          });
+        }
+        deactivate() {
+          this.activated = false;
+          this.cycleCount = 0;
+          this._gElem.innerHTML = "";
+        }
+        dispose() {
+          this.deactivate();
+        }
+      };
+    }
+  });
+
   // src/DeviceFactory.ts
   var DeviceFactory;
   var init_DeviceFactory = __esm({
@@ -998,6 +1067,7 @@
       init_TriangularBeam();
       init_RepulsorShield();
       init_TractorBeam();
+      init_Chissel();
       DeviceFactory = class {
         static createDevice(type, ...args) {
           const deviceCreator = this.deviceMap[type];
@@ -1010,6 +1080,7 @@
       };
       __publicField(DeviceFactory, "deviceMap", {
         "repulsorBeam": () => new TriangularBeam(),
+        "chissel": (...args) => new Chissel(args[0]),
         "repulsorShield": (...args) => new RepulsorShield(args[0], args[1]),
         "tractorBeam": (...args) => new TractorBeam()
       });
@@ -1027,6 +1098,7 @@
       init_library();
       init_TractorBeam();
       init_library();
+      init_Chissel();
       fontSize = window.innerHeight / 80;
       console.log("window.innerWidth: " + window.innerWidth);
       console.log("fontSize = window.innerHeight/80: " + window.innerHeight / 80);
@@ -1136,7 +1208,7 @@
           if (keysPressed["ArrowDown"]) {
             this.brake(this._maneuverability / 50);
           }
-          if (keysPressed[" "] && !(this.device instanceof TractorBeam)) {
+          if (keysPressed[" "] && !(this.device instanceof TractorBeam) && !(this.device instanceof Chissel)) {
             this.operate();
           }
         }
@@ -2252,6 +2324,7 @@
       init_RepulsorShield();
       init_svg_path_collider();
       init_library();
+      init_Chissel();
       SpaceGame = class {
         constructor() {
           __publicField(this, "audioBuffer");
@@ -2286,10 +2359,14 @@
           this.spacecraft.gElement.setAttribute("id", `${this.spacecraft.id}`);
           this.gameEnvironment.svgElement.appendChild(this.spacecraft.gElement);
           console.log("device: " + device);
-          this.spacecraft.addDevice(`${device}`, [
-            this.spacecraft.gElement.getBBox().width / 3,
-            this.spacecraft.gElement.getBBox().height / 3
-          ]);
+          if (device == "chissel") {
+            this.spacecraft.addDevice("chissel", [this.spacecraft.gElement]);
+          } else {
+            this.spacecraft.addDevice(`${device}`, [
+              this.spacecraft.gElement.getBBox().width / 3,
+              this.spacecraft.gElement.getBBox().height / 3
+            ]);
+          }
           this.spacecraft.touchControlType = this.spacecraft.type;
           this.gameLoop();
         }
@@ -2427,6 +2504,13 @@
             });
             device2.width = shortestDistance;
             device2.height = shortestDistance;
+            const gElem = device2._gElem;
+            if (gElem) {
+              this.spacecraft.gElement.appendChild(gElem);
+            }
+          }
+          if (device2 instanceof Chissel && keyboardController.isKeyPressed(" ")) {
+            device2.activate();
             const gElem = device2._gElem;
             if (gElem) {
               this.spacecraft.gElement.appendChild(gElem);
@@ -29831,7 +29915,7 @@
           planet.textContent = "planet";
           const noDevice = document.createElement("option");
           noDevice.innerHTML = "disabled selected";
-          noDevice.value = "repulsorShield";
+          noDevice.value = "chissel";
           noDevice.textContent = "Choose a Device";
           const repulsorShield = document.createElement("option");
           repulsorShield.value = "repulsorShield";
