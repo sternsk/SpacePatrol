@@ -22,7 +22,7 @@ export class Chissel implements Device{
     }
 
     activate(): void {
-        const blurAmount = 100;
+        const blurAmount = 1;
         
         requestAnimationFrame(() => {
             if (this.cycleCount < blurAmount) {   
@@ -67,10 +67,7 @@ export class Chissel implements Device{
                 }
             });
     
-            // Recursively call activate to create an animation loop
-            if (this.cycleCount <= blurAmount || this.blurElements.length > 0) {
-                this.activate(); // Re-trigger the animation loop
-            }
+            
         });
     }
     

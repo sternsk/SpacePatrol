@@ -317,7 +317,7 @@ export class SpaceGame {
             device.activate()
             const gElem = device._gElem
             if(gElem){
-                this.spacecraft.gElement.appendChild(gElem)
+                this.gameEnvironment.svgElement.insertBefore(device._gElem, this.spacecraft.gElement)
             }
         }
 

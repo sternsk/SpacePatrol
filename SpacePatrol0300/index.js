@@ -1007,7 +1007,7 @@
           this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
         }
         activate() {
-          const blurAmount = 100;
+          const blurAmount = 1;
           requestAnimationFrame(() => {
             if (this.cycleCount < blurAmount) {
               const newElement = {
@@ -1042,9 +1042,6 @@
                 this._gElem.appendChild(blurElem.element);
               }
             });
-            if (this.cycleCount <= blurAmount || this.blurElements.length > 0) {
-              this.activate();
-            }
           });
         }
         deactivate() {
@@ -2513,7 +2510,7 @@
             device2.activate();
             const gElem = device2._gElem;
             if (gElem) {
-              this.spacecraft.gElement.appendChild(gElem);
+              this.gameEnvironment.svgElement.insertBefore(device2._gElem, this.spacecraft.gElement);
             }
           }
           this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
