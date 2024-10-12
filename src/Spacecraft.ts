@@ -163,9 +163,10 @@ export class Spacecraft{
     onKeyUp(key: string) {
         switch (key){
             case " ":
-                if(this.device)
+                if(this.device){
                     this.device.dispose()
-
+                    console.log("device disiposed")
+                }
         }
 
     }

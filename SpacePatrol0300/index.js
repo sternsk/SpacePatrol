@@ -1007,7 +1007,7 @@
           this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
         }
         activate() {
-          const blurAmount = 1;
+          const blurAmount = 100;
           requestAnimationFrame(() => {
             if (this.cycleCount < blurAmount) {
               const newElement = {
@@ -1037,8 +1037,12 @@
               });
             }
             this.cycleCount++;
+            if (this.cycleCount <= blurAmount) {
+              this.activate();
+            }
             this.blurElements.forEach((blurElem) => {
               if (!this._gElem.contains(blurElem.element)) {
+                console.log("statement reached");
                 this._gElem.appendChild(blurElem.element);
               }
             });
@@ -1046,6 +1050,7 @@
         }
         deactivate() {
           this.activated = false;
+          this.blurElements = [];
           this.cycleCount = 0;
           this._gElem.innerHTML = "";
         }
@@ -1212,8 +1217,10 @@
         onKeyUp(key) {
           switch (key) {
             case " ":
-              if (this.device)
+              if (this.device) {
                 this.device.dispose();
+                console.log("device disiposed");
+              }
           }
         }
         handleTouchControl(vector) {
