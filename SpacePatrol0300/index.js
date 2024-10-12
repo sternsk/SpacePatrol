@@ -1040,12 +1040,12 @@
             if (this.cycleCount <= blurAmount) {
               this.activate();
             }
-            this.blurElements.forEach((blurElem) => {
-              if (!this._gElem.contains(blurElem.element)) {
-                console.log("statement reached");
-                this._gElem.appendChild(blurElem.element);
-              }
-            });
+          });
+          this.blurElements.forEach((blurElem) => {
+            if (!this._gElem.contains(blurElem.element)) {
+              console.log("statement reached");
+              this._gElem.appendChild(blurElem.element);
+            }
           });
         }
         deactivate() {
