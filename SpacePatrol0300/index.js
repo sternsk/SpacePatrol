@@ -1007,55 +1007,51 @@
           this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
         }
         activate() {
-          const blurAmount = 100;
-          requestAnimationFrame(() => {
-            if (this.cycleCount < blurAmount) {
-              const newElement = {
-                element: this.baseGElem.cloneNode(true),
-                // Clone base element
-                opacityValue: 1
-                // Start with full opacity
-              };
-              this.blurElements.push(newElement);
-              this.blurElements.forEach((blurElem) => {
-                blurElem.opacityValue -= 0.01;
-                blurElem.element.style.opacity = blurElem.opacityValue.toString();
-              });
-            } else {
-              if (this.blurElements.length > 0) {
-                this.blurElements.shift();
-              }
-              const newElement = {
-                element: this.baseGElem.cloneNode(true),
-                opacityValue: 1
-                // Start with full opacity
-              };
-              this.blurElements.push(newElement);
-              this.blurElements.forEach((blurElem) => {
-                blurElem.opacityValue -= 0.01;
-                blurElem.element.style.opacity = blurElem.opacityValue.toString();
-              });
-            }
-            this.cycleCount++;
-            if (this.cycleCount <= blurAmount) {
-              this.activate();
-            }
-          });
+          const blurAmount = 10;
+          console.log("this.cycleCount: " + this.cycleCount);
           this.blurElements.forEach((blurElem) => {
             if (!this._gElem.contains(blurElem.element)) {
-              console.log("statement reached");
+              console.log("this.blurElements.length: " + this.blurElements.length);
               this._gElem.appendChild(blurElem.element);
             }
           });
+          if (this.cycleCount < blurAmount) {
+            const newElement = {
+              element: this.baseGElem.cloneNode(true),
+              // Clone base element
+              opacityValue: 1
+              // Start with full opacity
+            };
+            this.blurElements.push(newElement);
+            this.blurElements.forEach((blurElem) => {
+              blurElem.opacityValue -= 1 / blurAmount;
+              blurElem.element.style.opacity = blurElem.opacityValue.toString();
+            });
+          } else {
+            if (this.blurElements.length > 0) {
+              this.blurElements.shift();
+              console.log("element removed");
+            }
+            const newElement = {
+              element: this.baseGElem.cloneNode(true),
+              opacityValue: 1
+              // Start with full opacity
+            };
+            this.blurElements.push(newElement);
+            this.blurElements.forEach((blurElem) => {
+              blurElem.opacityValue -= 0.01;
+              blurElem.element.style.opacity = blurElem.opacityValue.toString();
+            });
+          }
+          this.cycleCount++;
         }
         deactivate() {
+        }
+        dispose() {
           this.activated = false;
           this.blurElements = [];
           this.cycleCount = 0;
           this._gElem.innerHTML = "";
-        }
-        dispose() {
-          this.deactivate();
         }
       };
     }
