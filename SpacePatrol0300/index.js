@@ -1438,7 +1438,7 @@
   });
 
   // src/GameEnvironment.ts
-  var torusWidth, torusHeight, GameEnvironment;
+  var torusWidth, torusHeight, _svgElement, GameEnvironment;
   var init_GameEnvironment = __esm({
     "src/GameEnvironment.ts"() {
       "use strict";
@@ -1447,6 +1447,7 @@
       init_library();
       torusWidth = 1e3;
       torusHeight = 1e3;
+      _svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
       GameEnvironment = class {
         constructor() {
           __publicField(this, "screenAspectRatio");
@@ -1456,7 +1457,6 @@
           __publicField(this, "viewBoxLeft");
           __publicField(this, "viewBoxTop");
           __publicField(this, "label", document.createElement("HTMLLabelElement"));
-          __publicField(this, "_svgElement");
           //private _viewBoxBorder: SVGRectElement;
           __publicField(this, "_joystick", new Joystick());
           if (gameFrame.offsetHeight != 0) {
@@ -1474,12 +1474,11 @@
           this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio;
           this.viewBoxLeft = -this.viewBoxWidth / 2;
           this.viewBoxTop = -this.viewBoxHeight / 2;
-          this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
           this.insertBackgroundImage();
-          this._svgElement.style.position = "absolute";
-          this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
-          this._svgElement.setAttribute("tabindex", "0");
-          gameFrame.appendChild(this._svgElement);
+          _svgElement.style.position = "absolute";
+          _svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+          _svgElement.setAttribute("tabindex", "0");
+          gameFrame.appendChild(_svgElement);
           gameFrame.style.height = `${window.innerHeight}px`;
           gameFrame.appendChild(this._joystick.htmlElement);
           gameFrame.appendChild(this._joystick.fireButton);
@@ -1494,23 +1493,23 @@
           return this._joystick;
         }
         get svgElement() {
-          return this._svgElement;
+          return _svgElement;
         }
         handleResize() {
           this.updateLabel();
           gameFrame.style.width = `${window.innerWidth}px`;
           gameFrame.style.height = `${window.innerHeight}px`;
-          this._svgElement.style.width = `${window.innerWidth}px`;
-          this._svgElement.style.height = `${window.innerHeight}px`;
+          _svgElement.style.width = `${window.innerWidth}px`;
+          _svgElement.style.height = `${window.innerHeight}px`;
           this.viewBoxWidth = window.innerWidth * this.viewBoxToScreenRatio;
           this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio;
-          this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+          _svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
         }
         updateLabel() {
           this.label.innerHTML = `gameFrame.clientWidth doesnt change: ${gameFrame.clientWidth}, gameFrame.clientHeight: ${gameFrame.clientHeight}<br>
                                     window.innerWidth is dynamic: ${window.innerWidth}, window.innerHeight: ${window.innerHeight}<br>
                                     this.viewBoxWidth: ${this.viewBoxWidth}, this.viewBoxHeight: ${this.viewBoxHeight}<br>
-                                    this._svgElement.getAttribute("viewBox"): ${this._svgElement.getAttribute("viewBox")}`;
+                                    this._svgElement.getAttribute("viewBox"): ${_svgElement.getAttribute("viewBox")}`;
         }
         setLabel(text) {
           this.label.innerHTML = text;
@@ -1533,12 +1532,12 @@
             case "scroll":
               this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth / 2;
               this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2;
-              this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+              _svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
               break;
             case "pseudoTorus":
               this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth / 2;
               this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2;
-              this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
+              _svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
               if (spacecraft.location.x > torusWidth / 2) {
                 spacecraft.location.x = -torusWidth / 2;
               } else if (spacecraft.location.x < -torusWidth / 2) {
@@ -1559,7 +1558,7 @@
           const bgImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
           const bgImagWidth = torusWidth * 2;
           const bgImageHeight = torusHeight * 2;
-          this._svgElement.appendChild(bgImage);
+          _svgElement.appendChild(bgImage);
           bgImage.href.baseVal = "../resources/background10.jpg";
           bgImage.onload = () => {
             const imageWidth = bgImage.getBBox().width;
@@ -2511,7 +2510,9 @@
           }
           if (device2 instanceof Chissel && keyboardController.isKeyPressed(" ")) {
             device2.activate();
+            request.chissel = true;
             const gElem = device2._gElem;
+            gElem.setAttribute("id", "device");
             if (gElem) {
               this.gameEnvironment.svgElement.insertBefore(device2._gElem, this.spacecraft.gElement);
             }

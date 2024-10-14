@@ -315,7 +315,15 @@ export class SpaceGame {
 
         if(device instanceof Chissel && keyboardController.isKeyPressed(" ")){
             device.activate()
+            
+            // remove the old blur svg-Element // removes too much
+/*            const oldDevice = document.getElementById("device")
+                if (oldDevice)
+                    oldDevice.innerHTML = ""
+  */              
+            request.chissel = true
             const gElem = device._gElem
+            gElem.setAttribute("id", "device")
             if(gElem){
                 this.gameEnvironment.svgElement.insertBefore(device._gElem, this.spacecraft.gElement)
             }

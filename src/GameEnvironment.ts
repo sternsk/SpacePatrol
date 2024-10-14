@@ -6,6 +6,8 @@ import { polarVector, length, angle, create } from "./library.js";
 export const torusWidth = 1000;
 export const torusHeight = 1000;
 
+export const _svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+
 export class GameEnvironment{
     screenAspectRatio: number
     viewBoxToScreenRatio: number 
@@ -16,7 +18,7 @@ export class GameEnvironment{
 
 
     private label = document.createElement("HTMLLabelElement")
-    private _svgElement: SVGSVGElement;
+    
     //private _viewBoxBorder: SVGRectElement;
     
     private _joystick = new Joystick()
@@ -43,16 +45,16 @@ export class GameEnvironment{
         this.viewBoxLeft = -this.viewBoxWidth / 2
         this.viewBoxTop = -this.viewBoxHeight / 2
         
-        this._svgElement = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        
         this.insertBackgroundImage()
-        this._svgElement.style.position = "absolute"
+        _svgElement.style.position = "absolute"
        //prevent a focus border around the svg-Element
         // this._svgElement.style.outline = "none"
        //draw a border around the svg-Element 
        //this._svgElement.style.border = "5px solid red"
         
-        this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
-        this._svgElement.setAttribute("tabindex", "0")
+        _svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
+        _svgElement.setAttribute("tabindex", "0")
         /*
         // frame of limitation
         const playfieldBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
@@ -82,7 +84,7 @@ export class GameEnvironment{
         this._viewBoxBorder.setAttribute("stroke", `green`)
         this._svgElement.appendChild(this._viewBoxBorder)
         */
-        gameFrame.appendChild(this._svgElement)
+        gameFrame.appendChild(_svgElement)
         gameFrame.style.height = `${window.innerHeight}px`
         gameFrame.appendChild(this._joystick.htmlElement)
         gameFrame.appendChild(this._joystick.fireButton)
@@ -113,7 +115,7 @@ export class GameEnvironment{
     }
     
     get svgElement(){
-        return(this._svgElement);
+        return(_svgElement);
     }
     
     handleResize(){
@@ -121,19 +123,19 @@ export class GameEnvironment{
         this.updateLabel()
         gameFrame.style.width = `${window.innerWidth}px`
         gameFrame.style.height = `${window.innerHeight}px`
-        this._svgElement.style.width = `${window.innerWidth}px`
-        this._svgElement.style.height = `${window.innerHeight}px`
+        _svgElement.style.width = `${window.innerWidth}px`
+        _svgElement.style.height = `${window.innerHeight}px`
 
         this.viewBoxWidth = window.innerWidth * this.viewBoxToScreenRatio
         this.viewBoxHeight = this.viewBoxWidth / this.screenAspectRatio
-        this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
+        _svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
     }
 
     updateLabel(){
         this.label.innerHTML = `gameFrame.clientWidth doesnt change: ${gameFrame.clientWidth}, gameFrame.clientHeight: ${gameFrame.clientHeight}<br>
                                     window.innerWidth is dynamic: ${window.innerWidth}, window.innerHeight: ${window.innerHeight}<br>
                                     this.viewBoxWidth: ${this.viewBoxWidth}, this.viewBoxHeight: ${this.viewBoxHeight}<br>
-                                    this._svgElement.getAttribute("viewBox"): ${this._svgElement.getAttribute("viewBox")}`
+                                    this._svgElement.getAttribute("viewBox"): ${_svgElement.getAttribute("viewBox")}`
     }
 
     setLabel(text: string){
@@ -160,13 +162,13 @@ export class GameEnvironment{
             case "scroll":
                 this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth/2
                 this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2
-                this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
+                _svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
                 break;
             
             case "pseudoTorus":
                 this.viewBoxLeft = spacecraft.location.x - this.viewBoxWidth/2
                 this.viewBoxTop = spacecraft.location.y - this.viewBoxHeight / 2
-                this._svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
+                _svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}` ) 
                 if (spacecraft.location.x > torusWidth / 2){
                     spacecraft.location.x = -torusWidth / 2
                 }
@@ -192,7 +194,7 @@ export class GameEnvironment{
         const bgImage = document.createElementNS("http://www.w3.org/2000/svg", "image")
         const bgImagWidth = torusWidth * 2
         const bgImageHeight = torusHeight * 2
-        this._svgElement.appendChild(bgImage)
+        _svgElement.appendChild(bgImage)
         bgImage.href.baseVal = ("../resources/background10.jpg")
         bgImage.onload = () =>{
             const imageWidth = bgImage.getBBox().width

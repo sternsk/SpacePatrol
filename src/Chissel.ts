@@ -1,4 +1,5 @@
 import { Device } from "./Device";
+import { GameEnvironment } from "./GameEnvironment";
 
 interface BlurElement {
     element: SVGGElement;
