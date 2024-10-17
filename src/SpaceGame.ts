@@ -140,7 +140,28 @@ export class SpaceGame {
             // If the element is not in the reality-server-response, exclude it from the array
             // call the vanish method first
             if (index === -1){
-                element.vanish()
+                //element.vanish()
+
+                // vanish
+                const animate = ()=>{
+                    if (element.scale > .1){
+                        element.scale -= element.scale/100
+                        this.render(element)
+                        requestAnimationFrame(animate)
+                        
+                
+        
+                    } else {
+                        element.gElement.parentNode?.removeChild(element.gElement)
+                        if(element.label){
+                            element.label.parentNode?.removeChild(element.label)
+                            element.labelBorder?.parentNode?.removeChild(element.labelBorder)
+                            
+                
+                        }
+                    } 
+                }
+                animate()
                 return false
             }
             return true
@@ -243,6 +264,7 @@ export class SpaceGame {
                     } 
                 }
                 else this.spacecraft.operate()
+                console.log("opeartes")
                 
             }else if(this.spacecraft.device?.activated){
                 this.spacecraft.device.deactivate()
@@ -315,18 +337,21 @@ export class SpaceGame {
 
         if(device instanceof Chissel && keyboardController.isKeyPressed(" ")){
             device.activate()
-            
+            request.chissel = true
             // remove the old blur svg-Element // removes too much
 /*            const oldDevice = document.getElementById("device")
                 if (oldDevice)
                     oldDevice.innerHTML = ""
   */              
-            request.chissel = true
+            
+            
             const gElem = device._gElem
             gElem.setAttribute("id", "device")
             if(gElem){
                 this.gameEnvironment.svgElement.insertBefore(device._gElem, this.spacecraft.gElement)
             }
+            
+
         }
 
         this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());

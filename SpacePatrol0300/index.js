@@ -1007,51 +1007,44 @@
           this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
         }
         activate() {
-          const blurAmount = 10;
-          console.log("this.cycleCount: " + this.cycleCount);
-          this.blurElements.forEach((blurElem) => {
-            if (!this._gElem.contains(blurElem.element)) {
-              console.log("this.blurElements.length: " + this.blurElements.length);
-              this._gElem.appendChild(blurElem.element);
-            }
-          });
-          if (this.cycleCount < blurAmount) {
-            const newElement = {
-              element: this.baseGElem.cloneNode(true),
-              // Clone base element
-              opacityValue: 1
-              // Start with full opacity
-            };
-            this.blurElements.push(newElement);
-            this.blurElements.forEach((blurElem) => {
-              blurElem.opacityValue -= 1 / blurAmount;
-              blurElem.element.style.opacity = blurElem.opacityValue.toString();
-            });
-          } else {
-            if (this.blurElements.length > 0) {
-              this.blurElements.shift();
-              console.log("element removed");
-            }
-            const newElement = {
-              element: this.baseGElem.cloneNode(true),
-              opacityValue: 1
-              // Start with full opacity
-            };
-            this.blurElements.push(newElement);
-            this.blurElements.forEach((blurElem) => {
-              blurElem.opacityValue -= 0.01;
-              blurElem.element.style.opacity = blurElem.opacityValue.toString();
-            });
+          const blurAmount = 135;
+          const newElement = this.baseGElem.cloneNode(true);
+          this.blurElements.push(newElement);
+          this.updateGElement();
+          if (this.cycleCount >= blurAmount && this.blurElements.length > 0) {
+            this.blurElements.shift();
+            this.updateGElement();
           }
-          this.cycleCount++;
+          this.blurElements.forEach((blurElem) => {
+            let opacityValue = parseFloat(blurElem.getAttribute("opacity") || "1");
+            opacityValue -= 1 / blurAmount;
+            blurElem.setAttribute("opacity", `${opacityValue}`);
+          });
+          if (this.cycleCount < blurAmount)
+            this.cycleCount++;
+        }
+        updateGElement() {
+          this._gElem.innerHTML = "";
+          this.blurElements.forEach((blurElem) => {
+            this._gElem.appendChild(blurElem);
+          });
         }
         deactivate() {
         }
         dispose() {
           this.activated = false;
-          this.blurElements = [];
           this.cycleCount = 0;
-          this._gElem.innerHTML = "";
+          const animate = () => {
+            if (this.blurElements.length > 0) {
+              const newElement = this.baseGElem.cloneNode(true);
+              this.blurElements.push(newElement);
+              this.blurElements.shift();
+              this.blurElements.shift();
+              this.updateGElement();
+              requestAnimationFrame(animate);
+            }
+          };
+          animate();
         }
       };
     }
@@ -1215,7 +1208,6 @@
             case " ":
               if (this.device) {
                 this.device.dispose();
-                console.log("device disiposed");
               }
           }
         }
@@ -1416,15 +1408,16 @@
           }
         }
         vanish() {
-          console.log("vanish called");
           const animate = () => {
             var _a, _b, _c, _d;
             if (this._scale > 0.1) {
               this._scale -= this._scale / 100;
               this.update();
               requestAnimationFrame(animate);
+              console.log("this._scale: " + this.scale);
             } else {
               (_a = this.gElement.parentNode) == null ? void 0 : _a.removeChild(this.gElement);
+              console.log("removed at: " + this._scale);
               if (this._label) {
                 (_b = this._label.parentNode) == null ? void 0 : _b.removeChild(this._label);
                 (_d = (_c = this._labelBorder) == null ? void 0 : _c.parentNode) == null ? void 0 : _d.removeChild(this._labelBorder);
@@ -1478,6 +1471,17 @@
           _svgElement.style.position = "absolute";
           _svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
           _svgElement.setAttribute("tabindex", "0");
+          const playfieldBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+          playfieldBorder.setAttribute("x", `${-torusWidth / 2}`);
+          playfieldBorder.setAttribute("y", `${-torusHeight / 2}`);
+          playfieldBorder.setAttribute("width", `${torusWidth}`);
+          playfieldBorder.setAttribute("height", `${torusHeight}`);
+          playfieldBorder.setAttribute("fill", "none");
+          playfieldBorder.setAttribute("stroke", "red");
+          playfieldBorder.setAttribute("stroke-width", "1px");
+          playfieldBorder.setAttribute("vector-effect", "non-scaling-stroke");
+          playfieldBorder.setAttribute("id", "playfieldBorder");
+          _svgElement.appendChild(playfieldBorder);
           gameFrame.appendChild(_svgElement);
           gameFrame.style.height = `${window.innerHeight}px`;
           gameFrame.appendChild(this._joystick.htmlElement);
@@ -2404,7 +2408,21 @@
           this.spaceObjects = this.spaceObjects.filter((element) => {
             const index = reality.findIndex((response) => response.craftId === element.id);
             if (index === -1) {
-              element.vanish();
+              const animate = () => {
+                var _a, _b, _c, _d;
+                if (element.scale > 0.1) {
+                  element.scale -= element.scale / 100;
+                  this.render(element);
+                  requestAnimationFrame(animate);
+                } else {
+                  (_a = element.gElement.parentNode) == null ? void 0 : _a.removeChild(element.gElement);
+                  if (element.label) {
+                    (_b = element.label.parentNode) == null ? void 0 : _b.removeChild(element.label);
+                    (_d = (_c = element.labelBorder) == null ? void 0 : _c.parentNode) == null ? void 0 : _d.removeChild(element.labelBorder);
+                  }
+                }
+              };
+              animate();
               return false;
             }
             return true;
@@ -2461,6 +2479,7 @@
                   this.spacecraft.gElement.appendChild(gElem);
                 }
               } else this.spacecraft.operate();
+              console.log("opeartes");
             } else if ((_a = this.spacecraft.device) == null ? void 0 : _a.activated) {
               this.spacecraft.device.deactivate();
             }
@@ -30204,7 +30223,7 @@
   // src/index.ts
   init_GameMenu();
   console.log(" ");
-  console.log("index.ts says: SpacePatrol0300 ver.2331, and this should be the first statement");
+  console.log("index.ts says: SpacePatrol0300 ver.2052, and this should be the first statement");
   console.log("But there is apperently the imports and dependencies loaded first and then the following code executed.");
   console.log("Thats why there is statements above this textblock");
   console.log(" ");

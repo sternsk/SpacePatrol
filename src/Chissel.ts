@@ -1,11 +1,5 @@
 import { Device } from "./Device";
-import { GameEnvironment } from "./GameEnvironment";
-
-interface BlurElement {
-    element: SVGGElement;
-    opacityValue: number;
-  }
-  
+//import { _svgElement } from "./GameEnvironment";
 
 export class Chissel implements Device{
     
@@ -15,82 +9,77 @@ export class Chissel implements Device{
     activated = false
 
     cycleCount = 0
-    blurElements: BlurElement[] = []
+    blurElements: SVGElement[] = []
 
     constructor(gElem: SVGGElement){
         this.baseGElem = gElem
+        
         this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g")
+//        _svgElement.appendChild(this._gElem)
     }
 
     activate(): void {
-        const blurAmount = 10;
-        console.log("this.cycleCount: "+this.cycleCount)
+        const blurAmount = 135;
+        // add another element of baseGElem to the blurElements array
+        const newElement = 
+            this.baseGElem.cloneNode(true) as SVGGElement // Clone base element
+        this.blurElements.push(newElement);
+        this.updateGElement()
 
-        // iterate over the blurElements array and add each element to this._gElem
+        // if cycleCount is bigger than blurAmount remove the oldest elements of blurElements array
+        if (this.cycleCount >= blurAmount && this.blurElements.length > 0 ) {
+            this.blurElements.shift(); // Remove the oldest element
+            this.updateGElement()
+        }
+
+        // decrease the opacity value of the blurElements
         this.blurElements.forEach((blurElem) => {
-            if (!this._gElem.contains(blurElem.element)) {
-                console.log("this.blurElements.length: "+this.blurElements.length)
-                this._gElem.appendChild(blurElem.element); // Append only if not already appended
-            }
+            let opacityValue: number = parseFloat(blurElem.getAttribute("opacity") || "1") //returns undefined
+            opacityValue -= 1/blurAmount; // Decrease opacity
+            blurElem.setAttribute("opacity", `${opacityValue}`) // Apply opacity
         });
-        
-            if (this.cycleCount < blurAmount) {   
-                
-                        
-                    // add another element of baseGElem to the blurElements array
-                    const newElement: BlurElement = {
-                        element: this.baseGElem.cloneNode(true) as SVGGElement, // Clone base element
-                        opacityValue: 1 // Start with full opacity
-                    };
-                    this.blurElements.push(newElement);
 
-                    // decrease the opacity value of the blurElements
-                    this.blurElements.forEach((blurElem) => {
-                        blurElem.opacityValue -= 1/blurAmount; // Decrease opacity
-                        blurElem.element.style.opacity = blurElem.opacityValue.toString(); // Apply opacity
-                    });
-                
-            } else {
-                // if cycleCount is bigger than blurAmount remove the oldest elements of blurElements array
-                if (this.blurElements.length > 0 ) {
-                    this.blurElements.shift(); // Remove the oldest element
-                    console.log("element removed")
-                }
+        if(this.cycleCount < blurAmount)
+            this.cycleCount++;
+/*
+        // remove previous blurElements
+        const previousElements = document.getElementsByClassName("clonedBaseElement")
+        while (previousElements.length > 0) {
+            previousElements[0].parentNode?.removeChild(previousElements[0]); // Remove each element from the DOM
+        }
+  */      
+        
 
-                // add another element of baseGElem to the blurElements array
-                const newElement: BlurElement = {
-                    element: this.baseGElem.cloneNode(true) as SVGGElement,
-                    opacityValue: 1 // Start with full opacity
-                };
-                this.blurElements.push(newElement);
-
-                // decrease the opacity value of the blurElements
-                this.blurElements.forEach((blurElem) => {
-                    blurElem.opacityValue -= 0.01;
-                    blurElem.element.style.opacity = blurElem.opacityValue.toString();
-                });
-            }
-            
-                this.cycleCount++;
-        /*        // Re-trigger the animation loop
-            if (this.cycleCount <= blurAmount) {
-                this.activate();
-            }
-          */  
-        
-        
-        
     }
     
+    updateGElement(){
+        //remove the old GElement
+        this._gElem.innerHTML = ""
+        // iterate over the blurElements array and add each element 
+        this.blurElements.forEach((blurElem) => {
+            this._gElem.appendChild(blurElem)
+        });
+    }
 
     deactivate(): void {
-        
     }
 
     dispose(): void {
         this.activated = false
-        this.blurElements = []
+        //this.blurElements = []
         this.cycleCount = 0
-        this._gElem.innerHTML = ""
+        //this._gElem.innerHTML = ""
+        const animate = () =>{
+            if (this.blurElements.length > 0){
+                const newElement = 
+                this.baseGElem.cloneNode(true) as SVGGElement // Clone base element
+                this.blurElements.push(newElement);
+                this.blurElements.shift()
+                this.blurElements.shift()
+                this.updateGElement()
+                requestAnimationFrame(animate)
+            }
+        }
+        animate()
     }
 }

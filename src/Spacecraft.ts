@@ -156,6 +156,7 @@ export class Spacecraft{
         }
         if (keysPressed[' '] && !(this.device instanceof TractorBeam) && !(this.device instanceof Chissel)) {
             this.operate()
+            
         }
         
     }
@@ -165,7 +166,6 @@ export class Spacecraft{
             case " ":
                 if(this.device){
                     this.device.dispose()
-                    console.log("device disiposed")
                 }
         }
 
@@ -423,23 +423,31 @@ export class Spacecraft{
             this.objectStatus.location = add(this.objectStatus.impuls, this.objectStatus.location);
             this.direction += this.objectStatus.rotation
         }
+        // but scale must be updated in client
+        // there should be a render method somewhere.... in SpaceGame...
 
        
     }
 
     vanish(){
-        console.log("vanish called")
+        
+        
         const animate = ()=>{
             if (this._scale > .1){
                 this._scale -= this._scale/100
                 this.update()
                 requestAnimationFrame(animate)
+                console.log("this._scale: "+this.scale)
+        
 
             } else {
                 this.gElement.parentNode?.removeChild(this.gElement)
+                console.log("removed at: "+this._scale)
                 if(this._label){
                     this._label.parentNode?.removeChild(this._label)
                     this._labelBorder?.parentNode?.removeChild(this._labelBorder)
+                    
+        
                 }
             } 
         }
