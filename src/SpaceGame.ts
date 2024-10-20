@@ -14,16 +14,17 @@ import { Chissel } from "./Chissel.js";
 
 export class SpaceGame {
     audioBuffer?: AudioBuffer
-    private playingSound = false
+    private playingSound = true
 
     private spacecraft: Spacecraft
     private spaceObjects: Spacecraft[] = [];
     
     
     private gameEnvironment: GameEnvironment;
-    private touchControl = false
+    private touchControl = true
 
     private textArea = document.createElement("textArea")
+    private taxiValue?: string
     
     constructor() {
         this.spacecraft = new Spacecraft();
@@ -38,6 +39,7 @@ export class SpaceGame {
         gameFrame.appendChild(this.textArea)
         
         if(this.touchControl){
+            console.log("displaying touch-control: "+ this.touchControl)
             this.gameEnvironment.displayTouchControl()
             this.gameEnvironment.joystick.addObserver(() => this.handleTouchEndEvent());
         }
@@ -334,29 +336,78 @@ export class SpaceGame {
                 this.spacecraft.gElement.appendChild(gElem)
             }
         }
-
+        
         if(device instanceof Chissel && keyboardController.isKeyPressed(" ")){
             device.activate()
             request.chissel = true
-            // remove the old blur svg-Element // removes too much
-/*            const oldDevice = document.getElementById("device")
-                if (oldDevice)
-                    oldDevice.innerHTML = ""
-  */              
-            
             
             const gElem = device._gElem
-            gElem.setAttribute("id", "device")
+            let targetElement: SVGGraphicsElement
+            
+            gElem.setAttribute("class", "device")
             if(gElem){
                 this.gameEnvironment.svgElement.insertBefore(device._gElem, this.spacecraft.gElement)
             }
             
+            // get the viewport position of each blur-Element
+            Array.from(gElem.children).forEach((element) => {
+                
+                const prevSibling = element.previousElementSibling as SVGGraphicsElement
+                const nextSibling = element.nextElementSibling as SVGGraphicsElement
+                
+                if(prevSibling && nextSibling && element instanceof SVGGraphicsElement){
+                    const prevRect = prevSibling.getBoundingClientRect()
+                    const nextRect = nextSibling.getBoundingClientRect()
+                    // when element is typeguarded as SVGGraphicsElement you cann access the bounding box but that returns undefined
+                    const elementBBox = element.getBoundingClientRect()
+
+                    const xDistanceRelation = (elementBBox.left - prevRect.left) / (nextRect.left - elementBBox.left)
+                 /*   if(Math.abs(xDistanceRelation) > 2){
+                        console.log("x-jump detected")
+                        targetElement = element
+                    //    console.log(`element.getAttribute("x"):`+ element.getAttribute("x")) // returns undefined
+                    //    console.log(`prevSibling.getAttribute("x"): `+ prevSibling.getAttribute("x")) // returns undefined
+                        element.setAttribute("x", "100")
+                    }
+                   */ 
+                    // Iterate over the children of the gElement
+                    for (let i = 0; i < gElem.children.length; i++) {
+                        const child = gElem.children[i] 
+
+                        // Stop adjusting positions when the target element is reached
+                        if (child === targetElement) {
+                            break;
+                        }
+
+                        if (child instanceof SVGGraphicsElement) {
+                            // Adjust the position of the child element (before the target)
+                            const currentX = parseFloat(child.getAttribute("x") || "0");
+                            const currentY = parseFloat(child.getAttribute("y") || "0");
+                            const deltaX = 2000
+                            const deltaY = 0
+                            // Apply the delta values to shift the positions
+                            child.setAttribute("x", (currentX + deltaX).toString());
+                            child.setAttribute("y", (currentY + deltaY).toString());
+                        }
+                    }
+                    
+
+                    this.taxiValue = xDistanceRelation.toString()
+                    /*console.log(`Position relative to viewport: 
+                                Left: ${elementBBox.left},
+                                Top: ${elementBBox.top}`
+                    )
+                    */
+                    
+                
+                }
+            })
 
         }
 
         this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
         
-        // paint the textArea in the upper left corner
+        // draw the textArea in the upper left corner
         // Find the planet object within the spaceObjects array
         const planet: Spacecraft | undefined = this.spaceObjects.find(obj => obj.id === "planet");
         const station: Spacecraft | undefined = this.spaceObjects.find(obj => obj.id === "station")
@@ -364,7 +415,7 @@ export class SpaceGame {
             this.textArea.innerHTML = `spacecraft location: ${this.spacecraft.location.x.toFixed(1)}, ${this.spacecraft.location.y.toFixed(1)}
                                         planet location: ${planet.location.x.toFixed(1)}, ${planet.location.y.toFixed(1)}
                                         station location: ${station.location.x.toFixed(1)}, ${station.location.y.toFixed(1)}
-                                        distance to planet: ${distanceBetween(this.spacecraft.location, planet.location).toFixed(1)}
+                                      
                                         number of spaceObjects: ${this.spaceObjects.length}`
         }
 

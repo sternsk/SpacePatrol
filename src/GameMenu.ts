@@ -89,7 +89,7 @@ export class GameMenu{
 
         const noDevice = document.createElement("option")
         noDevice.innerHTML = "disabled selected"
-        noDevice.value = "chissel"
+        noDevice.value = "tractorBeam"
         noDevice.textContent = "Choose a Device"
 
         const repulsorShield = document.createElement("option")

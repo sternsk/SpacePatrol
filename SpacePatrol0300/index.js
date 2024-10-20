@@ -1471,17 +1471,6 @@
           _svgElement.style.position = "absolute";
           _svgElement.setAttribute("viewBox", `${this.viewBoxLeft}, ${this.viewBoxTop}, ${this.viewBoxWidth}, ${this.viewBoxHeight}`);
           _svgElement.setAttribute("tabindex", "0");
-          const playfieldBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-          playfieldBorder.setAttribute("x", `${-torusWidth / 2}`);
-          playfieldBorder.setAttribute("y", `${-torusHeight / 2}`);
-          playfieldBorder.setAttribute("width", `${torusWidth}`);
-          playfieldBorder.setAttribute("height", `${torusHeight}`);
-          playfieldBorder.setAttribute("fill", "none");
-          playfieldBorder.setAttribute("stroke", "red");
-          playfieldBorder.setAttribute("stroke-width", "1px");
-          playfieldBorder.setAttribute("vector-effect", "non-scaling-stroke");
-          playfieldBorder.setAttribute("id", "playfieldBorder");
-          _svgElement.appendChild(playfieldBorder);
           gameFrame.appendChild(_svgElement);
           gameFrame.style.height = `${window.innerHeight}px`;
           gameFrame.appendChild(this._joystick.htmlElement);
@@ -1563,7 +1552,7 @@
           const bgImagWidth = torusWidth * 2;
           const bgImageHeight = torusHeight * 2;
           _svgElement.appendChild(bgImage);
-          bgImage.href.baseVal = "../resources/background10.jpg";
+          bgImage.href.baseVal = "../resources/background13.jpg";
           bgImage.onload = () => {
             const imageWidth = bgImage.getBBox().width;
             const imageHeight = bgImage.getBBox().height;
@@ -2331,12 +2320,13 @@
       SpaceGame = class {
         constructor() {
           __publicField(this, "audioBuffer");
-          __publicField(this, "playingSound", false);
+          __publicField(this, "playingSound", true);
           __publicField(this, "spacecraft");
           __publicField(this, "spaceObjects", []);
           __publicField(this, "gameEnvironment");
-          __publicField(this, "touchControl", false);
+          __publicField(this, "touchControl", true);
           __publicField(this, "textArea", document.createElement("textArea"));
+          __publicField(this, "taxiValue");
           this.spacecraft = new Spacecraft();
           this.gameEnvironment = new GameEnvironment();
           this.textArea.style.position = "absolute";
@@ -2346,6 +2336,7 @@
           this.textArea.setAttribute("rows", "14");
           gameFrame.appendChild(this.textArea);
           if (this.touchControl) {
+            console.log("displaying touch-control: " + this.touchControl);
             this.gameEnvironment.displayTouchControl();
             this.gameEnvironment.joystick.addObserver(() => this.handleTouchEndEvent());
           }
@@ -2531,10 +2522,36 @@
             device2.activate();
             request.chissel = true;
             const gElem = device2._gElem;
-            gElem.setAttribute("id", "device");
+            let targetElement;
+            gElem.setAttribute("class", "device");
             if (gElem) {
               this.gameEnvironment.svgElement.insertBefore(device2._gElem, this.spacecraft.gElement);
             }
+            Array.from(gElem.children).forEach((element) => {
+              const prevSibling = element.previousElementSibling;
+              const nextSibling = element.nextElementSibling;
+              if (prevSibling && nextSibling && element instanceof SVGGraphicsElement) {
+                const prevRect = prevSibling.getBoundingClientRect();
+                const nextRect = nextSibling.getBoundingClientRect();
+                const elementBBox = element.getBoundingClientRect();
+                const xDistanceRelation = (elementBBox.left - prevRect.left) / (nextRect.left - elementBBox.left);
+                for (let i = 0; i < gElem.children.length; i++) {
+                  const child = gElem.children[i];
+                  if (child === targetElement) {
+                    break;
+                  }
+                  if (child instanceof SVGGraphicsElement) {
+                    const currentX = parseFloat(child.getAttribute("x") || "0");
+                    const currentY = parseFloat(child.getAttribute("y") || "0");
+                    const deltaX = 2e3;
+                    const deltaY = 0;
+                    child.setAttribute("x", (currentX + deltaX).toString());
+                    child.setAttribute("y", (currentY + deltaY).toString());
+                  }
+                }
+                this.taxiValue = xDistanceRelation.toString();
+              }
+            });
           }
           this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
           const planet = this.spaceObjects.find((obj) => obj.id === "planet");
@@ -2543,7 +2560,7 @@
             this.textArea.innerHTML = `spacecraft location: ${this.spacecraft.location.x.toFixed(1)}, ${this.spacecraft.location.y.toFixed(1)}
                                         planet location: ${planet.location.x.toFixed(1)}, ${planet.location.y.toFixed(1)}
                                         station location: ${station.location.x.toFixed(1)}, ${station.location.y.toFixed(1)}
-                                        distance to planet: ${distanceBetween(this.spacecraft.location, planet.location).toFixed(1)}
+                                      
                                         number of spaceObjects: ${this.spaceObjects.length}`;
           }
           evaluate(spacePatrolRequest, request).then((response) => {
@@ -29935,7 +29952,7 @@
           planet.textContent = "planet";
           const noDevice = document.createElement("option");
           noDevice.innerHTML = "disabled selected";
-          noDevice.value = "chissel";
+          noDevice.value = "tractorBeam";
           noDevice.textContent = "Choose a Device";
           const repulsorShield = document.createElement("option");
           repulsorShield.value = "repulsorShield";
@@ -30223,7 +30240,7 @@
   // src/index.ts
   init_GameMenu();
   console.log(" ");
-  console.log("index.ts says: SpacePatrol0300 ver.2052, and this should be the first statement");
+  console.log("index.ts says: SpacePatrol0300 ver.0243, and this should be the first statement");
   console.log("But there is apperently the imports and dependencies loaded first and then the following code executed.");
   console.log("Thats why there is statements above this textblock");
   console.log(" ");

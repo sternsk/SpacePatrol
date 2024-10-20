@@ -57,7 +57,7 @@ export class GameEnvironment{
         _svgElement.setAttribute("tabindex", "0")
         
         // frame of limitation
-        const playfieldBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
+      /*  const playfieldBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
         playfieldBorder.setAttribute("x", `${-torusWidth / 2}`)
         playfieldBorder.setAttribute("y", `${-torusHeight / 2}`)
         playfieldBorder.setAttribute("width", `${torusWidth}`)
@@ -70,7 +70,7 @@ export class GameEnvironment{
         
         playfieldBorder.setAttribute("id", "playfieldBorder")
         _svgElement.appendChild(playfieldBorder)
-
+*/
         /* viewBox seems to be resized by Chrome at windowresize 
         
         this._viewBoxBorder = document.createElementNS("http://www.w3.org/2000/svg", "rect")
@@ -195,7 +195,7 @@ export class GameEnvironment{
         const bgImagWidth = torusWidth * 2
         const bgImageHeight = torusHeight * 2
         _svgElement.appendChild(bgImage)
-        bgImage.href.baseVal = ("../resources/background10.jpg")
+        bgImage.href.baseVal = ("../resources/background13.jpg")
         bgImage.onload = () =>{
             const imageWidth = bgImage.getBBox().width
             const imageHeight = bgImage.getBBox().height

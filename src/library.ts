@@ -2,8 +2,7 @@ import { SpaceGame } from "./SpaceGame.js"
 import * as m from './root-model.js'
 
 // it would have been way more cool to import the bunch of the reflectionLab without the neccessity of importing each function inidividually
-// import * as m from "./space-patrol-model.js"
-// when there is a change in reflection Lab this should be reflected here as well...
+// import * as n from "./space-patrol-model.js"
 import { Vector2d, SpaceObjectStatus, SpacePatrolRequest} from "./space-patrol-model.js"
 
 // the following functions should be imported by reflectionLab as well
