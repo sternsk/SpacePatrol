@@ -79,11 +79,12 @@ export async function collidablePathElement(type: string): Promise<SVGPathElemen
                 polygon = getImageOutline(imageElement)
                 pathString = pointsToPathString(polygon)
                 const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path")
-                pathElement.setAttribute("stroke", "blue")
+                pathElement.setAttribute("stroke", "white")
                 pathElement.setAttribute("stroke-width", "1px")
                 pathElement.setAttribute("vector-effect", "non-scaling-stroke")
                 pathElement.setAttribute("fill", "none")
                 pathElement.setAttribute("d", pathString)
+                
                 //setting an initial transform value for the path-element before aplying it to the the g-Element
                 pathElement.setAttribute("transform", ` 
                     scale(
@@ -361,6 +362,7 @@ export function createGElement(type: string): SVGGElement{
                 stationImage.setAttribute("stroke", `${color}`)
                 stationImage.setAttribute("transform", `translate (-25,-25)`)
                 
+                /* you can draw a polygon around the image
                 // need to load the image as an html Image to apply getOutline
                 const hmtlStationImage = new Image()
                 hmtlStationImage.src = "../resources/station01.png"
@@ -383,6 +385,7 @@ export function createGElement(type: string): SVGGElement{
                     svgPolygon.setAttribute("transform", `translate(-25, -6) scale(${scalingFactor})`)
                 }
                 gElement.appendChild(svgPolygon)
+                */
                 gElement.appendChild(stationImage)
                 return(gElement)
             
@@ -396,6 +399,7 @@ export function createGElement(type: string): SVGGElement{
                     station02Image.setAttribute("stroke", `${color}`)
                     station02Image.setAttribute("transform", `translate (-25,-25)`)
                     
+                    /* You can draw a polygon around the image
                     // need to load the image as an html Image to apply getOutline
                     const hmtlStation02Image = new Image()
                     hmtlStation02Image.src = "../resources/station02.png"
@@ -420,6 +424,7 @@ export function createGElement(type: string): SVGGElement{
                     }
                     
                     gElement.appendChild(svgPolygon02)
+                    */
                     gElement.appendChild(station02Image)
                     return(gElement)
             

@@ -3,8 +3,8 @@ import { GameEnvironment, torusWidth, torusHeight } from "./GameEnvironment.js";
 import { createGElement, collidablePathElement } from "./SpacecraftShape.js";
 import { keyboardController, device, gameFrame, viewBoxWidth, audioContext } from "./GameMenu.js";
 import { TractorBeam } from "./TractorBeam.js";
-import { evaluate, RequestDefinition, rotatedVector, distanceBetween, distanceVector, spacePatrolRequest} from "./library.js";
-import { SpaceObjectStatus, SpacePatrolRequest, Vector2d} from "./space-patrol-model.js";
+import { evaluate, RequestDefinition, rotatedVector, distanceBetween, distanceVector, pollingRequest} from "./library.js";
+import { SpaceObjectStatus, SpacePatrolRequest, Vector2d, Sync, SpaceNotification, SyncResponse} from "./space-patrol-model.js";
 import { RepulsorShield } from "./RepulsorShield.js";
 import SVGPathCollider from "./svg-path-collider/svg-path-collider.js";
 import SAT from "sat";
@@ -17,7 +17,23 @@ export class SpaceGame {
     private playingSound = true
 
     private spacecraft: Spacecraft
-    private spaceObjects: Spacecraft[] = [];
+    private spaceObjects: Spacecraft[] = []
+    private request: Sync = {"spaceObject":
+                                {"activeDevice":"",
+                                "collidable":false,
+                                "craftId":"spacecraft",
+                                "direction":-60,
+                                "focus":"",
+                                "impuls":{"x":0,"y":0},
+                                "location":{"x":50,"y":50},
+                                "mass":10,
+                                "npc":false,
+                                "rotation":0,
+                                "type":"rainbowRocket"},
+                                "collides":{},
+                                "message":{}} as Sync
+    
+    private response: SyncResponse = create()
     
     
     private gameEnvironment: GameEnvironment;
@@ -27,8 +43,8 @@ export class SpaceGame {
     private taxiValue?: string
     
     constructor() {
-        this.spacecraft = new Spacecraft();
-        this.gameEnvironment = new GameEnvironment();
+        this.spacecraft = new Spacecraft()
+        this.gameEnvironment = new GameEnvironment()
 
         //spacecraft gets a convenient Label
         this.textArea.style.position = "absolute"
@@ -73,20 +89,31 @@ export class SpaceGame {
         //this.spacecraft.applyLabel(this.gameEnvironment.svgElement)
         this.gameLoop();
        
-        /*case the syncSpaceObjects intervall should be less than framerate
+        //case the syncSpaceObjects intervall should be less than framerate
         setInterval(() => {
-            const request = {} as SyncronizeSpaceObject
-            request.spaceObject = this.spacecraft.objectStatus
             
-            evaluate(syncSpaceObject, request)
+            this.request.spaceObject = this.spacecraft.objectStatus
+            
+            evaluate(pollingRequest, this.request)
             .then(response => {
-                this.syncReality(response)
+                this.syncReality(response.status)
+                this.response = response
+                
             })
             .catch(error => {
                 console.error("Failed to update spaceObjects:", error);
             });
-        }, 20);
-        */
+
+            // reset the request
+            this.request = create({
+            spaceObject: this.spacecraft.objectStatus, 
+            collides: {} as SpaceObjectStatus,   
+            message: {} as SpaceNotification,
+
+        })
+
+        }, 100);
+        
     }
 
     syncReality(reality: SpaceObjectStatus[]){
@@ -113,16 +140,18 @@ export class SpaceGame {
                 const spacecraft = new Spacecraft()
                 spacecraft.objectStatus = response
                 this.spaceObjects.push(spacecraft)
+                
                 // define collidable objects
                 if (spacecraft.type === "station02" || spacecraft.type === "station01" ){
                     spacecraft.objectStatus.collidable = true; 
                     let pathElement = await collidablePathElement(spacecraft.type)
                         spacecraft.shape.pathElement = pathElement
+                        spacecraft.shape.pathElement.setAttribute("class", "collidablePath")
                         spacecraft.gElement.appendChild(pathElement)
                 }
-                // the others get just a normal gElement
-                else 
-                    spacecraft.gElement = createGElement(spacecraft.type)
+                
+                // and a normal gElement
+                spacecraft.gElement.appendChild(createGElement(spacecraft.type))
                 
                 spacecraft.gElement.setAttribute("id", `${spacecraft.id}`)
                 this.gameEnvironment.svgElement.insertBefore(spacecraft.gElement, this.spacecraft.gElement)
@@ -180,6 +209,7 @@ export class SpaceGame {
         });
         
         // check for collisions between spacecrafts that have collider
+        let colliderMessage: string = ""
         for (let i = 0; i < this.spaceObjects.length; i++) {
             const spaceObject1 = this.spaceObjects[i];
             if (spaceObject1.collider){
@@ -188,8 +218,12 @@ export class SpaceGame {
                     const spaceObject2 = this.spaceObjects[j];
                     if (spaceObject2.collider){
                         spaceObject2.collider.update()
-                        if (spaceObject1.collider.test(spaceObject2.collider))
-                        console.log("collision detected")
+                        if (spaceObject1.collider.test(spaceObject2.collider)){
+                            this.request.collides = spaceObject1.objectStatus
+                            console.log(`spaceObject1: ${spaceObject1} collides with spaceobject2: ${spaceObject2}`)
+                            
+                            colliderMessage = `${spaceObject1.objectStatus.craftId} collides`
+                        }
                     }
                 }
             
@@ -233,17 +267,8 @@ export class SpaceGame {
         /* should transport following properties: */
         //  to avoid java.lang.NullPointerException: Cannot invoke "java.lang.Boolean.booleanValue()" because the return value of "net.sternski.spacepatrol.space_patrol.model.api.SpacePatrolRequest.getTractor()" is null
 	//      at net.sternski.spacepatrol.space_patrol.processing.SpacePatrolProcessor.manipulateSpaceObject(SpacePatrolProcessor.java:51)
-        const request: SpacePatrolRequest = create({
-            chissel: false, 
-            spaceObject: this.spacecraft.objectStatus, 
-            
-            collides: "",
-            message: "",
-            repulsor: false,
-            targetId: "", 
-            tractor: false
-        })
-
+       
+        
         if(this.touchControl){
             if(this.gameEnvironment.joystick.isTouched){
                 this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
@@ -286,10 +311,10 @@ export class SpaceGame {
         if(device instanceof TractorBeam && keyboardController.isKeyPressed(" ")){
             
             const targetObject = this.spaceObjects.find(element => element.id === "planet")
-            request.tractor = true
+            this.request.spaceObject.activeDevice = "tractor"
                         
             if(targetObject){
-                request.targetId = targetObject.id
+                this.request.spaceObject.focus = targetObject.id
                 const targetVector = rotatedVector(distanceVector(this.spacecraft.location, targetObject.location), 
                                     -(this.spacecraft.direction + 90))
                 /*const targetVector = rotatedVector(distanceVector(this.spacecraft.location, 
@@ -311,7 +336,7 @@ export class SpaceGame {
             if(audioContext)
                 this.playSound()
             // get the device to apply a certain radius to it
-            request.repulsor = true
+            this.request.spaceObject.activeDevice = "repulsor"
             //const device = this.spacecraft.device as RepulsorShield
             // get the closest nugget
             const nuggetList = this.spaceObjects.filter(element => element.type ==="nugget01")
@@ -339,7 +364,7 @@ export class SpaceGame {
         
         if(device instanceof Chissel && keyboardController.isKeyPressed(" ")){
             device.activate()
-            request.chissel = true
+            this.request.spaceObject.activeDevice = "chissel"
             
             const gElem = device._gElem
             let targetElement: SVGGraphicsElement
@@ -404,7 +429,7 @@ export class SpaceGame {
             })
 
         }
-
+        
         this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
         
         // draw the textArea in the upper left corner
@@ -412,11 +437,24 @@ export class SpaceGame {
         const planet: Spacecraft | undefined = this.spaceObjects.find(obj => obj.id === "planet");
         const station: Spacecraft | undefined = this.spaceObjects.find(obj => obj.id === "station")
         if(planet && station){
-            this.textArea.innerHTML = `spacecraft location: ${this.spacecraft.location.x.toFixed(1)}, ${this.spacecraft.location.y.toFixed(1)}
-                                        planet location: ${planet.location.x.toFixed(1)}, ${planet.location.y.toFixed(1)}
-                                        station location: ${station.location.x.toFixed(1)}, ${station.location.y.toFixed(1)}
-                                      
-                                        number of spaceObjects: ${this.spaceObjects.length}`
+            const nestedResult0: Map<String, number> = this.response.nestedResults[0] as Map<String, number>
+            let averageProcessingTime = 0;
+            console.log(nestedResult0)
+            // Überprüfen, ob `nestedResult0` tatsächlich eine Map ist
+            if (nestedResult0 instanceof Map) {
+                averageProcessingTime = nestedResult0.get("average") as number;
+                console.log("averageProcessingTime is a Map: "+averageProcessingTime);
+            } else {
+                // Wenn es kein Map ist, wird angenommen, dass es ein einfaches Objekt ist
+                averageProcessingTime = nestedResult0["average"];
+                console.log("averageProcessingTime is simple an object: "+averageProcessingTime);
+            }
+
+            this.textArea.innerHTML = `average request Processing time: ${averageProcessingTime}
+                                        client number of spaceObjects: ${this.spaceObjects.length}
+                                        server number of spaceobjects: ${this.response}
+                                        Your SpaceId: ${this.spacecraft.objectStatus.craftId}
+                                        ${colliderMessage}`
         }
 
         /*else{}{
@@ -425,6 +463,7 @@ export class SpaceGame {
             ${this.spacecraft.location.y.toFixed(1)}`
         }
         */
+       /*
         evaluate(spacePatrolRequest, request)
         .then(response => {
             this.syncReality(response)
@@ -432,7 +471,7 @@ export class SpaceGame {
         .catch(error => {
             console.error("Failed to update spaceObjects:", error);
         });
-        
+        */
         this.updateElements();
     }
 

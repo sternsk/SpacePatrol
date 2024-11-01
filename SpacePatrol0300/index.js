@@ -461,7 +461,7 @@
             polygon = getImageOutline(imageElement);
             pathString = pointsToPathString(polygon);
             const pathElement = document.createElementNS("http://www.w3.org/2000/svg", "path");
-            pathElement.setAttribute("stroke", "blue");
+            pathElement.setAttribute("stroke", "white");
             pathElement.setAttribute("stroke-width", "1px");
             pathElement.setAttribute("vector-effect", "non-scaling-stroke");
             pathElement.setAttribute("fill", "none");
@@ -712,22 +712,6 @@
         stationImage.setAttribute("height", `50`);
         stationImage.setAttribute("stroke", `${color}`);
         stationImage.setAttribute("transform", `translate (-25,-25)`);
-        const hmtlStationImage = new Image();
-        hmtlStationImage.src = "../resources/station01.png";
-        let svgPolygon = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-        hmtlStationImage.onload = () => {
-          const hmtlStationImageWidth = hmtlStationImage.width;
-          const scalingFactor = 50 / hmtlStationImageWidth;
-          console.log("hmtlStationImageWidth: " + hmtlStationImageWidth);
-          let polygon = getImageOutline(hmtlStationImage);
-          const pointsString = polygon.map((point) => `${point.x},${point.y}`).join(" ");
-          svgPolygon.setAttribute("points", pointsString);
-          svgPolygon.setAttribute("stroke", "brown");
-          svgPolygon.setAttribute("stroke-width", "5px");
-          svgPolygon.setAttribute("vector-effect", "non-scaling-stroke");
-          svgPolygon.setAttribute("transform", `translate(-25, -6) scale(${scalingFactor})`);
-        };
-        gElement.appendChild(svgPolygon);
         gElement.appendChild(stationImage);
         return gElement;
       case "station02":
@@ -738,23 +722,6 @@
         station02Image.setAttribute("height", `50`);
         station02Image.setAttribute("stroke", `${color}`);
         station02Image.setAttribute("transform", `translate (-25,-25)`);
-        const hmtlStation02Image = new Image();
-        hmtlStation02Image.src = "../resources/station02.png";
-        let svgPolygon02 = document.createElementNS("http://www.w3.org/2000/svg", "polygon");
-        hmtlStation02Image.onload = () => {
-          const hmtlStation02ImageWidth = hmtlStation02Image.width;
-          const scalingFactor = 50 / hmtlStation02ImageWidth;
-          console.log("hmtlStationImageWidth: " + hmtlStation02ImageWidth);
-          let polygon02 = getImageOutline(hmtlStation02Image);
-          const pointsString = polygon02.map((point) => `${point.x},${point.y}`).join(" ");
-          svgPolygon02.setAttribute("points", pointsString);
-          svgPolygon02.setAttribute("stroke", "white");
-          svgPolygon02.setAttribute("fill", "none");
-          svgPolygon02.setAttribute("stroke-width", "1px");
-          svgPolygon02.setAttribute("vector-effect", "non-scaling-stroke");
-          svgPolygon02.setAttribute("transform", `translate(-25, -22) scale(${scalingFactor})`);
-        };
-        gElement.appendChild(svgPolygon02);
         gElement.appendChild(station02Image);
         return gElement;
       case "nugget01":
@@ -1097,15 +1064,17 @@
       Spacecraft = class {
         constructor() {
           __publicField(this, "objectStatus", create({
-            location: { x: 50, y: 50 },
-            impuls: { x: 0, y: 0 },
-            direction: -60,
-            rotation: 0,
-            mass: 10,
+            activeDevice: "",
+            collidable: false,
             craftId: "spa\xDFcraft",
-            type: "rocket",
+            direction: -60,
+            focus: "",
+            impuls: { x: 0, y: 0 },
+            location: { x: 50, y: 50 },
+            mass: 10,
             npc: false,
-            collidable: false
+            rotation: 0,
+            type: "rocket"
           }));
           __publicField(this, "_shape");
           __publicField(this, "_color");
@@ -2323,6 +2292,24 @@
           __publicField(this, "playingSound", true);
           __publicField(this, "spacecraft");
           __publicField(this, "spaceObjects", []);
+          __publicField(this, "request", {
+            "spaceObject": {
+              "activeDevice": "",
+              "collidable": false,
+              "craftId": "spacecraft",
+              "direction": -60,
+              "focus": "",
+              "impuls": { "x": 0, "y": 0 },
+              "location": { "x": 50, "y": 50 },
+              "mass": 10,
+              "npc": false,
+              "rotation": 0,
+              "type": "rainbowRocket"
+            },
+            "collides": {},
+            "message": {}
+          });
+          __publicField(this, "response", create());
           __publicField(this, "gameEnvironment");
           __publicField(this, "touchControl", true);
           __publicField(this, "textArea", document.createElement("textArea"));
@@ -2363,6 +2350,20 @@
           }
           this.spacecraft.touchControlType = this.spacecraft.type;
           this.gameLoop();
+          setInterval(() => {
+            this.request.spaceObject = this.spacecraft.objectStatus;
+            evaluate(pollingRequest, this.request).then((response) => {
+              this.syncReality(response.status);
+              this.response = response;
+            }).catch((error) => {
+              console.error("Failed to update spaceObjects:", error);
+            });
+            this.request = create({
+              spaceObject: this.spacecraft.objectStatus,
+              collides: {},
+              message: {}
+            });
+          }, 100);
         }
         syncReality(reality) {
           reality.forEach((response) => __async(this, null, function* () {
@@ -2385,9 +2386,10 @@
                 spacecraft.objectStatus.collidable = true;
                 let pathElement = yield collidablePathElement(spacecraft.type);
                 spacecraft.shape.pathElement = pathElement;
+                spacecraft.shape.pathElement.setAttribute("class", "collidablePath");
                 spacecraft.gElement.appendChild(pathElement);
-              } else
-                spacecraft.gElement = createGElement(spacecraft.type);
+              }
+              spacecraft.gElement.appendChild(createGElement(spacecraft.type));
               spacecraft.gElement.setAttribute("id", `${spacecraft.id}`);
               this.gameEnvironment.svgElement.insertBefore(spacecraft.gElement, this.spacecraft.gElement);
               if (spacecraft.collidable && spacecraft.shape.pathElement) {
@@ -2429,6 +2431,7 @@
           requestAnimationFrame(() => {
             this.gameLoop();
           });
+          let colliderMessage = "";
           for (let i = 0; i < this.spaceObjects.length; i++) {
             const spaceObject1 = this.spaceObjects[i];
             if (spaceObject1.collider) {
@@ -2437,23 +2440,17 @@
                 const spaceObject2 = this.spaceObjects[j];
                 if (spaceObject2.collider) {
                   spaceObject2.collider.update();
-                  if (spaceObject1.collider.test(spaceObject2.collider))
-                    console.log("collision detected");
+                  if (spaceObject1.collider.test(spaceObject2.collider)) {
+                    this.request.collides = spaceObject1.objectStatus;
+                    console.log(`spaceObject1: ${spaceObject1} collides with spaceobject2: ${spaceObject2}`);
+                    colliderMessage = `${spaceObject1.objectStatus.craftId} collides`;
+                  }
                 }
               }
             }
           }
           const device2 = this.spacecraft.device;
           device2 == null ? void 0 : device2.deactivate();
-          const request = create({
-            chissel: false,
-            spaceObject: this.spacecraft.objectStatus,
-            collides: "",
-            message: "",
-            repulsor: false,
-            targetId: "",
-            tractor: false
-          });
           if (this.touchControl) {
             if (this.gameEnvironment.joystick.isTouched) {
               this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value);
@@ -2485,9 +2482,9 @@
           }
           if (device2 instanceof TractorBeam && keyboardController.isKeyPressed(" ")) {
             const targetObject = this.spaceObjects.find((element) => element.id === "planet");
-            request.tractor = true;
+            this.request.spaceObject.activeDevice = "tractor";
             if (targetObject) {
-              request.targetId = targetObject.id;
+              this.request.spaceObject.focus = targetObject.id;
               const targetVector = rotatedVector(
                 distanceVector(this.spacecraft.location, targetObject.location),
                 -(this.spacecraft.direction + 90)
@@ -2502,7 +2499,7 @@
           if (device2 instanceof RepulsorShield && keyboardController.isKeyPressed(" ")) {
             if (audioContext)
               this.playSound();
-            request.repulsor = true;
+            this.request.spaceObject.activeDevice = "repulsor";
             const nuggetList = this.spaceObjects.filter((element) => element.type === "nugget01");
             let shortestDistance = torusHeight + torusWidth;
             nuggetList.forEach((element) => {
@@ -2520,7 +2517,7 @@
           }
           if (device2 instanceof Chissel && keyboardController.isKeyPressed(" ")) {
             device2.activate();
-            request.chissel = true;
+            this.request.spaceObject.activeDevice = "chissel";
             const gElem = device2._gElem;
             let targetElement;
             gElem.setAttribute("class", "device");
@@ -2557,17 +2554,22 @@
           const planet = this.spaceObjects.find((obj) => obj.id === "planet");
           const station = this.spaceObjects.find((obj) => obj.id === "station");
           if (planet && station) {
-            this.textArea.innerHTML = `spacecraft location: ${this.spacecraft.location.x.toFixed(1)}, ${this.spacecraft.location.y.toFixed(1)}
-                                        planet location: ${planet.location.x.toFixed(1)}, ${planet.location.y.toFixed(1)}
-                                        station location: ${station.location.x.toFixed(1)}, ${station.location.y.toFixed(1)}
-                                      
-                                        number of spaceObjects: ${this.spaceObjects.length}`;
+            const nestedResult0 = this.response.nestedResults[0];
+            let averageProcessingTime = 0;
+            console.log(nestedResult0);
+            if (nestedResult0 instanceof Map) {
+              averageProcessingTime = nestedResult0.get("average");
+              console.log("averageProcessingTime is a Map: " + averageProcessingTime);
+            } else {
+              averageProcessingTime = nestedResult0["average"];
+              console.log("averageProcessingTime is simple an object: " + averageProcessingTime);
+            }
+            this.textArea.innerHTML = `average request Processing time: ${averageProcessingTime}
+                                        client number of spaceObjects: ${this.spaceObjects.length}
+                                        server number of spaceobjects: ${this.response}
+                                        Your SpaceId: ${this.spacecraft.objectStatus.craftId}
+                                        ${colliderMessage}`;
           }
-          evaluate(spacePatrolRequest, request).then((response) => {
-            this.syncReality(response);
-          }).catch((error) => {
-            console.error("Failed to update spaceObjects:", error);
-          });
           this.updateElements();
         }
         setupKeyUpListener() {
@@ -2667,8 +2669,8 @@
     inverse: () => inverse,
     length: () => length,
     polarVector: () => polarVector,
-    rotatedVector: () => rotatedVector,
-    spacePatrolRequest: () => spacePatrolRequest
+    pollingRequest: () => pollingRequest,
+    rotatedVector: () => rotatedVector
   });
   function add(v1, v2) {
     return create({ x: v1.x + v2.x, y: v1.y + v2.y });
@@ -2734,7 +2736,7 @@
     const game = new SpaceGame();
     game.init(type, color2, id);
   }
-  var RequestDefinition2, spacePatrolRequest;
+  var RequestDefinition2, pollingRequest;
   var init_library = __esm({
     "src/library.ts"() {
       "use strict";
@@ -2745,7 +2747,7 @@
           this.path = path;
         }
       };
-      spacePatrolRequest = new RequestDefinition2("SpacePatrolRequest");
+      pollingRequest = new RequestDefinition2("Sync");
     }
   });
 
@@ -30240,7 +30242,7 @@
   // src/index.ts
   init_GameMenu();
   console.log(" ");
-  console.log("index.ts says: SpacePatrol0300 ver.0243, and this should be the first statement");
+  console.log("index.ts says: SpacePatrol0300 ver.1256, and this should be the first statement");
   console.log("But there is apperently the imports and dependencies loaded first and then the following code executed.");
   console.log("Thats why there is statements above this textblock");
   console.log(" ");

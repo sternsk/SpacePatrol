@@ -21,15 +21,18 @@ console.log()
 
 export class Spacecraft{
 
-    objectStatus: SpaceObjectStatus = create({ location: {x:50, y:50} as Vector2d,
-                                        impuls: {x:0, y:0} as Vector2d,
-                                        direction: -60,
-                                        rotation:0,
-                                        mass: 10,
+    objectStatus: SpaceObjectStatus = create({ 
+                                        activeDevice:"",
+                                        collidable: false,
                                         craftId: "spaßcraft",
-                                        type: "rocket",
+                                        direction: -60,
+                                        focus: "",
+                                        impuls: {x:0, y:0} as Vector2d,
+                                        location: {x:50, y:50} as Vector2d,
+                                        mass: 10,
                                         npc: false,
-                                        collidable: false
+                                        rotation:0,
+                                        type: "rocket",
                                         } )
 
     private _shape: SpaceObjectShape

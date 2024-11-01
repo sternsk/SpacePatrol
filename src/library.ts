@@ -3,7 +3,7 @@ import * as m from './root-model.js'
 
 // it would have been way more cool to import the bunch of the reflectionLab without the neccessity of importing each function inidividually
 // import * as n from "./space-patrol-model.js"
-import { Vector2d, SpaceObjectStatus, SpacePatrolRequest} from "./space-patrol-model.js"
+import { Vector2d, SpaceObjectStatus, SpacePatrolRequest, Sync, SyncResponse} from "./space-patrol-model.js"
 
 // the following functions should be imported by reflectionLab as well
 export function add(v1: Vector2d, v2: Vector2d): Vector2d{
@@ -40,7 +40,7 @@ export class RequestDefinition<R, Res> {
         this.path = path;
     }
 }
-export const spacePatrolRequest = new RequestDefinition<SpacePatrolRequest, SpaceObjectStatus[]>("SpacePatrolRequest");
+export const pollingRequest = new RequestDefinition<Sync, SyncResponse>("Sync");
 
 export function evaluate<R, Res>(def: RequestDefinition<R, Res>, request: R): Promise<Res> {
     // use XMLHttpRequest or fetch from some lib to send you request and receive result:
