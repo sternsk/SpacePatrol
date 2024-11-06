@@ -2320,7 +2320,7 @@
           this.textArea.style.position = "absolute";
           this.textArea.style.color = "darkgrey";
           this.textArea.style.backgroundColor = "black";
-          this.textArea.innerHTML = "this label\xB4s text is yet to be written";
+          this.textArea.innerHTML = "connecting to server...";
           this.textArea.setAttribute("rows", "14");
           gameFrame.appendChild(this.textArea);
           if (this.touchControl) {
