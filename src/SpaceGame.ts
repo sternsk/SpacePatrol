@@ -10,6 +10,7 @@ import SVGPathCollider from "./svg-path-collider/svg-path-collider.js";
 import SAT from "sat";
 import { create } from "./library.js";
 import { Chissel } from "./Chissel.js";
+import { Joystick } from "./Joystick.js";
 
 
 export class SpaceGame {
@@ -34,7 +35,7 @@ export class SpaceGame {
                                 "message":{}} as Sync
     
     private response: SyncResponse = create()
-    
+    private requestFlag = true
     
     private gameEnvironment: GameEnvironment;
     private touchControl = true
@@ -50,7 +51,7 @@ export class SpaceGame {
         this.textArea.style.position = "absolute"
         this.textArea.style.color = "darkgrey"
         this.textArea.style.backgroundColor = "black"
-        this.textArea.innerHTML = "this label´s text is yet to be written"
+        this.textArea.innerHTML = "connecting to server..."
         this.textArea.setAttribute("rows", "14")
         gameFrame.appendChild(this.textArea)
         
@@ -90,30 +91,14 @@ export class SpaceGame {
         this.gameLoop();
        
         //case the syncSpaceObjects intervall should be less than framerate
-        setInterval(() => {
+       /* setInterval(() => {
             
-            this.request.spaceObject = this.spacecraft.objectStatus
             
-            evaluate(pollingRequest, this.request)
-            .then(response => {
-                this.syncReality(response.status)
-                this.response = response
-                
-            })
-            .catch(error => {
-                console.error("Failed to update spaceObjects:", error);
-            });
 
-            // reset the request
-            this.request = create({
-            spaceObject: this.spacecraft.objectStatus, 
-            collides: {} as SpaceObjectStatus,   
-            message: {} as SpaceNotification,
-
-        })
+            
 
         }, 100);
-        
+        */
     }
 
     syncReality(reality: SpaceObjectStatus[]){
@@ -204,9 +189,33 @@ export class SpaceGame {
     }
 
     private gameLoop() {
+        
         requestAnimationFrame(() => {
             this.gameLoop();
         });
+        
+        if(this.requestFlag){
+            this.requestFlag = false
+
+            this.request.spaceObject = this.spacecraft.objectStatus
+                
+                evaluate(pollingRequest, this.request)
+                .then(response => {
+                    this.syncReality(response.status)
+                    this.response = response
+                    this.requestFlag = true
+                })
+                .catch(error => {
+                    console.error("Failed to update spaceObjects:", error);
+                });
+            // reset the request
+            this.request = create({
+                spaceObject: this.spacecraft.objectStatus, 
+                collides: {} as SpaceObjectStatus,   
+                message: {} as SpaceNotification
+
+            })
+        }        
         
         // check for collisions between spacecrafts that have collider
         let colliderMessage: string = ""
@@ -272,19 +281,26 @@ export class SpaceGame {
         if(this.touchControl){
             if(this.gameEnvironment.joystick.isTouched){
                 this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value)
+
             }
+            if (!this.gameEnvironment.joystick.fires) {
+                this.spacecraft.objectStatus.activeDevice = ""
+                this.spacecraft.device?.dispose()
+            }
+            /*
             if (this.gameEnvironment.joystick.fires){
                 // case the spacecraft has the device tractorBeam 
                 // Access and use the setTarget method of the TractorBeam device
                 if (device instanceof TractorBeam && this.spaceObjects[1]) {
                    /* tractorBeam.setTarget({x: this.spaceObjects[0].location.x - this.spacecraft.location.x, 
                                             y: this.spaceObjects[0].location.y - this.spacecraft.location.y});
-                                            */
-                    const target = rotatedVector({x: this.spaceObjects[1].location.x + this.spacecraft.location.x,
-                        y: this.spaceObjects[1].location.y + this.spacecraft.location.y} as Vector2d, -90)
-                        
-                    device.activate(target)
-                                          
+                                            
+                    //const target = rotatedVector({x: this.spaceObjects[1].location.x + this.spacecraft.location.x,
+                    //    y: this.spaceObjects[1].location.y + this.spacecraft.location.y} as Vector2d, -90)
+                    const targetVector = rotatedVector(distanceVector(this.spacecraft.location, targetObject.location), 
+                                    -(this.spacecraft.direction + 90))
+                    device.activate(targetVector)
+                    this.request.spaceObject.activeDevice = "tractor"
                     const gElem = device._gElem
                     if(gElem){
                         this.spacecraft.gElement.appendChild(gElem)
@@ -292,12 +308,12 @@ export class SpaceGame {
                 }
                 else this.spacecraft.operate()
                 console.log("opeartes")
-                
             }else if(this.spacecraft.device?.activated){
                 this.spacecraft.device.deactivate()
             }
-            
+            */
         }
+
         if (keyboardController.isKeyPressed("w")){
             this.gameEnvironment.viewBoxWidth += this.gameEnvironment.viewBoxWidth / 100
             this.gameEnvironment.viewBoxHeight += this.gameEnvironment.viewBoxHeight / 100
@@ -308,7 +324,7 @@ export class SpaceGame {
             this.gameEnvironment.viewBoxHeight -= this.gameEnvironment.viewBoxHeight/100
         }
 
-        if(device instanceof TractorBeam && keyboardController.isKeyPressed(" ")){
+        if(device instanceof TractorBeam && (keyboardController.isKeyPressed(" ") || this.gameEnvironment.joystick.fires)){
             
             const targetObject = this.spaceObjects.find(element => element.id === "planet")
             this.request.spaceObject.activeDevice = "tractor"
@@ -332,11 +348,12 @@ export class SpaceGame {
          
         }
 
-        if(device instanceof RepulsorShield && keyboardController.isKeyPressed(" ")){
+        if(device instanceof RepulsorShield && (keyboardController.isKeyPressed(" ")|| this.gameEnvironment.joystick.fires)){
             if(audioContext)
                 this.playSound()
+            console.log("repulsor activated")
             // get the device to apply a certain radius to it
-            this.request.spaceObject.activeDevice = "repulsor"
+            this.spacecraft.objectStatus.activeDevice = "repulsor"
             //const device = this.spacecraft.device as RepulsorShield
             // get the closest nugget
             const nuggetList = this.spaceObjects.filter(element => element.type ==="nugget01")
@@ -362,7 +379,7 @@ export class SpaceGame {
             }
         }
         
-        if(device instanceof Chissel && keyboardController.isKeyPressed(" ")){
+        if(device instanceof Chissel && (keyboardController.isKeyPressed(" ") || this.gameEnvironment.joystick.fires)){
             device.activate()
             this.request.spaceObject.activeDevice = "chissel"
             
@@ -436,24 +453,28 @@ export class SpaceGame {
         // Find the planet object within the spaceObjects array
         const planet: Spacecraft | undefined = this.spaceObjects.find(obj => obj.id === "planet");
         const station: Spacecraft | undefined = this.spaceObjects.find(obj => obj.id === "station")
+        
         if(planet && station){
-            const nestedResult0: Map<String, number> = this.response.nestedResults[0] as Map<String, number>
-            let averageProcessingTime = 0;
-            console.log(nestedResult0)
-            // Überprüfen, ob `nestedResult0` tatsächlich eine Map ist
-            if (nestedResult0 instanceof Map) {
-                averageProcessingTime = nestedResult0.get("average") as number;
-                console.log("averageProcessingTime is a Map: "+averageProcessingTime);
-            } else {
-                // Wenn es kein Map ist, wird angenommen, dass es ein einfaches Objekt ist
-                averageProcessingTime = nestedResult0["average"];
-                console.log("averageProcessingTime is simple an object: "+averageProcessingTime);
+            const nestedResult0 = this.response.nestedResults[0] as { _type: string; value: any[] }
+            let averageProcessingTime;
+  //          console.log(nestedResult0)
+            
+            // Überprüfen, ob `nestedResult0` die erwartete Struktur hat
+            if (nestedResult0 && nestedResult0._type === 'flatmap' && Array.isArray(nestedResult0.value)) {
+                // Durchlaufe das `value`-Array in Zweierschritten
+                for (let i = 0; i < nestedResult0.value.length; i += 2) {
+                    if (nestedResult0.value[i] === "average ms" && typeof nestedResult0.value[i + 1] === "object" && "value" in nestedResult0.value[i + 1]) {
+                        // Wert extrahieren
+                        averageProcessingTime = parseFloat(nestedResult0.value[i + 1].value);
+                        break;
+                    }
+                }
             }
 
-            this.textArea.innerHTML = `average request Processing time: ${averageProcessingTime}
-                                        client number of spaceObjects: ${this.spaceObjects.length}
-                                        server number of spaceobjects: ${this.response}
-                                        Your SpaceId: ${this.spacecraft.objectStatus.craftId}
+            this.textArea.innerHTML = `average request Processing time: ${averageProcessingTime} k ns
+                                        number of spaceObjects: ${this.spaceObjects.length}
+                                        players online: ${this.response.nestedResults[0].value[3].value}
+                                        Your CraftId: ${this.spacecraft.objectStatus.craftId}
                                         ${colliderMessage}`
         }
 

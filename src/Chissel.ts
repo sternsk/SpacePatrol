@@ -19,7 +19,7 @@ export class Chissel implements Device{
     }
 
     activate(): void {
-        const blurAmount = 135;
+        const blurAmount = 15;
         // add another element of baseGElem to the blurElements array
         const newElement = 
             this.baseGElem.cloneNode(true) as SVGGElement // Clone base element
@@ -34,7 +34,7 @@ export class Chissel implements Device{
 
         // decrease the opacity value of the blurElements
         this.blurElements.forEach((blurElem) => {
-            let opacityValue: number = parseFloat(blurElem.getAttribute("opacity") || "1") //returns undefined
+            let opacityValue: number = parseFloat(blurElem.getAttribute("opacity") || "1") //case it returns undefined
             opacityValue -= 1/blurAmount; // Decrease opacity
             blurElem.setAttribute("opacity", `${opacityValue}`) // Apply opacity
         });

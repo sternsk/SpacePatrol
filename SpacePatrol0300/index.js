@@ -974,7 +974,7 @@
           this._gElem = document.createElementNS("http://www.w3.org/2000/svg", "g");
         }
         activate() {
-          const blurAmount = 135;
+          const blurAmount = 15;
           const newElement = this.baseGElem.cloneNode(true);
           this.blurElements.push(newElement);
           this.updateGElement();
@@ -2310,6 +2310,7 @@
             "message": {}
           });
           __publicField(this, "response", create());
+          __publicField(this, "requestFlag", true);
           __publicField(this, "gameEnvironment");
           __publicField(this, "touchControl", true);
           __publicField(this, "textArea", document.createElement("textArea"));
@@ -2350,20 +2351,6 @@
           }
           this.spacecraft.touchControlType = this.spacecraft.type;
           this.gameLoop();
-          setInterval(() => {
-            this.request.spaceObject = this.spacecraft.objectStatus;
-            evaluate(pollingRequest, this.request).then((response) => {
-              this.syncReality(response.status);
-              this.response = response;
-            }).catch((error) => {
-              console.error("Failed to update spaceObjects:", error);
-            });
-            this.request = create({
-              spaceObject: this.spacecraft.objectStatus,
-              collides: {},
-              message: {}
-            });
-          }, 100);
         }
         syncReality(reality) {
           reality.forEach((response) => __async(this, null, function* () {
@@ -2431,6 +2418,22 @@
           requestAnimationFrame(() => {
             this.gameLoop();
           });
+          if (this.requestFlag) {
+            this.requestFlag = false;
+            this.request.spaceObject = this.spacecraft.objectStatus;
+            evaluate(pollingRequest, this.request).then((response) => {
+              this.syncReality(response.status);
+              this.response = response;
+              this.requestFlag = true;
+            }).catch((error) => {
+              console.error("Failed to update spaceObjects:", error);
+            });
+            this.request = create({
+              spaceObject: this.spacecraft.objectStatus,
+              collides: {},
+              message: {}
+            });
+          }
           let colliderMessage = "";
           for (let i = 0; i < this.spaceObjects.length; i++) {
             const spaceObject1 = this.spaceObjects[i];
@@ -2455,21 +2458,9 @@
             if (this.gameEnvironment.joystick.isTouched) {
               this.spacecraft.handleTouchControl(this.gameEnvironment.joystick.value);
             }
-            if (this.gameEnvironment.joystick.fires) {
-              if (device2 instanceof TractorBeam && this.spaceObjects[1]) {
-                const target = rotatedVector({
-                  x: this.spaceObjects[1].location.x + this.spacecraft.location.x,
-                  y: this.spaceObjects[1].location.y + this.spacecraft.location.y
-                }, -90);
-                device2.activate(target);
-                const gElem = device2._gElem;
-                if (gElem) {
-                  this.spacecraft.gElement.appendChild(gElem);
-                }
-              } else this.spacecraft.operate();
-              console.log("opeartes");
-            } else if ((_a = this.spacecraft.device) == null ? void 0 : _a.activated) {
-              this.spacecraft.device.deactivate();
+            if (!this.gameEnvironment.joystick.fires) {
+              this.spacecraft.objectStatus.activeDevice = "";
+              (_a = this.spacecraft.device) == null ? void 0 : _a.dispose();
             }
           }
           if (keyboardController.isKeyPressed("w")) {
@@ -2480,7 +2471,7 @@
             this.gameEnvironment.viewBoxWidth -= this.gameEnvironment.viewBoxWidth / 100;
             this.gameEnvironment.viewBoxHeight -= this.gameEnvironment.viewBoxHeight / 100;
           }
-          if (device2 instanceof TractorBeam && keyboardController.isKeyPressed(" ")) {
+          if (device2 instanceof TractorBeam && (keyboardController.isKeyPressed(" ") || this.gameEnvironment.joystick.fires)) {
             const targetObject = this.spaceObjects.find((element) => element.id === "planet");
             this.request.spaceObject.activeDevice = "tractor";
             if (targetObject) {
@@ -2496,10 +2487,11 @@
               this.spacecraft.gElement.appendChild(gElem);
             }
           }
-          if (device2 instanceof RepulsorShield && keyboardController.isKeyPressed(" ")) {
+          if (device2 instanceof RepulsorShield && (keyboardController.isKeyPressed(" ") || this.gameEnvironment.joystick.fires)) {
             if (audioContext)
               this.playSound();
-            this.request.spaceObject.activeDevice = "repulsor";
+            console.log("repulsor activated");
+            this.spacecraft.objectStatus.activeDevice = "repulsor";
             const nuggetList = this.spaceObjects.filter((element) => element.type === "nugget01");
             let shortestDistance = torusHeight + torusWidth;
             nuggetList.forEach((element) => {
@@ -2515,7 +2507,7 @@
               this.spacecraft.gElement.appendChild(gElem);
             }
           }
-          if (device2 instanceof Chissel && keyboardController.isKeyPressed(" ")) {
+          if (device2 instanceof Chissel && (keyboardController.isKeyPressed(" ") || this.gameEnvironment.joystick.fires)) {
             device2.activate();
             this.request.spaceObject.activeDevice = "chissel";
             const gElem = device2._gElem;
@@ -2555,19 +2547,19 @@
           const station = this.spaceObjects.find((obj) => obj.id === "station");
           if (planet && station) {
             const nestedResult0 = this.response.nestedResults[0];
-            let averageProcessingTime = 0;
-            console.log(nestedResult0);
-            if (nestedResult0 instanceof Map) {
-              averageProcessingTime = nestedResult0.get("average");
-              console.log("averageProcessingTime is a Map: " + averageProcessingTime);
-            } else {
-              averageProcessingTime = nestedResult0["average"];
-              console.log("averageProcessingTime is simple an object: " + averageProcessingTime);
+            let averageProcessingTime;
+            if (nestedResult0 && nestedResult0._type === "flatmap" && Array.isArray(nestedResult0.value)) {
+              for (let i = 0; i < nestedResult0.value.length; i += 2) {
+                if (nestedResult0.value[i] === "average ms" && typeof nestedResult0.value[i + 1] === "object" && "value" in nestedResult0.value[i + 1]) {
+                  averageProcessingTime = parseFloat(nestedResult0.value[i + 1].value);
+                  break;
+                }
+              }
             }
-            this.textArea.innerHTML = `average request Processing time: ${averageProcessingTime}
-                                        client number of spaceObjects: ${this.spaceObjects.length}
-                                        server number of spaceobjects: ${this.response}
-                                        Your SpaceId: ${this.spacecraft.objectStatus.craftId}
+            this.textArea.innerHTML = `average request Processing time: ${averageProcessingTime} k ns
+                                        number of spaceObjects: ${this.spaceObjects.length}
+                                        players online: ${this.response.nestedResults[0].value[3].value}
+                                        Your CraftId: ${this.spacecraft.objectStatus.craftId}
                                         ${colliderMessage}`;
           }
           this.updateElements();
