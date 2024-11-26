@@ -454,7 +454,24 @@ export class SpaceGame {
         const planet: Spacecraft | undefined = this.spaceObjects.find(obj => obj.id === "planet");
         const station: Spacecraft | undefined = this.spaceObjects.find(obj => obj.id === "station")
         
+        // extrahiere aus dem Array nested result die gewünschten Werte
+        const nestedResult0 = this.response.nestedResults[0] as { _type: string; value: any[] }
+
+        // Überprüfen, ob `nestedResult0` die erwartete Struktur hat
+        if (nestedResult0 && nestedResult0._type === 'flatmap' && Array.isArray(nestedResult0.value)) {
+            // Durchlaufe das `value`-Array in Zweierschritten
+            for (let i = 0; i < nestedResult0.value.length; i += 2) {
+                if (nestedResult0.value[i] === "playerScore" && typeof nestedResult0.value[i + 1] === "object" && "value" in nestedResult0.value[i + 1]) {
+                    // Wert extrahieren
+                    this.spacecraft.score = parseFloat(nestedResult0.value[i + 1].value);
+                    break;
+                }
+            }
+        }
+         
         if(planet && station){
+/*
+            // extrahiere aus dem Array nested result die im server berechnete durchschnittliche Verarbeitungsdauer eines requests
             const nestedResult0 = this.response.nestedResults[0] as { _type: string; value: any[] }
             let averageProcessingTime;
   //          console.log(nestedResult0)
@@ -470,11 +487,23 @@ export class SpaceGame {
                     }
                 }
             }
-
-            this.textArea.innerHTML = `average request Processing time: ${averageProcessingTime} k ns
+            /*reduce is an array method that takes a callback and an initial value (0 in this case).
+                sum starts at 0 (the initial value).
+                For each element in the array:
+                Add element.score to the current sum.
+                
+*/          const totalScore: number = this.spacecraft.score +
+            this.spaceObjects.reduce((sum, element) => sum + element.score, 0);
+/*
+            let totalScore: number = this.spacecraft.objectStatus.score
+            this.spaceObjects.forEach((element) =>{
+                totalScore += element.objectStatus.score
+            })
+*/          
+            this.textArea.innerHTML = `total score: ${totalScore} 
                                         number of spaceObjects: ${this.spaceObjects.length}
-                                        players online: ${this.response.nestedResults[0].value[3].value}
-                                        Your CraftId: ${this.spacecraft.objectStatus.craftId}
+                                        players online: ${this.response.nestedResults[0].value[5].value}
+                                        your craftId: ${this.spacecraft.objectStatus.craftId}
                                         ${colliderMessage}`
         }
 

@@ -705,7 +705,6 @@
         gElement.appendChild(planetImage);
         return gElement;
       case "station01":
-        console.log("station requested");
         const stationImage = document.createElementNS("http://www.w3.org/2000/svg", "image");
         stationImage.href.baseVal = "../resources/station01.png";
         stationImage.setAttribute("width", `50`);
@@ -715,7 +714,6 @@
         gElement.appendChild(stationImage);
         return gElement;
       case "station02":
-        console.log("station02 requested");
         const station02Image = document.createElementNS("http://www.w3.org/2000/svg", "image");
         station02Image.href.baseVal = "../resources/station02.png";
         station02Image.setAttribute("width", `50`);
@@ -1077,6 +1075,7 @@
             type: "rocket"
           }));
           __publicField(this, "_shape");
+          __publicField(this, "_score", 0);
           __publicField(this, "_color");
           __publicField(this, "_touchControlType");
           __publicField(this, "easing", false);
@@ -1257,6 +1256,12 @@
           } else if (this.objectStatus.direction < -180) {
             this.objectStatus.direction += 360;
           }
+        }
+        get score() {
+          return this._score;
+        }
+        set score(n) {
+          this._score = n;
         }
         get shape() {
           return this._shape;
@@ -2545,21 +2550,21 @@
           this.spacecraft.handleKeyboardInput(keyboardController.getKeysPressed());
           const planet = this.spaceObjects.find((obj) => obj.id === "planet");
           const station = this.spaceObjects.find((obj) => obj.id === "station");
-          if (planet && station) {
-            const nestedResult0 = this.response.nestedResults[0];
-            let averageProcessingTime;
-            if (nestedResult0 && nestedResult0._type === "flatmap" && Array.isArray(nestedResult0.value)) {
-              for (let i = 0; i < nestedResult0.value.length; i += 2) {
-                if (nestedResult0.value[i] === "average ms" && typeof nestedResult0.value[i + 1] === "object" && "value" in nestedResult0.value[i + 1]) {
-                  averageProcessingTime = parseFloat(nestedResult0.value[i + 1].value);
-                  break;
-                }
+          const nestedResult0 = this.response.nestedResults[0];
+          if (nestedResult0 && nestedResult0._type === "flatmap" && Array.isArray(nestedResult0.value)) {
+            for (let i = 0; i < nestedResult0.value.length; i += 2) {
+              if (nestedResult0.value[i] === "playerScore" && typeof nestedResult0.value[i + 1] === "object" && "value" in nestedResult0.value[i + 1]) {
+                this.spacecraft.score = parseFloat(nestedResult0.value[i + 1].value);
+                break;
               }
             }
-            this.textArea.innerHTML = `average request Processing time: ${averageProcessingTime} k ns
+          }
+          if (planet && station) {
+            const totalScore = this.spacecraft.score + this.spaceObjects.reduce((sum, element) => sum + element.score, 0);
+            this.textArea.innerHTML = `total score: ${totalScore} 
                                         number of spaceObjects: ${this.spaceObjects.length}
-                                        players online: ${this.response.nestedResults[0].value[3].value}
-                                        Your CraftId: ${this.spacecraft.objectStatus.craftId}
+                                        players online: ${this.response.nestedResults[0].value[5].value}
+                                        your craftId: ${this.spacecraft.objectStatus.craftId}
                                         ${colliderMessage}`;
           }
           this.updateElements();
@@ -30234,7 +30239,7 @@
   // src/index.ts
   init_GameMenu();
   console.log(" ");
-  console.log("index.ts says: SpacePatrol0300 ver.1256, and this should be the first statement");
+  console.log("index.ts says: SpacePatrol0300 ver.1243, and this should be the first statement");
   console.log("But there is apperently the imports and dependencies loaded first and then the following code executed.");
   console.log("Thats why there is statements above this textblock");
   console.log(" ");

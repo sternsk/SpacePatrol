@@ -353,7 +353,6 @@ export function createGElement(type: string): SVGGElement{
                 gElement.appendChild(planetImage)
                 return(gElement)
             case "station01":
-                console.log("station requested")
                 const stationImage = document.createElementNS("http://www.w3.org/2000/svg", "image")
                 
                 stationImage.href.baseVal = "../resources/station01.png"
@@ -390,7 +389,6 @@ export function createGElement(type: string): SVGGElement{
                 return(gElement)
             
                 case "station02":
-                    console.log("station02 requested")
                     const station02Image = document.createElementNS("http://www.w3.org/2000/svg", "image")
                     
                     station02Image.href.baseVal = "../resources/station02.png"

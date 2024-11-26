@@ -22,6 +22,7 @@ console.log()
 export class Spacecraft{
 
     objectStatus: SpaceObjectStatus = create({ 
+                                        
                                         activeDevice:"",
                                         collidable: false,
                                         craftId: "spaßcraft",
@@ -36,7 +37,7 @@ export class Spacecraft{
                                         } )
 
     private _shape: SpaceObjectShape
-
+    private _score: number = 0
     
     private _color: string
     private _touchControlType: string
@@ -278,6 +279,14 @@ export class Spacecraft{
         }else if(this.objectStatus.direction < -180){
             this.objectStatus.direction += 360
         }
+    }
+
+    get score(): number{
+        return this._score
+    }
+
+    set score(n: number){
+        this._score = n
     }
 
     get shape(): SpaceObjectShape{
